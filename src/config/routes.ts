@@ -8,6 +8,9 @@ import Notifications from "../components/Notifications";
 import Announcements from "../components/Announcements";
 import Settings from "../components/Settings";
 import Attendance from "../components/Attendance";
+import QRScanner from "../components/QRScanner";
+import UserQRCode from "../components/UserQRCode";
+import ViewQRCode from "../components/ViewQRCode";
 
 import type { ComponentType } from "react";
 import type { Stats, Member, UpcomingExpiry, Debt, Package } from "../types";
@@ -84,5 +87,17 @@ export const createRoutes = (data: AppData): RouteConfig[] => [
   {
     path: "settings",
     element: Settings,
+  },
+  {
+    path: "qr-scanner",
+    element: QRScanner,
+  },
+  {
+    path: "user-qr",
+    element: UserQRCode,
+  },
+  {
+    path: "view-qr",
+    element: ViewQRCode,
   },
 ];

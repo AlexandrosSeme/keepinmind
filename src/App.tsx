@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
+import UserQRPage from "./components/UserQRPage";
 import { createRoutes } from "./config/routes";
 import type { Stats, Member, UpcomingExpiry, Debt, Package } from "./types";
 import { fetchAppData } from "./services/supabaseData";
@@ -76,6 +77,10 @@ function App() {
   return (
     <AppDataProvider value={contextValue}>
       <Routes>
+        {/* Standalone User QR Page - No Layout */}
+        <Route path="/my-qr" element={<UserQRPage />} />
+        
+        {/* Admin Routes with MainLayout */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           {routes.map((route) =>

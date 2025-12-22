@@ -77,7 +77,7 @@ const Notifications: React.FC = () => {
               <div key={notification.id} className="border-bottom p-4 hover-bg-light">
                 <div className="d-flex align-items-start justify-content-between">
                   <div className="d-flex align-items-start gap-3">
-                    <div className={`p-2 rounded-circle ${notification.iconBg}`}>
+                    <div className={`p-2 rounded-circle d-inline-flex align-items-center justify-content-center ${notification.iconBg}`}>
                       <IconComponent size={20} className={notification.iconColor} />
                     </div>
                     <div className="flex-grow-1">

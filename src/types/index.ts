@@ -2,6 +2,7 @@ export interface Member {
   id: number;
   name: string;
   phone: string;
+  email?: string;
   status: 'active' | 'expiring_soon' | 'expired';
   expiry: string;
   package: string;
