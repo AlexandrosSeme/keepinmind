@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import { CheckCircle, XCircle, AlertCircle, Camera } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, Camera, Settings } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import type { Member } from "../types";
 import { logEntrance } from "../services/entranceLogService";
@@ -12,6 +12,11 @@ interface ValidationResult {
   reason?: string;
 }
 
+interface CameraDevice {
+  id: string;
+  label: string;
+}
+
 const QRScanner: React.FC = () => {
   const [scanning, setScanning] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -19,6 +24,39 @@ const QRScanner: React.FC = () => {
   const [manualId, setManualId] = useState<string>("");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [cameraId, setCameraId] = useState<string | null>(null);
+  const [availableCameras, setAvailableCameras] = useState<CameraDevice[]>([]);
+  const [loadingCameras, setLoadingCameras] = useState(false);
+  const [scanQuality, setScanQuality] = useState<'fast' | 'balanced' | 'accurate'>('fast');
+
+  // Load available cameras on component mount
+  useEffect(() => {
+    const loadCameras = async () => {
+      setLoadingCameras(true);
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          const cameras: CameraDevice[] = devices.map((device, index) => ({
+            id: device.id,
+            label: device.label || `Κάμερα ${index + 1}`,
+          }));
+          setAvailableCameras(cameras);
+          // Set default camera if none selected
+          if (!cameraId && cameras.length > 0) {
+            setCameraId(cameras[0].id);
+          }
+        } else {
+          setError("Δεν βρέθηκαν κάμερες");
+        }
+      } catch (err) {
+        console.error("Error loading cameras:", err);
+        setError("Σφάλμα κατά τη φόρτωση των καμερών");
+      } finally {
+        setLoadingCameras(false);
+      }
+    };
+
+    loadCameras();
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -98,7 +136,7 @@ const QRScanner: React.FC = () => {
         message: "Μη έγκυρη Κατάσταση",
         reason: "Η κατάσταση της συνδρομής δεν είναι έγκυρη",
       };
-    } catch (err) {
+    } catch {
       return {
         valid: false,
         member: null,
@@ -108,7 +146,45 @@ const QRScanner: React.FC = () => {
     }
   };
 
+  const getScanConfig = () => {
+    switch (scanQuality) {
+      case 'fast':
+        return {
+          fps: 30,
+          qrbox: { width: 400, height: 400 },
+          aspectRatio: 1.0,
+          disableFlip: false,
+        };
+      case 'balanced':
+        return {
+          fps: 20,
+          qrbox: { width: 350, height: 350 },
+          aspectRatio: 1.0,
+          disableFlip: false,
+        };
+      case 'accurate':
+        return {
+          fps: 15,
+          qrbox: { width: 300, height: 300 },
+          aspectRatio: 1.0,
+          disableFlip: false,
+        };
+      default:
+        return {
+          fps: 30,
+          qrbox: { width: 400, height: 400 },
+          aspectRatio: 1.0,
+          disableFlip: false,
+        };
+    }
+  };
+
   const startScanning = async () => {
+    if (!cameraId) {
+      setError("Παρακαλώ επιλέξτε κάμερα");
+      return;
+    }
+
     try {
       setError(null);
       setValidationResult(null);
@@ -116,19 +192,11 @@ const QRScanner: React.FC = () => {
       const html5QrCode = new Html5Qrcode("qr-reader");
       scannerRef.current = html5QrCode;
 
-      // Get available cameras
-      const devices = await Html5Qrcode.getCameras();
-      
-      if (devices && devices.length > 0) {
-        const selectedCameraId = cameraId || devices[0].id;
-        setCameraId(selectedCameraId);
+      const config = getScanConfig();
 
-        await html5QrCode.start(
-          selectedCameraId,
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-          },
+      await html5QrCode.start(
+        cameraId,
+        config,
           async (decodedText) => {
             // Stop scanning after successful scan
             await html5QrCode.stop();
@@ -166,7 +234,7 @@ const QRScanner: React.FC = () => {
                   result.reason
                 );
               }
-            } catch (parseError) {
+            } catch {
               setValidationResult({
                 valid: false,
                 member: null,
@@ -181,11 +249,35 @@ const QRScanner: React.FC = () => {
         );
 
         setScanning(true);
-      } else {
-        setError("Δεν βρέθηκε κάμερα");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Σφάλμα κατά την έναρξη της σάρωσης";
+      setError(errorMessage);
+      setScanning(false);
+    }
+  };
+
+  const handleCameraChange = async (newCameraId: string) => {
+    try {
+      const wasScanning = scanning;
+      
+      // Stop scanning if active
+      if (wasScanning) {
+        await stopScanning();
       }
-    } catch (err: any) {
-      setError(err.message || "Σφάλμα κατά την έναρξη της σάρωσης");
+      
+      // Update camera selection
+      setCameraId(newCameraId);
+      
+      // Restart scanning if it was active
+      if (wasScanning) {
+        // Small delay to ensure camera is released
+        setTimeout(() => {
+          startScanning();
+        }, 500);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Σφάλμα κατά την αλλαγή κάμερας";
+      setError(errorMessage);
       setScanning(false);
     }
   };
@@ -196,7 +288,7 @@ const QRScanner: React.FC = () => {
         await scannerRef.current.stop();
         scannerRef.current.clear();
         scannerRef.current = null;
-      } catch (err) {
+      } catch {
         // Ignore errors when stopping
       }
     }
@@ -247,13 +339,62 @@ const QRScanner: React.FC = () => {
         <div className="col-12 col-md-6 mb-4">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
+              {/* Camera Selection */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Επιλογή Κάμερας</label>
+                {loadingCameras ? (
+                  <div className="text-muted small">Φόρτωση καμερών...</div>
+                ) : availableCameras.length > 0 ? (
+                  <select
+                    className="form-select"
+                    value={cameraId || ""}
+                    onChange={(e) => handleCameraChange(e.target.value)}
+                    disabled={scanning}
+                  >
+                    {availableCameras.map((camera) => (
+                      <option key={camera.id} value={camera.id}>
+                        {camera.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="alert alert-warning mb-0" role="alert">
+                    Δεν βρέθηκαν διαθέσιμες κάμερες
+                  </div>
+                )}
+              </div>
+
+              {/* Scan Quality Settings */}
+              {!scanning && (
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    <Settings className="me-1" size={16} />
+                    Ποιότητα Σάρωσης
+                  </label>
+                  <select
+                    className="form-select"
+                    value={scanQuality}
+                    onChange={(e) => setScanQuality(e.target.value as 'fast' | 'balanced' | 'accurate')}
+                  >
+                    <option value="fast">⚡ Γρήγορη (30 FPS, Μεγάλο QR Box)</option>
+                    <option value="balanced">⚖️ Ισορροπημένη (20 FPS, Μέτριο QR Box)</option>
+                    <option value="accurate">🎯 Ακριβής (15 FPS, Μικρό QR Box)</option>
+                  </select>
+                  <small className="text-muted d-block mt-1">
+                    {scanQuality === 'fast' && 'Γρήγορη σάρωση με μεγάλο scanning area - Προτεινόμενη'}
+                    {scanQuality === 'balanced' && 'Ισορροπημένη ταχύτητα και ακρίβεια'}
+                    {scanQuality === 'accurate' && 'Πιο ακριβής αλλά πιο αργή σάρωση'}
+                  </small>
+                </div>
+              )}
+
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0">Κάμερα</h5>
+                <h5 className="mb-0">Σάρωση</h5>
                 {!scanning ? (
                   <button
                     className="btn btn-primary"
                     onClick={startScanning}
-                    disabled={scanning}
+                    disabled={scanning || !cameraId || availableCameras.length === 0}
                   >
                     <Camera className="me-2" size={18} />
                     Έναρξη Σάρωσης
@@ -273,6 +414,7 @@ const QRScanner: React.FC = () => {
                 style={{
                   width: "100%",
                   minHeight: "300px",
+                  transform: "scaleX(-1)", // Mirror/flip horizontally
                 }}
               ></div>
 
