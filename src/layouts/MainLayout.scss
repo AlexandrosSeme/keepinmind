@@ -1,0 +1,50 @@
+.app-title {
+  color: rgb(100, 255, 255);
+  font-weight: 700;
+  line-height: 32px;
+  text-shadow: 0 0 10px rgba(100, 255, 255, 0.5);
+}
+
+.nav-buttons {
+  background-color: rgb(88, 255, 255);
+  color: rgb(75, 75, 75) !important;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.nav-buttons:hover {
+  color: rgb(75, 75, 75) !important;
+}
+
+.nav-buttons:focus {
+  color: rgb(75, 75, 75) !important;
+}
+
+.nav-buttons:active {
+  color: rgb(75, 75, 75) !important;
+}
+
+// .btn-primary {
+//   background-color: rgb(100, 255, 255);
+//   color: rgb(75, 75, 75) !important;
+//   border: none;
+//   border-radius: 5px;
+//   padding: 10px 20px;
+//   font-size: 16px;
+//   font-weight: 700;
+//   &:hover {
+//     background-color: rgb(16, 223, 223);
+//     color: rgb(75, 75, 75) !important;
+//   }
+//   &:focus {
+//     background-color: rgb(16, 223, 223);
+//     color: rgb(75, 75, 75) !important;
+//   }
+//   &:active {
+//     background-color: rgb(16, 223, 223);
+//     color: rgb(75, 75, 75) !important;
+//   }
+// }
