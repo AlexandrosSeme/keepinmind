@@ -17,14 +17,7 @@ interface DebtsProps {
 }
 
 const Debts: React.FC<DebtsProps> = ({ debts = [] }) => {
-  const mockDebts: Debt[] = [
-    { id: 1, memberName: 'Γιώργος Κωνσταντίνου', amount: 50, daysOverdue: 8, status: 'overdue', lastContact: '10/10/2025', phone: '6934567890', email: 'g.konstantinou@email.com' },
-    { id: 2, memberName: 'Αντώνης Μιχαηλίδης', amount: 120, daysOverdue: 3, status: 'warning', lastContact: '12/10/2025', phone: '6945678901', email: 'a.michailidis@email.com' },
-    { id: 3, memberName: 'Κατερίνα Παυλίδου', amount: 45, daysOverdue: 15, status: 'critical', lastContact: '08/10/2025', phone: '6956789012', email: 'k.pavlidou@email.com' },
-    { id: 4, memberName: 'Δημήτρης Αλεξάνδρου', amount: 90, daysOverdue: 5, status: 'warning', lastContact: '11/10/2025', phone: '6967890123', email: 'd.alexandrou@email.com' },
-  ];
-
-  const displayDebts = debts.length > 0 ? debts : mockDebts;
+  const displayDebts = debts;
 
 
   const getStatusBadge = (status: string) => {

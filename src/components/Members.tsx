@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
-import { Search, Filter, Download, Plus, User } from 'lucide-react';
+import { Search, Filter, Download, Plus, User, Edit, Trash2 } from 'lucide-react';
 import type { Member } from '../types';
+import { useAppData } from '../contexts/AppDataContext';
 
 interface MembersProps {
   members: Member[];
 }
 
-const Members: React.FC<MembersProps> = ({ members }) => {
+const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
+  const { members, addMember, editMember, removeMember } = useAppData();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [formData, setFormData] = useState<Omit<Member, 'id'>>({
+    name: '',
+    phone: '',
+    status: 'active',
+    expiry: '',
+    package: '',
+  });
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -25,17 +37,63 @@ const Members: React.FC<MembersProps> = ({ members }) => {
     );
   };
 
-  const filteredMembers = members.filter(member =>
+  // Use members from context if available, otherwise use prop
+  const displayMembers = members.length > 0 ? members : membersProp;
+
+  const filteredMembers = displayMembers.filter(member =>
     member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     member.phone.includes(searchTerm)
   );
+
+  const handleAdd = () => {
+    setFormData({ name: '', phone: '', status: 'active', expiry: '', package: '' });
+    setShowAddModal(true);
+  };
+
+  const handleEdit = (member: Member) => {
+    setEditingMember(member);
+    setFormData({
+      name: member.name,
+      phone: member.phone,
+      status: member.status,
+      expiry: member.expiry,
+      package: member.package,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το μέλος;')) {
+      await removeMember(id);
+    }
+  };
+
+  const handleSubmitAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newMember = await addMember(formData);
+    if (newMember) {
+      setShowAddModal(false);
+      setFormData({ name: '', phone: '', status: 'active', expiry: '', package: '' });
+    }
+  };
+
+  const handleSubmitEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingMember) {
+      const updated = await editMember(editingMember.id, formData);
+      if (updated) {
+        setShowEditModal(false);
+        setEditingMember(null);
+      }
+    }
+  };
 
   return (
     <div>
       {/* Header */}
       <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
         <h2 className="h4 mb-3 mb-md-0">Μέλη Γυμναστηρίου</h2>
-        <button className="btn btn-primary">
+        <button className="btn btn-primary" onClick={handleAdd}>
           <Plus size={16} className="me-2" />
           Νέο Μέλος
         </button>
@@ -115,9 +173,22 @@ const Members: React.FC<MembersProps> = ({ members }) => {
                       {getStatusBadge(member.status)}
                     </td>
                     <td className="pe-4">
-                      <button className="btn btn-link btn-sm text-primary p-0">
-                        Προβολή
-                      </button>
+                      <div className="btn-group" role="group">
+                        <button 
+                          className="btn btn-link btn-sm text-primary p-0 me-2"
+                          onClick={() => handleEdit(member)}
+                          title="Επεξεργασία"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          className="btn btn-link btn-sm text-danger p-0"
+                          onClick={() => handleDelete(member.id)}
+                          title="Διαγραφή"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -154,13 +225,178 @@ const Members: React.FC<MembersProps> = ({ members }) => {
                   <span className="text-dark">{member.expiry}</span>
                 </div>
               </div>
-              <button className="btn btn-outline-primary btn-sm w-100">
-                Προβολή
-              </button>
+              <div className="d-grid gap-2">
+                <button 
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() => handleEdit(member)}
+                >
+                  <Edit size={14} className="me-1" />
+                  Επεξεργασία
+                </button>
+                <button 
+                  className="btn btn-outline-danger btn-sm"
+                  onClick={() => handleDelete(member.id)}
+                >
+                  <Trash2 size={14} className="me-1" />
+                  Διαγραφή
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Add Member Modal */}
+      {showAddModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAddModal(false)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Προσθήκη Νέου Μέλους</h5>
+                <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
+              </div>
+              <form onSubmit={handleSubmitAdd}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label">Ονοματεπώνυμο</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Τηλέφωνο</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Κατάσταση</label>
+                    <select
+                      className="form-select"
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as Member['status'] })}
+                      required
+                    >
+                      <option value="active">Ενεργή</option>
+                      <option value="expiring_soon">Λήγει Σύντομα</option>
+                      <option value="expired">Ληγμένη</option>
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Ημερομηνία Λήξης</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="DD/MM/YYYY"
+                      value={formData.expiry}
+                      onChange={(e) => setFormData({ ...formData, expiry: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Πακέτο</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.package}
+                      onChange={(e) => setFormData({ ...formData, package: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Ακύρωση</button>
+                  <button type="submit" className="btn btn-primary">Αποθήκευση</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Member Modal */}
+      {showEditModal && editingMember && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowEditModal(false)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Επεξεργασία Μέλους</h5>
+                <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
+              </div>
+              <form onSubmit={handleSubmitEdit}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label">Ονοματεπώνυμο</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Τηλέφωνο</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Κατάσταση</label>
+                    <select
+                      className="form-select"
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as Member['status'] })}
+                      required
+                    >
+                      <option value="active">Ενεργή</option>
+                      <option value="expiring_soon">Λήγει Σύντομα</option>
+                      <option value="expired">Ληγμένη</option>
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Ημερομηνία Λήξης</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="DD/MM/YYYY"
+                      value={formData.expiry}
+                      onChange={(e) => setFormData({ ...formData, expiry: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Πακέτο</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.package}
+                      onChange={(e) => setFormData({ ...formData, package: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Ακύρωση</button>
+                  <button type="submit" className="btn btn-primary">Αποθήκευση</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
