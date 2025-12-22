@@ -6,7 +6,6 @@ import {
   TrendingUp,
   Euro,
   AlertCircle,
-  Plus,
 } from "lucide-react";
 import Chart from "react-apexcharts";
 import type { Stats, UpcomingExpiry, Debt } from "../types";
@@ -45,7 +44,9 @@ const Dashboard: React.FC<DashboardProps> = ({
               <h5 className={`card-title mb-0 ${color}`}>{value}</h5>
             </div>
             <div className={`p-2 rounded-circle ${bgColor}`}>
-              {React.cloneElement(icon as React.ReactElement, { size: 18 })}
+              <div style={{ fontSize: '18px' }}>
+                {icon}
+              </div>
             </div>
           </div>
         </div>
@@ -334,7 +335,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     bar: {
                       horizontal: false,
                       columnWidth: "100%",
-                      endingShape: "rounded",
+                      borderRadius: 4,
                     },
                   },
                   dataLabels: {

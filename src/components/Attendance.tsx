@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { CheckCircle, XCircle, Clock, Plus, Search, Filter, UserCheck, UserX } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Plus, Search, UserCheck, UserX } from 'lucide-react';
 import type { Program, AttendanceRecord, Member } from '../types';
 import moment from 'moment';
-import 'moment/locale/el';
 
 moment.locale('el');
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, Users, CreditCard, Bell, Settings, BarChart3, FileText, Send, Menu, X, Search, Plus, Filter, Download, Mail, Phone, AlertCircle, CheckCircle, Clock, Euro, TrendingUp } 
+import { useState } from 'react';
+import { Calendar, Users, CreditCard, Bell, Settings, BarChart3, FileText, Send, Menu, X, Search, Plus, Filter, Download, AlertCircle, CheckCircle, Clock, Euro, TrendingUp } 
 from 'lucide-react';
 
 const GymMockups = () => {
@@ -61,7 +61,7 @@ const GymMockups = () => {
     { id: 'settings', name: 'Ρυθμίσεις', icon: Settings },
   ];
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'expiring_soon': return 'bg-orange-100 text-orange-800';
@@ -71,7 +71,7 @@ const GymMockups = () => {
     }
   };
 
-  const getStatusText = (status) => {
+  const getStatusText = (status: string) => {
     switch (status) {
       case 'active': return 'Ενεργή';
       case 'expiring_soon': return 'Λήγει Σύντομα';

@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { Calendar as BigCalendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import 'moment/locale/el';
 import { Plus, X } from 'lucide-react';
 import './Calendar.scss';
 
@@ -185,7 +184,7 @@ const Calendar: React.FC = () => {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        position: 'relative',
+        position: 'relative' as const,
         top: '0',
         left: '0',
         width: '100%',
