@@ -17,8 +17,7 @@ const MainLayout: React.FC = () => {
     { id: 'attendance', name: 'Προσέλευση', icon: <ClipboardCheck size={20} />, path: '/attendance' },
     { id: 'notifications', name: 'Ειδοποιήσεις', icon: <BellIcon size={20} />, path: '/notifications' },
     { id: 'announcements', name: 'Ανακοινώσεις', icon: <Megaphone size={20} />, path: '/announcements' },
-    { id: 'settings', name: 'Ρυθμίσεις', icon: <Settings size={20} />, path: '/settings' },
-    { id: 'test-routing', name: 'Test Routing', icon: <Bell size={20} />, path: '/test-routing' },
+    { id: 'settings', name: 'Ρυθμίσεις', icon: <Settings size={20} />, path: '/settings' }
   ];
 
   return (
@@ -46,8 +45,8 @@ const MainLayout: React.FC = () => {
       }}>
         {/* Header */}
         <div className="p-3 py-4 d-flex align-items-center justify-content-between border-bottom">
-          <h4 className="app-title mb-0 text-primary-300">Gym App</h4> 
-          {/* <div className="text-white pt-2"><span className='mx-1 fw-bold'>|</span>  CRM</div> */}
+          <h4 className="app-title mb-0 text-primary-300">KM Management</h4> 
+          <div className="text-white pt-1"><span className='mx-1 fw-bold'>|</span>  CRM</div>
           <button 
             className="btn btn-link text-white p-0 d-lg-none"
             onClick={() => setSidebarOpen(false)}

@@ -44,7 +44,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               <h5 className={`card-title mb-0 ${color}`}>{value}</h5>
             </div>
             <div className={`p-2 rounded-circle ${bgColor}`}>
-              <div style={{ fontSize: '18px' }}>
+              <div style={{ fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {icon}
               </div>
             </div>
@@ -118,7 +118,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 Προβολή Όλων
               </button>
             </div>
-            <div className="card-body p-3">
+            <div className="card-body p-3 overflow-auto" style={{ maxHeight: "240px", minHeight: "240px" }}>
               {upcomingExpiries.map((exp) => (
                 <div
                   key={exp.id}
@@ -210,7 +210,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 Προβολή Όλων
               </button>
             </div>
-            <div className="card-body p-3">
+            <div className="card-body p-3 overflow-auto" style={{ maxHeight: "240px", minHeight: "240px" }}>
               {debts.map((debt) => (
                 <div
                   key={debt.id}
