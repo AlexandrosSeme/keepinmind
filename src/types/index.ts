@@ -66,17 +66,30 @@ export interface Program {
   title: string;
   date: string;
   time: string;
-  type: string;
+  type: 'group' | 'program' | 'appointment' | 'class';
   instructor?: string;
   maxParticipants?: number;
 }
 
 export interface AttendanceRecord {
   id: number;
-  programId: number;
+  programId?: number;
   memberId: number;
   memberName: string;
   status: 'attended' | 'absent' | 'cancelled';
   recordedAt: string;
+  notes?: string;
+}
+
+export interface EntranceLog {
+  id: number;
+  memberId: number;
+  memberName: string;
+  memberPhone: string;
+  memberStatus: 'active' | 'expiring_soon' | 'expired';
+  validationStatus: 'valid' | 'invalid' | 'expiring_soon';
+  validationMessage: string;
+  entranceType: 'qr_scan' | 'manual';
+  timestamp: string;
   notes?: string;
 }

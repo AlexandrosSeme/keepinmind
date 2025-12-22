@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
-import { CheckCircle, XCircle, Clock, Plus, Search, UserCheck, UserX } from 'lucide-react';
-import type { Program, AttendanceRecord, Member } from '../types';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, XCircle, Clock, Plus, Search, UserCheck, UserX, Filter, Calendar, Users, CalendarDays, QrCode, LogIn } from 'lucide-react';
+import type { Program, AttendanceRecord, EntranceLog } from '../types';
 import moment from 'moment';
+import { getEntranceLogs } from '../services/entranceLogService';
+import { useAppData } from '../contexts/AppDataContext';
 
 moment.locale('el');
 
 const Attendance: React.FC = () => {
+  const { members } = useAppData();
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'attended' | 'absent' | 'cancelled'>('all');
+  const [filterCategory, setFilterCategory] = useState<'all' | 'group' | 'program' | 'appointment'>('all');
+  const [activeTab, setActiveTab] = useState<'programs' | 'entrance'>('programs');
+  const [entranceLogs, setEntranceLogs] = useState<EntranceLog[]>([]);
 
-  // Dummy data - Programs
+  // Programs with categories
   const [programs] = useState<Program[]>([
     {
       id: 1,
       title: 'Boxing Class',
       date: '2025-10-15',
       time: '18:00',
-      type: 'Τάξη',
+      type: 'class',
       instructor: 'Γιάννης Παπαδόπουλος',
       maxParticipants: 20,
     },
@@ -27,7 +33,7 @@ const Attendance: React.FC = () => {
       title: 'Muay Thai',
       date: '2025-10-15',
       time: '19:30',
-      type: 'Τάξη',
+      type: 'class',
       instructor: 'Μαρία Κωνσταντίνου',
       maxParticipants: 15,
     },
@@ -36,7 +42,7 @@ const Attendance: React.FC = () => {
       title: 'MMA Training',
       date: '2025-10-16',
       time: '20:00',
-      type: 'Προπόνηση',
+      type: 'program',
       instructor: 'Νίκος Αντωνίου',
       maxParticipants: 12,
     },
@@ -45,7 +51,7 @@ const Attendance: React.FC = () => {
       title: 'Boxing Class',
       date: '2025-10-17',
       time: '18:00',
-      type: 'Τάξη',
+      type: 'class',
       instructor: 'Γιάννης Παπαδόπουλος',
       maxParticipants: 20,
     },
@@ -54,22 +60,19 @@ const Attendance: React.FC = () => {
       title: 'Personal Training - Ελένη Δημητρίου',
       date: '2025-10-18',
       time: '10:00',
-      type: 'Προσωπική Προπόνηση',
+      type: 'appointment',
       instructor: 'Κώστας Γεωργίου',
       maxParticipants: 1,
     },
-  ]);
-
-  // Dummy data - Members
-  const [members] = useState<Member[]>([
-    { id: 1, name: 'Νίκος Παπαδόπουλος', phone: '6912345678', status: 'active', expiry: '15/11/2025', package: 'Μηνιαία Απεριόριστη' },
-    { id: 2, name: 'Μαρία Γεωργίου', phone: '6923456789', status: 'active', expiry: '20/10/2025', package: 'Ετήσια' },
-    { id: 3, name: 'Γιώργος Κωνσταντίνου', phone: '6934567890', status: 'active', expiry: '05/10/2025', package: 'Ωριαία (10 ώρες)' },
-    { id: 4, name: 'Ελένη Δημητρίου', phone: '6945678901', status: 'active', expiry: '30/12/2025', package: 'Μηνιαία Απεριόριστη' },
-    { id: 5, name: 'Κώστας Αθανασίου', phone: '6956789012', status: 'active', expiry: '22/10/2025', package: 'Μηνιαία' },
-    { id: 6, name: 'Σοφία Νικολάου', phone: '6967890123', status: 'active', expiry: '25/10/2025', package: 'Ωριαία' },
-    { id: 7, name: 'Αντώνης Μιχαηλίδης', phone: '6978901234', status: 'active', expiry: '18/11/2025', package: 'Ετήσια' },
-    { id: 8, name: 'Κατερίνα Παυλίδου', phone: '6989012345', status: 'active', expiry: '12/10/2025', package: 'Μηνιαία' },
+    {
+      id: 6,
+      title: 'Group Training - Advanced',
+      date: '2025-10-19',
+      time: '17:00',
+      type: 'group',
+      instructor: 'Μαρία Κωνσταντίνου',
+      maxParticipants: 10,
+    },
   ]);
 
   // Dummy data - Attendance Records
@@ -86,6 +89,23 @@ const Attendance: React.FC = () => {
     { id: 10, programId: 3, memberId: 8, memberName: 'Κατερίνα Παυλίδου', status: 'cancelled', recordedAt: '2025-10-16T19:30:00', notes: 'Ακύρωση από μέλος' },
   ]);
 
+  useEffect(() => {
+    // Load entrance logs
+    const loadLogs = async () => {
+      const logs = await getEntranceLogs();
+      setEntranceLogs(logs);
+    };
+    
+    loadLogs();
+    
+    // Refresh logs every 2 seconds
+    const interval = setInterval(() => {
+      loadLogs();
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSelectProgram = (program: Program) => {
     setSelectedProgram(program);
     setShowRecordModal(true);
@@ -94,7 +114,8 @@ const Attendance: React.FC = () => {
   const handleRecordAttendance = (memberId: number, status: 'attended' | 'absent' | 'cancelled', notes?: string) => {
     if (!selectedProgram) return;
 
-    const member = members.find(m => m.id === memberId);
+    const member = members.find(m => m.id === memberId) || 
+                   { id: memberId, name: 'Unknown', phone: '', status: 'active' as const, expiry: '', package: '' };
     if (!member) return;
 
     // Check if record already exists
@@ -140,10 +161,41 @@ const Attendance: React.FC = () => {
     };
   };
 
+  const getCategoryLabel = (type: string) => {
+    switch (type) {
+      case 'group': return 'Ομαδικό';
+      case 'program': return 'Πρόγραμμα';
+      case 'appointment': return 'Ραντεβού';
+      case 'class': return 'Τάξη';
+      default: return type;
+    }
+  };
+
+  const getCategoryIcon = (type: string) => {
+    switch (type) {
+      case 'group': return <Users size={16} />;
+      case 'program': return <Calendar size={16} />;
+      case 'appointment': return <CalendarDays size={16} />;
+      case 'class': return <UserCheck size={16} />;
+      default: return <Calendar size={16} />;
+    }
+  };
+
+  const getCategoryBadgeColor = (type: string) => {
+    switch (type) {
+      case 'group': return 'bg-primary';
+      case 'program': return 'bg-info';
+      case 'appointment': return 'bg-warning';
+      case 'class': return 'bg-success';
+      default: return 'bg-secondary';
+    }
+  };
+
   const filteredPrograms = programs.filter(program => {
     const matchesSearch = program.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          program.instructor?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+    const matchesCategory = filterCategory === 'all' || program.type === filterCategory;
+    return matchesSearch && matchesCategory;
   });
 
   const filteredRecords = attendanceRecords.filter(record => {
@@ -152,13 +204,22 @@ const Attendance: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const filteredEntranceLogs = entranceLogs.filter(log => {
+    const matchesSearch = log.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         log.memberPhone.includes(searchTerm);
+    return matchesSearch;
+  });
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'attended':
+      case 'valid':
         return <CheckCircle size={18} className="text-success" />;
       case 'absent':
+      case 'invalid':
         return <XCircle size={18} className="text-danger" />;
       case 'cancelled':
+      case 'expiring_soon':
         return <Clock size={18} className="text-warning" />;
       default:
         return null;
@@ -167,14 +228,22 @@ const Attendance: React.FC = () => {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'attended':
-        return 'Παρέστη';
-      case 'absent':
-        return 'Απουσία';
-      case 'cancelled':
-        return 'Ακυρώθηκε';
-      default:
-        return status;
+      case 'attended': return 'Παρέστη';
+      case 'absent': return 'Απουσία';
+      case 'cancelled': return 'Ακυρώθηκε';
+      case 'valid': return 'Έγκυρο';
+      case 'invalid': return 'Μη Έγκυρο';
+      case 'expiring_soon': return 'Λήγει Σύντομα';
+      default: return status;
+    }
+  };
+
+  const getValidationStatusBadge = (status: string) => {
+    switch (status) {
+      case 'valid': return 'badge bg-success';
+      case 'invalid': return 'badge bg-danger';
+      case 'expiring_soon': return 'badge bg-warning';
+      default: return 'badge bg-secondary';
     }
   };
 
@@ -183,14 +252,39 @@ const Attendance: React.FC = () => {
       {/* Header */}
       <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
         <div>
-          <h2 className="h4 mb-2">Καταγραφή Προσέλευσης</h2>
-          <p className="text-muted mb-0">Διαχείριση προσέλευσης σε προγράμματα και ραντεβού</p>
+          <h2 className="h4 mb-2">Προσέλευση & Logs Εισόδων</h2>
+          <p className="text-muted mb-0">Διαχείριση προσέλευσης σε προγράμματα και καταγραφή εισόδων</p>
         </div>
       </div>
 
+      {/* Tabs */}
+      <ul className="nav nav-tabs mb-4" role="tablist">
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'programs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('programs')}
+          >
+            <Calendar className="me-2" size={18} />
+            Προγράμματα & Ραντεβού
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'entrance' ? 'active' : ''}`}
+            onClick={() => setActiveTab('entrance')}
+          >
+            <LogIn className="me-2" size={18} />
+            Logs Εισόδων
+            {entranceLogs.length > 0 && (
+              <span className="badge bg-primary ms-2">{entranceLogs.length}</span>
+            )}
+          </button>
+        </li>
+      </ul>
+
       {/* Search and Filter */}
       <div className="row mb-4">
-        <div className="col-md-6 mb-3 mb-md-0">
+        <div className="col-md-4 mb-3 mb-md-0">
           <div className="input-group">
             <span className="input-group-text">
               <Search size={18} />
@@ -198,155 +292,281 @@ const Attendance: React.FC = () => {
             <input
               type="text"
               className="form-control"
-              placeholder="Αναζήτηση προγράμματος ή μέλους..."
+              placeholder="Αναζήτηση..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
-        <div className="col-md-3">
-          <select
-            className="form-select"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
-          >
-            <option value="all">Όλες οι καταστάσεις</option>
-            <option value="attended">Παρέστη</option>
-            <option value="absent">Απουσία</option>
-            <option value="cancelled">Ακυρώθηκε</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Programs List */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card border-0 shadow-sm">
-            <div className="card-header bg-white">
-              <h5 className="mb-0">Προγράμματα & Ραντεβού</h5>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>Ημερομηνία</th>
-                      <th>Ώρα</th>
-                      <th>Πρόγραμμα</th>
-                      <th>Τύπος</th>
-                      <th>Εκπαιδευτής</th>
-                      <th>Στατιστικά</th>
-                      <th>Ενέργειες</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPrograms.map(program => {
-                      const stats = getAttendanceStats(program.id);
-                      return (
-                        <tr key={program.id}>
-                          <td>{moment(program.date).format('DD/MM/YYYY')}</td>
-                          <td>{program.time}</td>
-                          <td className="fw-semibold">{program.title}</td>
-                          <td>
-                            <span className="badge bg-info">{program.type}</span>
-                          </td>
-                          <td>{program.instructor || '-'}</td>
-                          <td>
-                            <div className="d-flex gap-2 align-items-center">
-                              <small className="text-success">
-                                <UserCheck size={14} className="me-1" />
-                                {stats.attended}
-                              </small>
-                              <small className="text-danger">
-                                <UserX size={14} className="me-1" />
-                                {stats.absent}
-                              </small>
-                              {stats.cancelled > 0 && (
-                                <small className="text-warning">
-                                  <Clock size={14} className="me-1" />
-                                  {stats.cancelled}
-                                </small>
-                              )}
-                            </div>
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-sm btn-primary"
-                              onClick={() => handleSelectProgram(program)}
-                            >
-                              <Plus size={14} className="me-1" />
-                              Καταγραφή
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+        {activeTab === 'programs' && (
+          <>
+            <div className="col-md-3 mb-3 mb-md-0">
+              <div className="input-group">
+                <span className="input-group-text">
+                  <Filter size={18} />
+                </span>
+                <select
+                  className="form-select"
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value as 'all' | 'group' | 'program' | 'appointment')}
+                >
+                  <option value="all">Όλες οι κατηγορίες</option>
+                  <option value="group">Ομαδικά</option>
+                  <option value="program">Προγράμματα</option>
+                  <option value="appointment">Ραντεβού</option>
+                  <option value="class">Τάξεις</option>
+                </select>
               </div>
             </div>
-          </div>
-        </div>
+            <div className="col-md-3">
+              <select
+                className="form-select"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as 'all' | 'attended' | 'absent' | 'cancelled')}
+              >
+                <option value="all">Όλες οι καταστάσεις</option>
+                <option value="attended">Παρέστη</option>
+                <option value="absent">Απουσία</option>
+                <option value="cancelled">Ακυρώθηκε</option>
+              </select>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Attendance Records */}
-      <div className="row">
-        <div className="col-12">
-          <div className="card border-0 shadow-sm">
-            <div className="card-header bg-white">
-              <h5 className="mb-0">Καταγραφές Προσέλευσης</h5>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>Ημερομηνία</th>
-                      <th>Πρόγραμμα</th>
-                      <th>Μέλος</th>
-                      <th>Κατάσταση</th>
-                      <th>Ημερομηνία Καταγραφής</th>
-                      <th>Σημειώσεις</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRecords.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="text-center text-muted py-4">
-                          Δεν βρέθηκαν καταγραφές
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredRecords.map(record => {
-                        const program = programs.find(p => p.id === record.programId);
-                        return (
-                          <tr key={record.id}>
-                            <td>
-                              {program && `${moment(program.date).format('DD/MM/YYYY')} ${program.time}`}
-                            </td>
-                            <td className="fw-semibold">{program?.title || '-'}</td>
-                            <td>{record.memberName}</td>
-                            <td>
-                              <div className="d-flex align-items-center gap-2">
-                                {getStatusIcon(record.status)}
-                                <span>{getStatusText(record.status)}</span>
-                              </div>
-                            </td>
-                            <td>{moment(record.recordedAt).format('DD/MM/YYYY HH:mm')}</td>
-                            <td>
-                              <small className="text-muted">{record.notes || '-'}</small>
+      {/* Programs Tab */}
+      {activeTab === 'programs' && (
+        <>
+          {/* Programs List */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="card border-0 shadow-sm">
+                <div className="card-header bg-white d-flex justify-content-between align-items-center">
+                  <h5 className="mb-0">Προγράμματα & Ραντεβού</h5>
+                  <span className="badge bg-secondary">{filteredPrograms.length} προγράμματα</span>
+                </div>
+                <div className="card-body">
+                  <div className="table-responsive">
+                    <table className="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Ημερομηνία</th>
+                          <th>Ώρα</th>
+                          <th>Πρόγραμμα</th>
+                          <th>Κατηγορία</th>
+                          <th>Εκπαιδευτής</th>
+                          <th>Στατιστικά</th>
+                          <th>Ενέργειες</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredPrograms.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="text-center text-muted py-4">
+                              Δεν βρέθηκαν προγράμματα
                             </td>
                           </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                        ) : (
+                          filteredPrograms.map(program => {
+                            const stats = getAttendanceStats(program.id);
+                            return (
+                              <tr key={program.id}>
+                                <td>{moment(program.date).format('DD/MM/YYYY')}</td>
+                                <td>{program.time}</td>
+                                <td className="fw-semibold">{program.title}</td>
+                                <td>
+                                  <span className={`badge ${getCategoryBadgeColor(program.type)} d-flex align-items-center gap-1`} style={{ width: 'fit-content' }}>
+                                    {getCategoryIcon(program.type)}
+                                    {getCategoryLabel(program.type)}
+                                  </span>
+                                </td>
+                                <td>{program.instructor || '-'}</td>
+                                <td>
+                                  <div className="d-flex gap-2 align-items-center">
+                                    <small className="text-success">
+                                      <UserCheck size={14} className="me-1" />
+                                      {stats.attended}
+                                    </small>
+                                    <small className="text-danger">
+                                      <UserX size={14} className="me-1" />
+                                      {stats.absent}
+                                    </small>
+                                    {stats.cancelled > 0 && (
+                                      <small className="text-warning">
+                                        <Clock size={14} className="me-1" />
+                                        {stats.cancelled}
+                                      </small>
+                                    )}
+                                  </div>
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn btn-sm btn-primary"
+                                    onClick={() => handleSelectProgram(program)}
+                                  >
+                                    <Plus size={14} className="me-1" />
+                                    Καταγραφή
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Attendance Records */}
+          <div className="row">
+            <div className="col-12">
+              <div className="card border-0 shadow-sm">
+                <div className="card-header bg-white">
+                  <h5 className="mb-0">Καταγραφές Προσέλευσης</h5>
+                </div>
+                <div className="card-body">
+                  <div className="table-responsive">
+                    <table className="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Ημερομηνία</th>
+                          <th>Πρόγραμμα</th>
+                          <th>Μέλος</th>
+                          <th>Κατάσταση</th>
+                          <th>Ημερομηνία Καταγραφής</th>
+                          <th>Σημειώσεις</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredRecords.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="text-center text-muted py-4">
+                              Δεν βρέθηκαν καταγραφές
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredRecords.map(record => {
+                            const program = programs.find(p => p.id === record.programId);
+                            return (
+                              <tr key={record.id}>
+                                <td>
+                                  {program && `${moment(program.date).format('DD/MM/YYYY')} ${program.time}`}
+                                </td>
+                                <td className="fw-semibold">{program?.title || '-'}</td>
+                                <td>{record.memberName}</td>
+                                <td>
+                                  <div className="d-flex align-items-center gap-2">
+                                    {getStatusIcon(record.status)}
+                                    <span>{getStatusText(record.status)}</span>
+                                  </div>
+                                </td>
+                                <td>{moment(record.recordedAt).format('DD/MM/YYYY HH:mm')}</td>
+                                <td>
+                                  <small className="text-muted">{record.notes || '-'}</small>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Entrance Logs Tab */}
+      {activeTab === 'entrance' && (
+        <div className="row">
+          <div className="col-12">
+            <div className="card border-0 shadow-sm">
+              <div className="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 className="mb-0">Logs Εισόδων</h5>
+                <div className="d-flex gap-2">
+                  <span className="badge bg-success">{entranceLogs.filter(l => l.validationStatus === 'valid').length} Έγκυρες</span>
+                  <span className="badge bg-danger">{entranceLogs.filter(l => l.validationStatus === 'invalid').length} Μη Έγκυρες</span>
+                  <span className="badge bg-warning">{entranceLogs.filter(l => l.validationStatus === 'expiring_soon').length} Λήγουν Σύντομα</span>
+                </div>
+              </div>
+              <div className="card-body">
+                {filteredEntranceLogs.length === 0 ? (
+                  <div className="text-center text-muted py-5">
+                    <QrCode size={48} className="mb-3 opacity-50" />
+                    <p>Δεν υπάρχουν logs εισόδων</p>
+                    <small>Οι εισόδοι από QR scanner θα εμφανίζονται εδώ</small>
+                  </div>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Ημερομηνία/Ώρα</th>
+                          <th>Μέλος</th>
+                          <th>Τηλέφωνο</th>
+                          <th>Κατάσταση Συνδρομής</th>
+                          <th>Επικύρωση</th>
+                          <th>Τύπος</th>
+                          <th>Μήνυμα</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredEntranceLogs.map(log => (
+                          <tr key={log.id}>
+                            <td>{moment(log.timestamp).format('DD/MM/YYYY HH:mm:ss')}</td>
+                            <td className="fw-semibold">{log.memberName}</td>
+                            <td>{log.memberPhone}</td>
+                            <td>
+                              <span className={`badge ${
+                                log.memberStatus === 'active' ? 'bg-success' :
+                                log.memberStatus === 'expiring_soon' ? 'bg-warning' :
+                                'bg-danger'
+                              }`}>
+                                {log.memberStatus === 'active' ? 'Ενεργή' :
+                                 log.memberStatus === 'expiring_soon' ? 'Λήγει Σύντομα' :
+                                 'Ληγμένη'}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="d-flex align-items-center gap-2">
+                                {getStatusIcon(log.validationStatus)}
+                                <span className={getValidationStatusBadge(log.validationStatus)}>
+                                  {getStatusText(log.validationStatus)}
+                                </span>
+                              </div>
+                            </td>
+                            <td>
+                              {log.entranceType === 'qr_scan' ? (
+                                <span className="badge bg-info">
+                                  <QrCode size={12} className="me-1" />
+                                  QR Scan
+                                </span>
+                              ) : (
+                                <span className="badge bg-secondary">Manual</span>
+                              )}
+                            </td>
+                            <td>
+                              <small className="text-muted">{log.validationMessage}</small>
+                              {log.notes && (
+                                <div className="small text-muted mt-1">{log.notes}</div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Record Attendance Modal */}
       {showRecordModal && selectedProgram && (
@@ -393,7 +613,7 @@ const Attendance: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {members.map(member => {
+                      {members.length > 0 ? members.map(member => {
                         const existingRecord = attendanceRecords.find(
                           r => r.programId === selectedProgram.id && r.memberId === member.id
                         );
@@ -438,7 +658,13 @@ const Attendance: React.FC = () => {
                             </td>
                           </tr>
                         );
-                      })}
+                      }) : (
+                        <tr>
+                          <td colSpan={4} className="text-center text-muted py-3">
+                            Δεν υπάρχουν μέλη
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -464,4 +690,3 @@ const Attendance: React.FC = () => {
 };
 
 export default Attendance;
-

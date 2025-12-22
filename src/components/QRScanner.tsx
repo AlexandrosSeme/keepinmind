@@ -3,6 +3,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { CheckCircle, XCircle, AlertCircle, Camera } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import type { Member } from "../types";
+import { logEntrance } from "../services/entranceLogService";
 
 interface ValidationResult {
   valid: boolean;
@@ -151,6 +152,20 @@ const QRScanner: React.FC = () => {
               // Validate member
               const result = await validateMember(memberId);
               setValidationResult(result);
+
+              // Log the entrance attempt
+              if (result.member) {
+                await logEntrance(
+                  result.member.id,
+                  result.member.name,
+                  result.member.phone,
+                  result.member.status,
+                  result.valid ? (result.member.status === 'expiring_soon' ? 'expiring_soon' : 'valid') : 'invalid',
+                  result.message,
+                  'qr_scan',
+                  result.reason
+                );
+              }
             } catch (parseError) {
               setValidationResult({
                 valid: false,
@@ -203,6 +218,20 @@ const QRScanner: React.FC = () => {
     setError(null);
     const result = await validateMember(id);
     setValidationResult(result);
+
+    // Log the manual entrance attempt
+    if (result.member) {
+      await logEntrance(
+        result.member.id,
+        result.member.name,
+        result.member.phone,
+        result.member.status,
+        result.valid ? (result.member.status === 'expiring_soon' ? 'expiring_soon' : 'valid') : 'invalid',
+        result.message,
+        'manual',
+        result.reason
+      );
+    }
   };
 
   return (
