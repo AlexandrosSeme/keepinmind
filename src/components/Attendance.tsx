@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Clock, Plus, Search, UserCheck, UserX, Filter, Calendar, Users, CalendarDays, QrCode, LogIn } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Plus, Search, UserCheck, UserX, Filter, Calendar, Users, CalendarDays, QrCode, LogIn, RefreshCw } from 'lucide-react';
 import type { Program, AttendanceRecord, EntranceLog } from '../types';
 import moment from 'moment';
 import { getEntranceLogs } from '../services/entranceLogService';
@@ -92,8 +92,13 @@ const Attendance: React.FC = () => {
   useEffect(() => {
     // Load entrance logs
     const loadLogs = async () => {
-      const logs = await getEntranceLogs();
-      setEntranceLogs(logs);
+      try {
+        const logs = await getEntranceLogs();
+        console.log('[Attendance] Loaded entrance logs:', logs.length);
+        setEntranceLogs(logs);
+      } catch (error) {
+        console.error('[Attendance] Error loading entrance logs:', error);
+      }
     };
     
     loadLogs();
@@ -488,7 +493,19 @@ const Attendance: React.FC = () => {
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">Logs Εισόδων</h5>
-                <div className="d-flex gap-2">
+                <div className="d-flex gap-2 align-items-center">
+                  <button
+                    className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                    onClick={async () => {
+                      console.log('[Attendance] Manual refresh triggered');
+                      const logs = await getEntranceLogs();
+                      console.log('[Attendance] Refreshed logs:', logs.length);
+                      setEntranceLogs(logs);
+                    }}
+                    title="Ανανέωση logs"
+                  >
+                    <RefreshCw size={16} />
+                  </button>
                   <span className="badge bg-success">{entranceLogs.filter(l => l.validationStatus === 'valid').length} Έγκυρες</span>
                   <span className="badge bg-danger">{entranceLogs.filter(l => l.validationStatus === 'invalid').length} Μη Έγκυρες</span>
                   <span className="badge bg-warning">{entranceLogs.filter(l => l.validationStatus === 'expiring_soon').length} Λήγουν Σύντομα</span>

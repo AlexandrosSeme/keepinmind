@@ -28,6 +28,7 @@ export async function logEntrance(
   // Try to save to Supabase
   if (supabase) {
     try {
+      console.log("[EntranceLog] Saving entrance log to Supabase:", logData);
       const { data, error } = await supabase
         .from("entrance_logs")
         .insert([logData])
@@ -37,7 +38,9 @@ export async function logEntrance(
       if (error) {
         console.error("[EntranceLog] Error saving to Supabase:", error);
         // Fallback to in-memory storage
-        return addToCache(logData);
+        const cachedLog = addToCache(logData);
+        console.log("[EntranceLog] Saved to cache instead:", cachedLog);
+        return cachedLog;
       }
 
       if (data) {
@@ -56,12 +59,15 @@ export async function logEntrance(
         
         // Add to cache for immediate access
         entranceLogsCache.unshift(log);
+        console.log("[EntranceLog] Successfully saved to Supabase and cache:", log);
         return log;
       }
     } catch (err) {
       console.error("[EntranceLog] Exception saving to Supabase:", err);
       // Fallback to in-memory storage
-      return addToCache(logData);
+      const cachedLog = addToCache(logData);
+      console.log("[EntranceLog] Saved to cache instead:", cachedLog);
+      return cachedLog;
     }
   }
 
@@ -94,11 +100,12 @@ export async function getEntranceLogs(): Promise<EntranceLog[]> {
       const { data, error } = await supabase
         .from("entrance_logs")
         .select("*")
-        .order("timestamp", { ascending: false })
+        .order("timestamp", { ascending: false, nullsFirst: false })
         .limit(1000); // Limit to last 1000 logs
 
       if (error) {
         console.error("[EntranceLog] Error fetching from Supabase:", error);
+        console.log("[EntranceLog] Returning cache instead, count:", entranceLogsCache.length);
         // Fallback to cache
         return [...entranceLogsCache];
       }
@@ -119,7 +126,11 @@ export async function getEntranceLogs(): Promise<EntranceLog[]> {
 
         // Update cache
         entranceLogsCache = logs;
+        console.log("[EntranceLog] Fetched", logs.length, "logs from Supabase");
         return logs;
+      } else {
+        console.log("[EntranceLog] No logs found in Supabase, returning cache");
+        return [...entranceLogsCache];
       }
     } catch (err) {
       console.error("[EntranceLog] Exception fetching from Supabase:", err);
@@ -129,6 +140,7 @@ export async function getEntranceLogs(): Promise<EntranceLog[]> {
   }
 
   // Fallback to cache if Supabase is not available
+  console.log("[EntranceLog] Supabase not available, returning cache, count:", entranceLogsCache.length);
   return [...entranceLogsCache];
 }
 

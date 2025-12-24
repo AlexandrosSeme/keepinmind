@@ -111,11 +111,14 @@ const UserQRCode: React.FC = () => {
 
   const statusInfo = getStatusInfo();
   const qrValue = JSON.stringify({
+    id: member.id,
     memberId: member.id,
     name: member.name,
     phone: member.phone,
     timestamp: Date.now(),
   });
+  
+  console.log('[UserQRCode] Generated QR JSON:', qrValue);
 
   return (
     <div className="container mt-5">

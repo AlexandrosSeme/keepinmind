@@ -128,11 +128,14 @@ const UserQRPage: React.FC = () => {
 
   const statusInfo = getStatusInfo();
   const qrValue = JSON.stringify({
+    id: member.id,
     memberId: member.id,
     name: member.name,
     phone: member.phone,
     timestamp: Date.now(),
   });
+  
+  console.log('[UserQRPage] Generated QR JSON:', qrValue);
 
   return (
     <div

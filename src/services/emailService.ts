@@ -31,8 +31,8 @@ export interface EmailResponse {
 
 class EmailService {
   private apiKey: string | null = null;
-  private fromEmail: string = 'noreply@example.com';
-  private fromName: string = 'Fighting Rooster Athens';
+  private fromEmail: string = 'noreply@807c33da300c12b9.maileroo.org'; // Verified Maileroo domain
+  private fromName: string = 'Colosseum Gym';
   private baseUrl: string = 'https://smtp.maileroo.com/api/v2'; // Maileroo API endpoint
 
   /**
@@ -94,8 +94,8 @@ class EmailService {
       console.log('Payload:', JSON.stringify(payload, null, 2));
 
       // Use backend proxy server to avoid CORS issues
-      // The proxy server runs on http://localhost:3001
-      const proxyUrl = 'http://localhost:3001/api/maileroo/send';
+      // The proxy server runs on http://localhost:3010
+      const proxyUrl = 'http://localhost:3010/api/maileroo/send';
       const isDevelopment = import.meta.env.DEV;
       
       // In development, use the proxy server

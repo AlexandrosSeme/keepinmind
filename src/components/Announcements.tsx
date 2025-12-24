@@ -126,6 +126,8 @@ const Announcements: React.FC = () => {
   const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
   const [manualEmails, setManualEmails] = useState<string[]>([]);
   const [newEmailInput, setNewEmailInput] = useState('');
+  const [manualPhones, setManualPhones] = useState<string[]>([]);
+  const [newPhoneInput, setNewPhoneInput] = useState('');
   const [recentAnnouncements, setRecentAnnouncements] = useState<Announcement[]>([
     {
       id: 1,
@@ -206,14 +208,19 @@ const Announcements: React.FC = () => {
 
   // Calculate estimated cost based on channel
   const calculateEstimatedCost = (): number => {
-    if (!message || filteredMembers.length === 0) return 0;
+    if (!message) return 0;
     
     if (channel === 'email') {
       return 0; // Email is free with Maileroo
     }
     
     const smsChannel = channel === 'viber' ? 'viber' : 'sms';
-    return smsService.calculateCost(message, filteredMembers.length, smsChannel);
+    // For SMS cost, count only members with phone + manual phone numbers
+    const memberPhoneCount = filteredMembers.filter(m => m.phone).length;
+    const totalRecipients = memberPhoneCount + manualPhones.length;
+    if (totalRecipients === 0) return 0;
+
+    return smsService.calculateCost(message, totalRecipients, smsChannel);
   };
 
   const estimatedCost = calculateEstimatedCost();
@@ -222,10 +229,11 @@ const Announcements: React.FC = () => {
   useEffect(() => {
     // Check localStorage first, then use default Maileroo API key
     const emailApiKey = localStorage.getItem('emailApiKey') || '2f97c1ef3c4c95f61976e3043bedf139976c6e688428e24576bc87c3ea37d530';
-    const emailFrom = localStorage.getItem('emailFrom') || ''; // Must be verified domain email
-    const emailFromName = localStorage.getItem('emailFromName') || 'Fighting Rooster Athens';
+    const emailFrom = localStorage.getItem('emailFrom') || 'noreply@807c33da300c12b9.maileroo.org'; // Verified Maileroo domain
+    const emailFromName = localStorage.getItem('emailFromName') || 'Colosseum Gym';
     
-    const smsApiKey = localStorage.getItem('smsApiKey');
+    const smsUsername = localStorage.getItem('smsUsername');
+    const smsPassword = localStorage.getItem('smsPassword');
     const smsSenderId = localStorage.getItem('smsSenderId') || 'FightingRstr';
 
     if (emailApiKey) {
@@ -233,8 +241,9 @@ const Announcements: React.FC = () => {
       console.log('Email service initialized on component mount');
     }
     
-    if (smsApiKey) {
-      smsService.initialize(smsApiKey, smsSenderId);
+    if (smsUsername && smsPassword) {
+      smsService.initialize(smsUsername, smsPassword, smsSenderId);
+      console.log('SMS service initialized on component mount');
     }
   }, []);
 
@@ -282,15 +291,20 @@ const Announcements: React.FC = () => {
         return;
       }
     } else if (channel === 'sms' || channel === 'viber') {
-      // For SMS/Viber, we need members with phone
-      if (filteredMembers.length === 0) {
-        setSendResult({ success: false, message: 'Δεν υπάρχουν αποδέκτες. Επιλέξτε μέλη από το dropdown "Αποδέκτες".' });
+      // For SMS/Viber, χρειαζόμαστε μέλη με τηλέφωνο ή manual τηλέφωνα
+      const hasMemberPhones = filteredMembers.some(m => m.phone);
+      const hasManualPhones = manualPhones.length > 0;
+      if (!hasMemberPhones && !hasManualPhones) {
+        setSendResult({
+          success: false,
+          message: 'Δεν υπάρχουν αριθμοί κινητού. Επιλέξτε μέλη με τηλέφωνο ή προσθέστε manual αριθμούς (πατήστε "Προσθήκη" μετά τον αριθμό).'
+        });
         return;
       }
     } else if (channel === 'both') {
       // For both, we need at least one email OR one phone
       const hasMemberEmails = filteredMembers.some(m => m.email);
-      const hasMemberPhones = filteredMembers.some(m => m.phone);
+      const hasMemberPhones = filteredMembers.some(m => m.phone) || manualPhones.length > 0;
       
       if (!hasMemberEmails && manualEmails.length === 0 && !hasMemberPhones) {
         setSendResult({ 
@@ -371,7 +385,7 @@ const Announcements: React.FC = () => {
           console.log('📤 === STARTING EMAIL SEND ===');
           console.log('Recipients:', allEmailRecipients.map(r => r.email));
           console.log('Message length:', message.length);
-          console.log('Subject: Ανακοίνωση - Fighting Rooster Athens');
+          console.log('Subject: Ανακοίνωση - Colosseum Gym');
           
           const sendRate = parseInt(localStorage.getItem('sendRate') || '3', 10);
           console.log('Send rate:', sendRate);
@@ -384,7 +398,7 @@ const Announcements: React.FC = () => {
             
             result = await emailService.sendBulkEmails(
               allEmailRecipients,
-              '🎄 Χριστουγεννιάτικες Προσφορές - Fighting Rooster Athens',
+              '🎄 Χριστουγεννιάτικες Προσφορές - Colosseum Gym',
               message,
               htmlMessage,
               sendRate
@@ -401,30 +415,57 @@ const Announcements: React.FC = () => {
       }
 
       if (channel === 'sms' || channel === 'viber' || channel === 'both') {
+        console.log('📱 === SMS CHANNEL SELECTED ===');
         if (!smsService.isInitialized()) {
           throw new Error('SMS service not configured. Please set up SMSme.gr API in Settings.');
         }
 
-        const smsRecipients = filteredMembers
+        const memberSmsRecipients = filteredMembers
           .filter(m => m.phone)
           .map(m => ({
             phone: m.phone,
             name: m.name,
           }));
 
+        const manualSmsRecipients = manualPhones.map(phone => ({
+          phone,
+          name: phone,
+        }));
+
+        const smsRecipients = [...memberSmsRecipients, ...manualSmsRecipients];
+        console.log('📱 SMS Recipients:', {
+          memberRecipients: memberSmsRecipients.length,
+          manualRecipients: manualSmsRecipients.length,
+          total: smsRecipients.length,
+          recipients: smsRecipients.map(r => ({ phone: r.phone, name: r.name })),
+        });
+
         if (smsRecipients.length > 0) {
           const smsChannel = channel === 'viber' ? 'viber' : 'sms';
           const sendRate = parseInt(localStorage.getItem('sendRate') || '3', 10);
+          console.log('📱 Starting SMS send:', { channel: smsChannel, sendRate, messageLength: message.length });
           result = await smsService.sendBulkSMS(smsRecipients, message, smsChannel, sendRate);
+          console.log('📱 SMS send result:', result);
           channels.push(smsChannel === 'viber' ? 'Viber' : 'SMS');
+        } else {
+          console.warn('⚠️ No SMS recipients found');
         }
       }
 
       if (result) {
+        // Check if there were any errors
+        if (result.failed > 0 && result.errors.length > 0) {
+          // Show error message to user
+          setSendResult({
+            success: false,
+            message: `Αποστολή απέτυχε: ${result.errors.join('; ')}`,
+          });
+        } else if (result.success > 0) {
+          // Success - create announcement
         const newAnnouncement: Announcement = {
           id: Date.now(),
           title: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
-          sentTo: `${result.success} μέλη`,
+            sentTo: `${result.success} παραλήπτες`,
           channel: channels.join(' + '),
           date: new Date().toLocaleString('el-GR'),
           status: 'sent',
@@ -434,10 +475,18 @@ const Announcements: React.FC = () => {
         setRecentAnnouncements([newAnnouncement, ...recentAnnouncements]);
         setMessage('');
         setManualEmails([]); // Clear manual emails after successful send
+          setManualPhones([]); // Clear manual phones after successful send
         setSendResult({
           success: true,
           message: `Αποστολή ολοκληρώθηκε! Επιτυχημένα: ${result.success}, Αποτυχημένα: ${result.failed}`,
         });
+        } else {
+          // All failed
+          setSendResult({
+            success: false,
+            message: `Αποστολή απέτυχε: ${result.errors.join('; ') || 'Άγνωστο σφάλμα'}`,
+          });
+        }
       }
     } catch (error) {
       console.error('Error sending announcement:', error);
@@ -505,6 +554,45 @@ const Announcements: React.FC = () => {
     if (e.key === 'Enter') {
       handleAddEmail();
     }
+  };
+
+  const validatePhone = (phone: string): boolean => {
+    // Allow digits, spaces, plus sign, and common separators
+    const cleaned = phone.replace(/[+\s\-().]/g, '');
+    // Basic validation: at least 8 digits
+    return /^[0-9]{8,15}$/.test(cleaned);
+  };
+
+  const handleAddPhone = () => {
+    const phone = newPhoneInput.trim();
+    if (!phone) {
+      setSendResult({ success: false, message: 'Παρακαλώ εισάγετε αριθμό κινητού' });
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      setSendResult({ success: false, message: 'Μη έγκυρος αριθμός κινητού. Χρησιμοποιήστε μορφή 69..., 3069... ή +3069...' });
+      return;
+    }
+
+    if (manualPhones.includes(phone)) {
+      setSendResult({ success: false, message: 'Ο αριθμός υπάρχει ήδη στη λίστα' });
+      return;
+    }
+
+    setManualPhones([...manualPhones, phone]);
+    setNewPhoneInput('');
+    setSendResult(null);
+  };
+
+  const handlePhoneKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleAddPhone();
+    }
+  };
+
+  const handleRemovePhone = (phoneToRemove: string) => {
+    setManualPhones(manualPhones.filter(phone => phone !== phoneToRemove));
   };
 
   return (
@@ -617,7 +705,7 @@ const Announcements: React.FC = () => {
 
 Καλησπέρα!
 
-Αυτές τις γιορτές, το Fighting Rooster Athens σας προσφέρει ειδικές προσφορές! 🎉
+Αυτές τις γιορτές, το Colosseum Gym σας προσφέρει ειδικές προσφορές! 🎉
 
 🔥 Προσφορές:
 ✨ 20% έκπτωση σε όλες τις συνδρομές
@@ -632,7 +720,7 @@ const Announcements: React.FC = () => {
 
 Καλά Χριστούγεννα! 🎄🎁
 
-Η ομάδα του Fighting Rooster Athens`;
+Η ομάδα του Colosseum Gym`;
 
                       setMessage(christmasTemplate);
                     }}
@@ -671,9 +759,19 @@ const Announcements: React.FC = () => {
                     Manual Emails: {manualEmails.length}
                   </small>
                 )}
+                {manualPhones.length > 0 && (channel === 'sms' || channel === 'both') && (
+                  <small className="text-info">
+                    Manual Τηλέφωνα (SMS): {manualPhones.length}
+                  </small>
+                )}
                 {(channel === 'email' || channel === 'both') && (
                   <small className="text-muted fw-semibold">
                     Σύνολο Email Recipients: {filteredMembers.filter(m => m.email).length + manualEmails.length}
+                  </small>
+                )}
+                {(channel === 'sms' || channel === 'both') && (
+                  <small className="text-muted fw-semibold">
+                    Σύνολο SMS Recipients: {filteredMembers.filter(m => m.phone).length + manualPhones.length}
                   </small>
                 )}
               </div>
@@ -732,16 +830,89 @@ const Announcements: React.FC = () => {
               </div>
             )}
 
+            {/* Manual Phone Numbers for SMS */}
+            {(channel === 'sms' || channel === 'both') && (
+              <div className="col-12">
+                <label className="form-label fw-semibold">Προσθήκη Αριθμών Κινητού (SMS Manual)</label>
+                <div className="d-flex gap-2 mb-2">
+                  <input
+                    type="tel"
+                    className="form-control"
+                    placeholder="69..., 3069..., ή +3069..."
+                    value={newPhoneInput}
+                    onChange={(e) => setNewPhoneInput(e.target.value)}
+                    onKeyPress={handlePhoneKeyPress}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary d-flex align-items-center gap-2"
+                    onClick={handleAddPhone}
+                  >
+                    <Plus size={16} />
+                    Προσθήκη
+                  </button>
+                </div>
+                {manualPhones.length > 0 && (
+                  <div className="mt-2">
+                    <small className="text-muted d-block mb-2">
+                      Προστέθηκαν {manualPhones.length} αριθμοί:
+                    </small>
+                    <div className="d-flex flex-wrap gap-2">
+                      {manualPhones.map((phone, index) => (
+                        <span
+                          key={index}
+                          className="badge bg-success d-flex align-items-center gap-2"
+                          style={{ fontSize: '0.875rem', padding: '0.5rem' }}
+                        >
+                          {phone}
+                          <button
+                            type="button"
+                            className="btn-close btn-close-white"
+                            style={{ fontSize: '0.7rem' }}
+                            onClick={() => handleRemovePhone(phone)}
+                            aria-label="Remove"
+                          />
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <small className="text-muted d-block mt-2">
+                  Προσθέστε αριθμούς κινητού που δεν ανήκουν στα μέλη (μπορείτε να γράψετε 69..., 3069..., ή +3069..., θα γίνουν αυτόματα κανονικοποίηση).
+                </small>
+              </div>
+            )}
+
             {/* Send Result */}
             {sendResult && (
               <div className="col-12">
-                <div className={`alert ${sendResult.success ? 'alert-success' : 'alert-danger'} d-flex align-items-center gap-2`}>
+                <div className={`alert ${sendResult.success ? 'alert-success' : 'alert-danger'} d-flex align-items-start gap-2`}>
                   {sendResult.success ? (
-                    <CheckCircle size={20} />
+                    <CheckCircle size={20} className="mt-1" />
                   ) : (
-                    <XCircle size={20} />
+                    <XCircle size={20} className="mt-1" />
                   )}
-                  <span>{sendResult.message}</span>
+                  <div className="flex-grow-1">
+                    {sendResult.message.split('\n').map((line, index) => (
+                      <div key={index}>
+                        {line.includes('http') ? (
+                          <span>
+                            {line.split(/(https?:\/\/[^\s]+)/).map((part, i) => 
+                              part.match(/^https?:\/\//) ? (
+                                <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-decoration-underline">
+                                  {part}
+                                </a>
+                              ) : (
+                                <span key={i}>{part}</span>
+                              )
+                            )}
+                          </span>
+                        ) : (
+                          <span>{line}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

@@ -2,22 +2,23 @@ import React, { useState } from 'react';
 
 const Settings: React.FC = () => {
   const [gymInfo, setGymInfo] = useState({
-    name: 'Fighting Rooster Athens',
+    name: 'Colosseum Gym',
     phone: '210 1234567',
-    email: 'info@fightingrooster.gr'
+    email: 'info@colosseumgym.gr'
   });
 
   const [smsProvider, setSmsProvider] = useState({
     provider: 'SMSme.gr',
-    apiKey: localStorage.getItem('smsApiKey') || '',
-    senderId: localStorage.getItem('smsSenderId') || 'FightingRstr'
+    username: localStorage.getItem('smsUsername') || '',
+    password: localStorage.getItem('smsPassword') || '',
+    senderId: localStorage.getItem('smsSenderId') || 'ColosseumGym'
   });
 
   const [emailProvider, setEmailProvider] = useState({
     provider: 'Maileroo',
     apiKey: localStorage.getItem('emailApiKey') || '2f97c1ef3c4c95f61976e3043bedf139976c6e688428e24576bc87c3ea37d530',
-    fromEmail: localStorage.getItem('emailFrom') || '', // Must be verified domain email (not Gmail)
-    fromName: localStorage.getItem('emailFromName') || 'Fighting Rooster Athens'
+    fromEmail: localStorage.getItem('emailFrom') || 'noreply@807c33da300c12b9.maileroo.org', // Verified Maileroo domain
+    fromName: localStorage.getItem('emailFromName') || 'Colosseum Gym'
   });
 
   const [sendRate, setSendRate] = useState<number>(
@@ -46,9 +47,15 @@ const Settings: React.FC = () => {
     }
 
     // Save SMS provider settings
-    if (smsProvider.apiKey) {
-      localStorage.setItem('smsApiKey', smsProvider.apiKey);
+    if (smsProvider.username && smsProvider.password) {
+      localStorage.setItem('smsUsername', smsProvider.username);
+      localStorage.setItem('smsPassword', smsProvider.password);
       localStorage.setItem('smsSenderId', smsProvider.senderId);
+    } else {
+      // Clear SMS settings if credentials are incomplete
+      localStorage.removeItem('smsUsername');
+      localStorage.removeItem('smsPassword');
+      localStorage.removeItem('smsSenderId');
     }
 
     // Save Email provider settings
@@ -69,9 +76,9 @@ const Settings: React.FC = () => {
     localStorage.setItem('sendRate', sendRate.toString());
 
     // Initialize services
-    if (smsProvider.apiKey) {
+    if (smsProvider.username && smsProvider.password) {
       import('../services/smsService').then(({ smsService }) => {
-        smsService.initialize(smsProvider.apiKey, smsProvider.senderId);
+        smsService.initialize(smsProvider.username, smsProvider.password, smsProvider.senderId);
       });
     }
 
@@ -137,25 +144,38 @@ const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* SMS/Viber Provider */}
+        {/* SMS Provider */}
         <div className="col-12 col-lg-6">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-header bg-white border-bottom">
-              <h5 className="card-title mb-0">SMS/Viber Provider (SMSme.gr)</h5>
+              <h5 className="card-title mb-0">SMS Provider (SMSme.gr)</h5>
             </div>
             <div className="card-body">
               <div className="mb-3">
-                <label className="form-label fw-semibold">API Key</label>
+                <label className="form-label fw-semibold">Username (Email)</label>
+                <input 
+                  type="email" 
+                  className="form-control"
+                  placeholder="your-email@example.com"
+                  value={smsProvider.username}
+                  onChange={(e) => setSmsProvider({...smsProvider, username: e.target.value})}
+                />
+                <small className="text-muted">
+                  Το email που χρησιμοποιείτε για login στο SMSme.gr
+                </small>
+              </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Password</label>
                 <input 
                   type="password" 
                   className="form-control"
-                  placeholder="Εισάγετε το API Key από SMSme.gr"
-                  value={smsProvider.apiKey}
-                  onChange={(e) => setSmsProvider({...smsProvider, apiKey: e.target.value})}
+                  placeholder="Εισάγετε τον κωδικό πρόσβασης"
+                  value={smsProvider.password}
+                  onChange={(e) => setSmsProvider({...smsProvider, password: e.target.value})}
                 />
                 <small className="text-muted">
                   <a href="https://smsme.gr" target="_blank" rel="noopener noreferrer">
-                    Λάβετε API Key από SMSme.gr
+                    Δημιουργήστε λογαριασμό στο SMSme.gr
                   </a>
                 </small>
               </div>
@@ -164,11 +184,19 @@ const Settings: React.FC = () => {
                 <input 
                   type="text" 
                   className="form-control"
-                  placeholder="FightingRstr"
+                  placeholder="ColosseumGym"
+                  maxLength={11}
                   value={smsProvider.senderId}
                   onChange={(e) => setSmsProvider({...smsProvider, senderId: e.target.value})}
                 />
-                <small className="text-muted">Το όνομα που θα εμφανίζεται ως αποστολέας</small>
+                <small className="text-muted d-block mt-1">
+                  Το όνομα που θα εμφανίζεται ως αποστολέας (μέχρι 11 χαρακτήρες, αλφαριθμητικό)
+                </small>
+                <small className="text-warning d-block mt-1">
+                  ⚠️ <strong>Σημαντικό:</strong> Τα alphanumeric sender IDs (όπως "ColosseumGym") πρέπει να είναι <strong>approved</strong> από το SMSme.gr support. 
+                  Εάν λαμβάνετε 500 error, πιθανότατα το sender ID δεν είναι approved. 
+                  Επικοινωνήστε με το SMSme.gr support για να approve το sender ID σας ή χρησιμοποιήστε numeric sender (π.χ. "1234567890").
+                </small>
               </div>
             </div>
           </div>
@@ -201,7 +229,7 @@ const Settings: React.FC = () => {
                 <input 
                   type="email" 
                   className="form-control"
-                  placeholder="alexandros.seme@gmail.com"
+                  placeholder="noreply@807c33da300c12b9.maileroo.org"
                   value={emailProvider.fromEmail}
                   onChange={(e) => setEmailProvider({...emailProvider, fromEmail: e.target.value})}
                 />
@@ -224,7 +252,7 @@ const Settings: React.FC = () => {
                 <input 
                   type="text" 
                   className="form-control"
-                  placeholder="Fighting Rooster Athens"
+                  placeholder="Colosseum Gym"
                   value={emailProvider.fromName}
                   onChange={(e) => setEmailProvider({...emailProvider, fromName: e.target.value})}
                 />

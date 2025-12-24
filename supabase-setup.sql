@@ -109,3 +109,5 @@ CREATE POLICY "Allow public delete" ON public.upcoming_expiries FOR DELETE USING
 -- ('Μηνιαία Απεριόριστη', 'subscription', '30 ημέρες', 45, 0),
 -- ('Ετήσια Απεριόριστη', 'subscription', '365 ημέρες', 450, 0);
 
+
+

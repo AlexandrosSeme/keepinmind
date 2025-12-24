@@ -7,7 +7,8 @@ import cors from 'cors';
 // Node.js 18+ has built-in fetch, no need to import
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+// Changed default port to 3010 to avoid conflicts with other apps using 3001
+const PORT = process.env.PORT || 3010;
 
 // Middleware
 app.use(cors());
@@ -37,7 +38,7 @@ app.post('/api/maileroo/send', async (req, res) => {
     const mailerooPayload = {
       from: {
         address: req.body.from?.email || req.body.from?.address,
-        display_name: req.body.from?.name || req.body.from?.display_name || 'Fighting Rooster Athens'
+        display_name: req.body.from?.name || req.body.from?.display_name || 'Colosseum Gym'
       },
       to: (Array.isArray(req.body.to) ? req.body.to : [req.body.to]).map((recipient) => ({
         address: recipient.email || recipient.address,

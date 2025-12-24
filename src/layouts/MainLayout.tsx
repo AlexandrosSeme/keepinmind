@@ -180,7 +180,7 @@ const MainLayout: React.FC = () => {
                     <Menu size={20} />
                   </button>
                   <div>
-                    {/* <h1 className="h5 mb-0 text-white">Fighting Rooster Gym Management</h1> */}
+                    {/* <h1 className="h5 mb-0 text-white">Colosseum Gym Management</h1> */}
                     <small className="text-secondary">
                       Καλώς ήρθατε στο σύστημα διαχείρισης
                     </small>

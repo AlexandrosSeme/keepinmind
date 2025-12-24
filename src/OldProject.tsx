@@ -543,7 +543,7 @@ const GymMockups = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Όνομα</label>
-              <input type="text" defaultValue="Fighting Rooster Athens" className="w-full px-4 py-2 border rounded-lg" />
+              <input type="text" defaultValue="Colosseum Gym" className="w-full px-4 py-2 border rounded-lg" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Τηλέφωνο</label>
@@ -689,7 +689,7 @@ const GymMockups = () => {
         <div className="bg-white shadow-sm">
           <div className="px-8 py-4 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Fighting Rooster Gym Management</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Colosseum Gym Management</h1>
               <p className="text-sm text-gray-600">Καλώς ήρθατε στο σύστημα διαχείρισης</p>
             </div>
             <div className="flex items-center gap-4">
