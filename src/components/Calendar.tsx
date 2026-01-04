@@ -12,7 +12,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   Search,
   Filter,
@@ -79,7 +78,6 @@ const Calendar: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showBookingDetails, setShowBookingDetails] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<{ day: number; hour: number } | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -156,7 +154,6 @@ const Calendar: React.FC = () => {
     const startTime = dayDate.clone().hour(hour).minute(0).second(0).toDate();
     const endTime = dayDate.clone().hour(hour + 1).minute(0).second(0).toDate();
 
-    setSelectedSlot({ day, hour });
     setFormData(prev => ({
       ...prev,
       startTime: startTime,
@@ -293,7 +290,6 @@ const Calendar: React.FC = () => {
   const handleCloseModal = () => {
     setShowBookingModal(false);
     setShowBookingDetails(false);
-    setSelectedSlot(null);
     setSelectedBooking(null);
     setEditingBooking(null);
     setFormData({
@@ -345,7 +341,6 @@ const Calendar: React.FC = () => {
           <button 
             className="btn btn-primary btn-add-booking"
             onClick={() => {
-              setSelectedSlot(null);
               setEditingBooking(null);
               setFormData({
                 memberId: null,
@@ -490,7 +485,7 @@ const Calendar: React.FC = () => {
             })}
 
             {/* Time slots */}
-            {TIME_SLOTS.map((timeSlot, slotIndex) => (
+            {TIME_SLOTS.map((timeSlot) => (
               <React.Fragment key={timeSlot.hour}>
                 {/* Time label */}
                 <div className="time-slot-label">
