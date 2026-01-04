@@ -67,9 +67,14 @@ export async function fetchAppData(): Promise<AppDataResponse | null> {
 export async function createMember(member: Omit<Member, "id">): Promise<Member | null> {
   if (!supabase) return null;
 
+  // Filter out undefined values to avoid sending them to Supabase
+  const memberData = Object.fromEntries(
+    Object.entries(member).filter(([_, value]) => value !== undefined)
+  ) as Omit<Member, "id">;
+
   const { data, error } = await supabase
     .from("members")
-    .insert([member])
+    .insert([memberData])
     .select()
     .single();
 
@@ -84,9 +89,14 @@ export async function createMember(member: Omit<Member, "id">): Promise<Member |
 export async function updateMember(id: number, updates: Partial<Omit<Member, "id">>): Promise<Member | null> {
   if (!supabase) return null;
 
+  // Filter out undefined values to avoid sending them to Supabase
+  const updateData = Object.fromEntries(
+    Object.entries(updates).filter(([_, value]) => value !== undefined)
+  ) as Partial<Omit<Member, "id">>;
+
   const { data, error } = await supabase
     .from("members")
-    .update(updates)
+    .update(updateData)
     .eq("id", id)
     .select()
     .single();

@@ -151,11 +151,20 @@ const UserQRPage: React.FC = () => {
                 <div className="text-center mb-4">
                   <h2 className="mb-3 fw-bold">Το QR Code μου</h2>
                   <div className="d-flex justify-content-center mb-3">
-                    <div
-                      className={`p-3 rounded-circle ${statusInfo?.bgColor || "bg-light"}`}
-                    >
-                      {statusInfo?.icon}
-                    </div>
+                    {member.photo_url ? (
+                      <img
+                        src={member.photo_url}
+                        alt={member.name}
+                        className="rounded-circle"
+                        style={{ width: '120px', height: '120px', objectFit: 'cover', border: '4px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+                      />
+                    ) : (
+                      <div
+                        className={`p-3 rounded-circle ${statusInfo?.bgColor || "bg-light"}`}
+                      >
+                        {statusInfo?.icon}
+                      </div>
+                    )}
                   </div>
                   <p className={`mb-2 fw-semibold ${statusInfo?.color || "text-muted"}`}>
                     {statusInfo?.text}

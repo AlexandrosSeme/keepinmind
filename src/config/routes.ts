@@ -1,5 +1,6 @@
 import Dashboard from "../components/Dashboard";
 import Members from "../components/Members";
+import SingleMember from "../components/SingleMember";
 import Subscriptions from "../components/Subscriptions";
 import Payments from "../components/Payments";
 import Debts from "../components/Debts";
@@ -52,6 +53,10 @@ export const createRoutes = (data: AppData): RouteConfig[] => [
     props: {
       members: data.members,
     },
+  },
+  {
+    path: "members/:id",
+    element: SingleMember,
   },
   {
     path: "subscriptions",

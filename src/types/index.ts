@@ -6,6 +6,7 @@ export interface Member {
   status: 'active' | 'expiring_soon' | 'expired';
   expiry: string;
   package: string;
+  photo_url?: string;
 }
 
 export interface UpcomingExpiry {
@@ -92,4 +93,37 @@ export interface EntranceLog {
   entranceType: 'qr_scan' | 'manual';
   timestamp: string;
   notes?: string;
+}
+
+// Booking types
+export interface Booking {
+  id: number;
+  memberId: number;
+  memberName: string;
+  memberPhone?: string;
+  title: string;
+  description?: string;
+  type: 'class' | 'personal_training' | 'appointment' | 'event';
+  startTime: string; // ISO datetime string
+  endTime: string; // ISO datetime string
+  status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
+  instructor?: string;
+  maxParticipants?: number;
+  currentParticipants?: number;
+  color?: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface BookingFormData {
+  memberId: number | null;
+  title: string;
+  description: string;
+  type: 'class' | 'personal_training' | 'appointment' | 'event';
+  startTime: Date;
+  endTime: Date;
+  instructor: string;
+  maxParticipants: number | null;
+  notes: string;
 }
