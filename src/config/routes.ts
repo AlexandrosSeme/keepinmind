@@ -12,6 +12,7 @@ import Attendance from "../components/Attendance";
 import QRScanner from "../components/QRScanner";
 import UserQRCode from "../components/UserQRCode";
 import ViewQRCode from "../components/ViewQRCode";
+import HomeAssistant from "../components/HomeAssistant";
 
 import type { ComponentType } from "react";
 import type { Stats, Member, UpcomingExpiry, Debt, Package } from "../types";
@@ -104,5 +105,9 @@ export const createRoutes = (data: AppData): RouteConfig[] => [
   {
     path: "view-qr",
     element: ViewQRCode,
+  },
+  {
+    path: "home-assistant",
+    element: HomeAssistant,
   },
 ];

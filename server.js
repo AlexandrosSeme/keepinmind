@@ -1,6 +1,7 @@
 // Simple Express server to proxy Maileroo API requests
 // This avoids CORS issues when calling Maileroo API from the browser
 
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
@@ -116,9 +117,156 @@ app.post('/api/maileroo/send', async (req, res) => {
   }
 });
 
+// Home Assistant API proxy endpoint
+// This avoids CORS issues when calling Home Assistant API from the browser
+app.all('/api/home-assistant/*', async (req, res) => {
+  try {
+    const haBaseUrl = req.headers['x-ha-base-url'] || process.env.HA_BASE_URL || 'http://192.168.1.79:8123';
+    const accessToken = req.headers['x-ha-access-token'] || process.env.HA_ACCESS_TOKEN || '';
+    
+    if (!accessToken) {
+      console.error('❌ Home Assistant proxy: No access token provided');
+      return res.status(400).json({
+        success: false,
+        error: 'Home Assistant Access Token is required. Provide X-HA-Access-Token header or set HA_ACCESS_TOKEN env variable.'
+      });
+    }
+
+    // Extract the endpoint path (everything after /api/home-assistant/)
+    const endpoint = req.path.replace('/api/home-assistant', '');
+    const url = `${haBaseUrl.replace(/\/$/, '')}/api${endpoint}`;
+    
+    console.log(`🏠 Home Assistant proxy: ${req.method} ${url}`);
+    console.log(`   Base URL: ${haBaseUrl}`);
+    console.log(`   Endpoint: ${endpoint}`);
+    console.log(`   Token: ${accessToken.substring(0, 20)}...`);
+
+    // Forward query parameters
+    const urlObj = new URL(url);
+    Object.keys(req.query).forEach(key => {
+      urlObj.searchParams.append(key, req.query[key]);
+    });
+    const finalUrl = urlObj.toString();
+
+    // Prepare request body for POST/PUT/PATCH
+    let requestBody;
+    if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
+      requestBody = JSON.stringify(req.body);
+      console.log(`   Request body: ${requestBody}`);
+    }
+
+    try {
+      const response = await fetch(finalUrl, {
+        method: req.method,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: requestBody,
+      });
+
+      console.log(`   Response status: ${response.status}`);
+
+      // Read response body only once
+      let data;
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch (e) {
+          const text = await response.text();
+          data = { error: text || 'No response body' };
+        }
+      } else {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { error: text || 'No response body' };
+        }
+      }
+
+      if (response.ok) {
+        console.log(`✅ Home Assistant proxy: Success`);
+        return res.status(response.status).json(data);
+      } else {
+        console.error(`❌ Home Assistant proxy error: ${response.status}`, data);
+        return res.status(response.status).json({
+          success: false,
+          error: data.message || data.error || `HTTP ${response.status}: ${response.statusText}`,
+          ...data
+        });
+      }
+    } catch (fetchError) {
+      console.error('❌ Home Assistant proxy fetch error:', fetchError);
+      return res.status(500).json({
+        success: false,
+        error: `Failed to connect to Home Assistant at ${haBaseUrl}: ${fetchError.message}`,
+        details: fetchError.message
+      });
+    }
+  } catch (error) {
+    console.error('❌ Home Assistant proxy error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to connect to Home Assistant',
+      details: error.toString()
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Maileroo proxy server is running' });
+});
+
+// Test Home Assistant connection endpoint
+app.get('/api/home-assistant/test', async (req, res) => {
+  try {
+    const haBaseUrl = req.headers['x-ha-base-url'] || req.query.baseUrl || process.env.HA_BASE_URL || 'http://192.168.1.79:8123';
+    const accessToken = req.headers['x-ha-access-token'] || req.query.token || process.env.HA_ACCESS_TOKEN || '';
+    
+    if (!accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Access Token is required'
+      });
+    }
+
+    const testUrl = `${haBaseUrl.replace(/\/$/, '')}/api/config`;
+    console.log(`🧪 Testing Home Assistant connection: ${testUrl}`);
+
+    const response = await fetch(testUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return res.json({
+        success: true,
+        message: 'Connection successful',
+        version: data.version,
+        location_name: data.location_name,
+      });
+    } else {
+      const errorText = await response.text();
+      return res.status(response.status).json({
+        success: false,
+        error: `HTTP ${response.status}: ${errorText}`,
+      });
+    }
+  } catch (error) {
+    console.error('❌ Test connection error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to connect',
+    });
+  }
 });
 
 app.listen(PORT, () => {

@@ -437,7 +437,7 @@ const Calendar: React.FC = () => {
             <select
               className="filter-select"
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value as any)}
+              onChange={(e) => setFilterType(e.target.value as Booking['type'])}
             >
               <option value="all">Όλοι οι τύποι</option>
               <option value="class">Τάξη</option>
@@ -598,7 +598,7 @@ const Calendar: React.FC = () => {
                   <select
                     className="form-control"
                     value={formData.type}
-                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as Booking['type'] }))}
                   >
                     <option value="class">Τάξη</option>
                     <option value="personal_training">Προσωπική Προπόνηση</option>

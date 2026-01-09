@@ -17,6 +17,7 @@ import {
   ClipboardCheck,
   QrCode,
   Smartphone,
+  Home,
 } from "lucide-react";
 import "./MainLayout.scss";
 
@@ -96,6 +97,12 @@ const MainLayout: React.FC = () => {
       name: "Ρυθμίσεις",
       icon: <Settings size={20} />,
       path: "/settings",
+    },
+    {
+      id: "home-assistant",
+      name: "Home Assistant",
+      icon: <Home size={20} />,
+      path: "/home-assistant",
     },
   ];
 

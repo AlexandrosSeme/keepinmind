@@ -20,3 +20,11 @@ coverage/
 # Local caches
 .cache/
 .eslintcache
+
+# eWeLink/Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+ENV/
