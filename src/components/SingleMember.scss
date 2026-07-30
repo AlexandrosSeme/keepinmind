@@ -1,0 +1,136 @@
+/* Single member — Melos chrome, denser layout */
+
+.km-member {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.km-member__profile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.km-member__photo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--km-brand);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.km-member__photo-fallback {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 3px solid var(--km-brand);
+  background: var(--km-brand-soft);
+  color: #9a7a00;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.km-member__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1.25rem;
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .km-member__meta {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .km-member__meta {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.km-member__field-label {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--km-text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.km-member__field-value {
+  font-weight: 600;
+  color: var(--km-text);
+  font-size: 0.95rem;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.km-member__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 992px) {
+  .km-member__grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: stretch;
+  }
+}
+
+.km-member__panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.km-member__panel .card-header {
+  flex-shrink: 0;
+}
+
+.km-member__logs {
+  max-height: 280px;
+  overflow: auto;
+}
+
+.km-member__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.km-member__stat {
+  background: var(--km-surface-raised);
+  border: 1px solid var(--km-border);
+  border-radius: 6px;
+  padding: 0.55rem 0.65rem;
+}
+
+.km-member__stat-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--km-text);
+}
+
+.km-member__name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 1.35rem;
+  margin: 0 0 0.35rem;
+  color: var(--km-text);
+}

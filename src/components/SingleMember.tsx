@@ -5,18 +5,11 @@ import {
   Edit,
   Trash2,
   User,
-  Phone,
-  Mail,
-  Calendar,
-  Package,
   XCircle,
   Camera,
   X,
-  TrendingUp,
   LogIn,
   QrCode,
-  CalendarDays,
-  CalendarCheck,
   RefreshCw,
 } from "lucide-react";
 import Chart from "react-apexcharts";
@@ -26,6 +19,39 @@ import { useAppData } from "../contexts/AppDataContext";
 import { uploadMemberPhoto } from "../services/photoService";
 import { getEntranceLogsByMember } from "../services/entranceLogService";
 import StatusBadge from "./ui/StatusBadge";
+import "./SingleMember.scss";
+
+const BRAND = {
+  yellow: "#f5c400",
+  yellowStrong: "#d4a800",
+  ink: "#111111",
+  muted: "#8a8680",
+  canvas: "#e8e5df",
+};
+
+function stripAccents(text: string): string {
+  const map: Record<string, string> = {
+    ά: "α",
+    έ: "ε",
+    ή: "η",
+    ί: "ι",
+    ό: "ο",
+    ύ: "υ",
+    ώ: "ω",
+    Ά: "Α",
+    Έ: "Ε",
+    Ή: "Η",
+    Ί: "Ι",
+    Ό: "Ο",
+    Ύ: "Υ",
+    Ώ: "Ω",
+    ϊ: "ι",
+    ϋ: "υ",
+    ΐ: "ι",
+    ΰ: "υ",
+  };
+  return [...text].map((c) => map[c] || c).join("");
+}
 
 const SingleMember: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -120,110 +146,110 @@ const SingleMember: React.FC = () => {
       const logs = await getEntranceLogsByMember(member.id);
       setEntranceLogs(logs);
 
-        // Calculate statistics
-        const now = new Date();
-        const startOfWeek = new Date(now);
-        const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to Monday-based week
-        startOfWeek.setDate(now.getDate() - daysToMonday); // Start of current week (Monday)
-        startOfWeek.setHours(0, 0, 0, 0);
+      // Calculate statistics
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to Monday-based week
+      startOfWeek.setDate(now.getDate() - daysToMonday); // Start of current week (Monday)
+      startOfWeek.setHours(0, 0, 0, 0);
 
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        startOfMonth.setHours(0, 0, 0, 0);
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      startOfMonth.setHours(0, 0, 0, 0);
 
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        startOfYear.setHours(0, 0, 0, 0);
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      startOfYear.setHours(0, 0, 0, 0);
 
-        // Count ALL logs (all entrances, not just valid ones)
-        const thisWeekCount = logs.filter(log => {
-          if (!log.timestamp) return false;
-          try {
-            const logDate = new Date(log.timestamp);
-            if (isNaN(logDate.getTime())) return false;
-            return logDate >= startOfWeek;
-          } catch {
-            return false;
-          }
-        }).length;
-
-        const thisMonthCount = logs.filter(log => {
-          if (!log.timestamp) return false;
-          try {
-            const logDate = new Date(log.timestamp);
-            if (isNaN(logDate.getTime())) return false;
-            return logDate >= startOfMonth;
-          } catch {
-            return false;
-          }
-        }).length;
-
-        const thisYearCount = logs.filter(log => {
-          if (!log.timestamp) return false;
-          try {
-            const logDate = new Date(log.timestamp);
-            if (isNaN(logDate.getTime())) return false;
-            return logDate >= startOfYear;
-          } catch {
-            return false;
-          }
-        }).length;
-
-        console.log("[SingleMember] Calculated stats:", {
-          totalLogs: logs.length,
-          thisWeek: thisWeekCount,
-          thisMonth: thisMonthCount,
-          thisYear: thisYearCount,
-          startOfWeek: startOfWeek.toISOString(),
-          startOfMonth: startOfMonth.toISOString(),
-          startOfYear: startOfYear.toISOString(),
-        });
-
-        setAttendanceStats({
-          thisWeek: thisWeekCount,
-          thisMonth: thisMonthCount,
-          thisYear: thisYearCount,
-        });
-
-        // Calculate monthly attendance - show all 12 months of current year
-        const monthNames = ["Ιαν", "Φεβ", "Μαρ", "Απρ", "Μαι", "Ιουν", "Ιουλ", "Αυγ", "Σεπ", "Οκτ", "Νοε", "Δεκ"];
-        const currentYear = now.getFullYear();
-        
-        // Initialize all 12 months of current year with 0 - ensure we always have 12 months
-        const monthlyArray: { month: string; count: number }[] = [];
-        for (let i = 0; i < 12; i++) {
-          monthlyArray.push({
-            month: `${monthNames[i]} ${currentYear}`,
-            count: 0,
-          });
+      // Count ALL logs (all entrances, not just valid ones)
+      const thisWeekCount = logs.filter(log => {
+        if (!log.timestamp) return false;
+        try {
+          const logDate = new Date(log.timestamp);
+          if (isNaN(logDate.getTime())) return false;
+          return logDate >= startOfWeek;
+        } catch {
+          return false;
         }
-        
-        // Count actual attendances
-        logs.forEach(log => {
-          if (!log.timestamp) return;
-          try {
-            const logDate = new Date(log.timestamp);
-            if (isNaN(logDate.getTime())) return;
-            const logYear = logDate.getFullYear();
-            const logMonth = logDate.getMonth(); // 0-based index
-            
-            // Only count if it's from current year
-            if (logYear === currentYear && logMonth >= 0 && logMonth < 12) {
-              monthlyArray[logMonth].count++;
-            }
-          } catch {
-            return;
-          }
-        });
+      }).length;
 
-        setMonthlyAttendance(monthlyArray);
-      } catch (error) {
-        console.error("[SingleMember] Error loading entrance logs:", error);
-      } finally {
-        if (showLoading) {
-          setRefreshingLogs(false);
+      const thisMonthCount = logs.filter(log => {
+        if (!log.timestamp) return false;
+        try {
+          const logDate = new Date(log.timestamp);
+          if (isNaN(logDate.getTime())) return false;
+          return logDate >= startOfMonth;
+        } catch {
+          return false;
         }
+      }).length;
+
+      const thisYearCount = logs.filter(log => {
+        if (!log.timestamp) return false;
+        try {
+          const logDate = new Date(log.timestamp);
+          if (isNaN(logDate.getTime())) return false;
+          return logDate >= startOfYear;
+        } catch {
+          return false;
+        }
+      }).length;
+
+      console.log("[SingleMember] Calculated stats:", {
+        totalLogs: logs.length,
+        thisWeek: thisWeekCount,
+        thisMonth: thisMonthCount,
+        thisYear: thisYearCount,
+        startOfWeek: startOfWeek.toISOString(),
+        startOfMonth: startOfMonth.toISOString(),
+        startOfYear: startOfYear.toISOString(),
+      });
+
+      setAttendanceStats({
+        thisWeek: thisWeekCount,
+        thisMonth: thisMonthCount,
+        thisYear: thisYearCount,
+      });
+
+      // Calculate monthly attendance - show all 12 months of current year
+      const monthNames = ["Ιαν", "Φεβ", "Μαρ", "Απρ", "Μαι", "Ιουν", "Ιουλ", "Αυγ", "Σεπ", "Οκτ", "Νοε", "Δεκ"];
+      const currentYear = now.getFullYear();
+
+      // Initialize all 12 months of current year with 0 - ensure we always have 12 months
+      const monthlyArray: { month: string; count: number }[] = [];
+      for (let i = 0; i < 12; i++) {
+        monthlyArray.push({
+          month: `${monthNames[i]} ${currentYear}`,
+          count: 0,
+        });
       }
-    }, [member]);
+
+      // Count actual attendances
+      logs.forEach(log => {
+        if (!log.timestamp) return;
+        try {
+          const logDate = new Date(log.timestamp);
+          if (isNaN(logDate.getTime())) return;
+          const logYear = logDate.getFullYear();
+          const logMonth = logDate.getMonth(); // 0-based index
+
+          // Only count if it's from current year
+          if (logYear === currentYear && logMonth >= 0 && logMonth < 12) {
+            monthlyArray[logMonth].count++;
+          }
+        } catch {
+          return;
+        }
+      });
+
+      setMonthlyAttendance(monthlyArray);
+    } catch (error) {
+      console.error("[SingleMember] Error loading entrance logs:", error);
+    } finally {
+      if (showLoading) {
+        setRefreshingLogs(false);
+      }
+    }
+  }, [member]);
 
   useEffect(() => {
     loadEntranceLogs(false);
@@ -484,398 +510,115 @@ const SingleMember: React.FC = () => {
     );
   }
 
+  const maxAttendance = Math.max(
+    ...monthlyAttendance.map((item) => item.count),
+    0
+  );
+  const yAxisMax = maxAttendance > 5 ? Math.ceil(maxAttendance * 1.15) : 5;
+  const chartCategories = monthlyAttendance.map((item) =>
+    item.month.split(" ")[0]
+  );
+  const chartData = monthlyAttendance.map((item) =>
+    item.count === 0 ? 0.08 : item.count
+  );
+
   return (
-    <div>
-      {/* Header */}
-      <div className="d-flex align-items-center mb-4">
-        <button
-          className="btn btn-link text-decoration-none p-0 me-3"
-          onClick={() => navigate("/members")}
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h2 className="h4 mb-0">Στοιχεια Μελους</h2>
-        <div className="ms-auto">
-          <button className="btn btn-outline-secondary me-2" onClick={handleEdit}>
-            <Edit size={16} className="me-2" />
+    <div className="km-member">
+      <div className="km-page-header">
+        <div className="d-flex align-items-center gap-3 min-w-0">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => navigate("/members")}
+            aria-label="Πισω"
+          >
+            <ArrowLeft size={16} />
+          </button>
+          <div className="min-w-0">
+            <h2 className="km-page-title">Στοιχεια Μελους</h2>
+            <p className="km-page-subtitle mb-0 text-truncate">
+              #{member.id} · {stripAccents(member.name)}
+            </p>
+          </div>
+        </div>
+        <div className="d-flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            onClick={handleEdit}
+          >
+            <Edit size={14} className="me-1" />
             Επεξεργασια
           </button>
-          <button className="btn btn-outline-danger" onClick={handleDelete}>
-            <Trash2 size={16} className="me-2" />
+          <button
+            type="button"
+            className="btn btn-outline-danger btn-sm"
+            onClick={handleDelete}
+          >
+            <Trash2 size={14} className="me-1" />
             Διαγραφη
           </button>
         </div>
       </div>
 
-      {/* Member Details Card */}
-      <div className="card border-0 shadow-sm mb-4">
-        <div className="card-body p-4">
-          <div className="row align-items-center">
-            {/* Photo Section - Left Side */}
-            <div className="col-12 col-md-3 col-lg-2 text-center mb-4 mb-md-0">
-              {member.photo_url ? (
-                <div className="position-relative d-inline-block">
-                  <img
-                    src={member.photo_url}
-                    alt={member.name}
-                    className="rounded-circle shadow-sm"
-                    style={{
-                      width: "160px",
-                      height: "160px",
-                      objectFit: "cover",
-                      cursor: "pointer",
-                      border: "4px solid #e3f2fd",
-                    }}
-                    onClick={() => setShowPhotoModal(true)}
-                  />
-                </div>
-              ) : (
-                <div
-                  className="rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm"
-                  style={{ 
-                    width: "160px", 
-                    height: "160px",
-                    backgroundColor: "#e3f2fd",
-                    border: "4px solid #e3f2fd",
-                  }}
-                >
-                  <User size={70} className="text-primary" style={{ color: "#1976d2" }} />
-                </div>
-              )}
-            </div>
-
-            {/* Details Section - Right Side */}
-            <div className="col-12 col-md-9 col-lg-10">
-              <div className="row g-4">
-                {/* Name - Full Width at Top */}
-                <div className="col-12">
-                  <h3 className="h3 mb-0 fw-bold" style={{ color: "#212529" }}>
-                    {member.name}
-                  </h3>
-                </div>
-
-                {/* Information Grid */}
-                <div className="col-12">
-                  <div className="row g-3">
-                    {/* Phone */}
-                    <div className="col-12 col-sm-6 col-lg-4">
-                      <div className="d-flex align-items-start">
-                        <div 
-                          className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3"
-                          style={{ 
-                            width: "48px", 
-                            height: "48px",
-                            backgroundColor: "#e3f2fd",
-                          }}
-                        >
-                          <Phone size={22} className="text-primary" style={{ color: "#1976d2" }} />
-                        </div>
-                        <div className="flex-grow-1">
-                          <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                            Τηλεφωνο
-                          </small>
-                          <span className="fw-bold d-block" style={{ fontSize: "1rem", color: "#212529" }}>
-                            {member.phone}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Email */}
-                      <div className="col-12 col-sm-6 col-lg-4">
-                        <div className="d-flex align-items-start">
-                          <div 
-                            className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3"
-                            style={{ 
-                              width: "48px", 
-                              height: "48px",
-                              backgroundColor: "#e3f2fd",
-                            }}
-                          >
-                            <Mail size={22} className="text-primary" style={{ color: "#1976d2" }} />
-                          </div>
-                          <div className="flex-grow-1">
-                            <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                              Email
-                            </small>
-                            <span className="fw-bold d-block" style={{ fontSize: "1rem", color: "#212529" }}>
-                                {member.email ?? `-` } 
-                            </span>
-                          </div>
-                        </div>
-                      </div>  
-
-                    {/* Package */}
-                    <div className="col-12 col-sm-6 col-lg-4">
-                      <div className="d-flex align-items-start">
-                        <div 
-                          className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3"
-                          style={{ 
-                            width: "48px", 
-                            height: "48px",
-                            backgroundColor: "#e3f2fd",
-                          }}
-                        >
-                          <Package size={22} className="text-primary" style={{ color: "#1976d2" }} />
-                        </div>
-                        <div className="flex-grow-1">
-                          <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                            Πακετο
-                          </small>
-                          <span className="fw-bold d-block" style={{ fontSize: "1rem", color: "#212529" }}>
-                            {member.package || "Δεν εχει οριστει"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Status */}
-                    <div className="col-12 col-sm-6 col-lg-4">
-                      <div className="d-flex align-items-start">
-                        <div 
-                          className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3"
-                          style={{ 
-                            width: "48px", 
-                            height: "48px",
-                            backgroundColor: "#e3f2fd",
-                          }}
-                        >
-                          <User size={22} className="text-primary" style={{ color: "#1976d2" }} />
-                        </div>
-                        <div className="flex-grow-1">
-                          <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                            Κατασταση
-                          </small>
-                          <div className="mt-1"><StatusBadge status={member.status} /></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Expiration Date */}
-                    <div className="col-12 col-sm-6 col-lg-4">
-                      <div className="d-flex align-items-start">
-                        <div 
-                          className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3"
-                          style={{ 
-                            width: "48px", 
-                            height: "48px",
-                            backgroundColor: "#e3f2fd",
-                          }}
-                        >
-                          <Calendar size={22} className="text-primary" style={{ color: "#1976d2" }} />
-                        </div>
-                        <div className="flex-grow-1">
-                          <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                            Ημερομηνια Ληξης
-                          </small>
-                          <span className="fw-bold d-block" style={{ fontSize: "1rem", color: "#212529" }}>
-                            {member.expiry || "Δεν εχει οριστει"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Attendance Statistics and Chart */}
-      <div className="card border-0 shadow-sm mb-4">
+      {/* Profile */}
+      <div className="card border-0 shadow-sm">
         <div className="card-body p-3">
-          {/* Monthly Attendance Chart - Full Width */}
-          <div className="mb-4">
-            <div className="mb-2">
-              <h6 className="mb-0 d-flex align-items-center">
-                <TrendingUp size={16} className="me-2 text-primary" />
-                Προσελευσεις ανα Μηνα
-              </h6>
-            </div>
-            {(() => {
-              // Calculate max value from data, default to 5, but use max if higher
-              const maxDataValue = Math.max(...monthlyAttendance.map(item => item.count), 0);
-              const yAxisMax = maxDataValue > 5 ? Math.ceil(maxDataValue * 1.1) : 5; // Add 10% padding if dynamic
-              
-              return (
-                <Chart
-                  options={{
-                    chart: {
-                      type: "bar",
-                      height: 350,
-                      toolbar: {
-                        show: false,
-                      },
-                    },
-                    colors: ["#0d6efd"],
-                    plotOptions: {
-                      bar: {
-                        horizontal: false,
-                        columnWidth: "30%",
-                        borderRadius: 6,
-                        borderRadiusApplication: 'end',
-                        dataLabels: {
-                          position: 'right',
-                        },
-                      },
-                    },
-                    dataLabels: {
-                      enabled: true,
-                      style: {
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        colors: ["#0d6efd"],
-                      },
-                      offsetY: -20,
-                      formatter: function (val: number) {
-                        // Show label only for real values (> 0.1), hide for minimal bars (0.05)
-                        return val > 0.1 ? Math.round(val).toString() : '';
-                      },
-                    },
-                    stroke: {
-                      show: true,
-                      width: 2,
-                      colors: ["transparent"],
-                    },
-                    xaxis: {
-                      categories: monthlyAttendance.map(item => item.month),
-                      labels: {
-                        style: {
-                          fontSize: '11px',
-                          fontWeight: 500,
-                        },
-                        rotate: -45,
-                        rotateAlways: false,
-                      },
-                      axisBorder: {
-                        show: true,
-                        color: '#e0e0e0',
-                      },
-                      axisTicks: {
-                        show: true,
-                        color: '#e0e0e0',
-                      },
-                    },
-                    yaxis: {
-                      title: {
-                        text: "Αριθμος Προσελευσεων",
-                        style: {
-                          fontSize: '12px',
-                          fontWeight: 600,
-                        },
-                      },
-                      labels: {
-                        style: {
-                          fontSize: '11px',
-                        },
-                        formatter: function (val: number) {
-                          return Math.round(val).toString(); // Always show integers
-                        },
-                      },
-                      min: 0,
-                      max: yAxisMax,
-                      forceNiceScale: true,
-                      decimalsInFloat: 0,
-                    },
-                    fill: {
-                      opacity: 1,
-                    },
-                    grid: {
-                      borderColor: '#e0e0e0',
-                      strokeDashArray: 3,
-                      xaxis: {
-                        lines: {
-                          show: false,
-                        },
-                      },
-                      yaxis: {
-                        lines: {
-                          show: true,
-                        },
-                      },
-                    },
-                    tooltip: {
-                      theme: 'light',
-                      y: {
-                        formatter: function (val: number) {
-                          // Convert 0.05 back to 0 for display
-                          const actualVal = val < 0.1 ? 0 : Math.round(val);
-                          return actualVal + (actualVal === 1 ? " προσελευση" : " προσελευσεις");
-                        },
-                      },
-                    },
-                  }}
-                    series={[
-                      {
-                        name: "Προσελευσεις",
-                        data: monthlyAttendance.map(item => {
-                          // Use 0.05 for visual bar (very small), but display as 0 everywhere
-                          return item.count === 0 ? 0.10 : item.count;
-                        }),
-                      },
-                    ]}
-                    type="bar"
-                    height={200}
-                  />
-                );
-              })()}
-          </div>
+          <div className="km-member__profile">
+            {member.photo_url ? (
+              <img
+                src={member.photo_url}
+                alt={stripAccents(member.name)}
+                className="km-member__photo"
+                onClick={() => setShowPhotoModal(true)}
+              />
+            ) : (
+              <div className="km-member__photo-fallback">
+                <User size={36} />
+              </div>
+            )}
 
-          {/* Attendance Statistics - 3 Columns Below Chart */}
-          <div className="row g-3">
-            {/* This Week */}
-            <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body p-3">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '56px', height: '56px' }}>
-                      <Calendar size={28} className="text-primary" />
-                    </div>
-                    <div className="flex-grow-1">
-                      <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                        Αυτη τη Βδομαδα
-                      </div>
-                      <div className="h4 mb-0 fw-bold text-primary">{attendanceStats.thisWeek}</div>
-                    </div>
+            <div className="flex-grow-1 min-w-0">
+              <h3 className="km-member__name">
+                {stripAccents(member.name)}
+              </h3>
+              <div className="mb-2">
+                <StatusBadge status={member.status} />
+                {member.card_lost && (
+                  <span className="ms-2">
+                    <StatusBadge status="card_lost" />
+                  </span>
+                )}
+              </div>
+              <div className="km-member__meta">
+                <div>
+                  <div className="km-member__field-label">Τηλεφωνο</div>
+                  <div className="km-member__field-value">{member.phone}</div>
+                </div>
+                <div>
+                  <div className="km-member__field-label">Email</div>
+                  <div className="km-member__field-value">
+                    {member.email ? stripAccents(member.email) : "—"}
                   </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* This Month */}
-            <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body p-3">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '56px', height: '56px' }}>
-                      <CalendarDays size={28} className="text-success" />
-                    </div>
-                    <div className="flex-grow-1">
-                      <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                        Αυτον τον Μηνα
-                      </div>
-                      <div className="h4 mb-0 fw-bold text-success">{attendanceStats.thisMonth}</div>
-                    </div>
+                <div>
+                  <div className="km-member__field-label">Πακετο</div>
+                  <div className="km-member__field-value">
+                    {member.package
+                      ? stripAccents(member.package)
+                      : "Δεν εχει οριστει"}
                   </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* This Year */}
-            <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body p-3">
-                  <div className="d-flex align-items-center">
-                    <div className="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '56px', height: '56px' }}>
-                      <CalendarCheck size={28} className="text-info" />
-                    </div>
-                    <div className="flex-grow-1">
-                      <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                        Αυτο το Ετος
-                      </div>
-                      <div className="h4 mb-0 fw-bold text-info">{attendanceStats.thisYear}</div>
-                    </div>
+                <div>
+                  <div className="km-member__field-label">Ληξη</div>
+                  <div className="km-member__field-value">
+                    {member.expiry || "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="km-member__field-label">Ετος προσελευσεων</div>
+                  <div className="km-member__field-value">
+                    {attendanceStats.thisYear}
                   </div>
                 </div>
               </div>
@@ -884,66 +627,65 @@ const SingleMember: React.FC = () => {
         </div>
       </div>
 
-      {/* Entrance Logs Card */}
-      <div className="card border-0 shadow-sm mb-4">
-        <div className="card-header border-0 py-3 pb-0">
-          <div className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0 d-flex align-items-center">
-              <LogIn size={20} className="me-2 text-primary" />
+      <div className="km-member__grid">
+        {/* Entrance logs */}
+        <div className="card border-0 shadow-sm km-member__panel km-table-card">
+          <div className="card-header border-0 py-2 px-3 d-flex align-items-center justify-content-between">
+            <h6 className="card-title mb-0 d-flex align-items-center gap-2">
               Προσελευσεις
               {entranceLogs.length > 0 && (
-                <span className="badge bg-primary ms-2">{entranceLogs.length}</span>
+                <span className="km-badge km-badge--brand">
+                  <span className="km-badge__label">{entranceLogs.length}</span>
+                </span>
               )}
-            </h5>
+            </h6>
             <button
-              className="btn btn-sm btn-outline-secondary d-flex align-items-center"
+              type="button"
+              className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
               onClick={() => loadEntranceLogs(true)}
               disabled={refreshingLogs}
-              title="Ανανεωση προσελευσεων"
             >
-              <RefreshCw 
-                size={16} 
-                className="me-2"
-                style={refreshingLogs ? { 
-                  animation: "spin 1s linear infinite",
-                  transformOrigin: "center"
-                } : {}}
+              <RefreshCw
+                size={14}
+                style={
+                  refreshingLogs
+                    ? {
+                        animation: "spin 1s linear infinite",
+                        transformOrigin: "center",
+                      }
+                    : undefined
+                }
               />
-              {refreshingLogs ? "Ανανεωση..." : "Ανανεωση"}
+              {refreshingLogs ? "..." : "Ανανεωση"}
             </button>
           </div>
-        </div>
-        <div className="card-body p-0">
-          {entranceLogs.length === 0 ? (
-            <div className="text-center py-5">
-              <LogIn size={48} className="text-muted mb-3" />
-              <p className="text-muted mb-0">Δεν υπαρχουν καταγραφες προσελευσεων</p>
-            </div>
-          ) : (
-            <div 
-              className="table-responsive"
-              style={{ maxHeight: '250px', overflowY: 'auto' }}
-            >
-              <table className="table table-hover mb-0 km-table">
-                <thead className="table-light" style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#f8f9fa' }}>
-                  <tr>
-                    <th className="border-0 ps-4 bg-light">Ημερομηνια & Ωρα</th>
-                    <th className="border-0 bg-light">Τροπος Εισοδου</th>
-                    <th className="border-0 bg-light">Κατασταση</th>
-                    <th className="border-0 pe-4 bg-light">Μηνυμα</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entranceLogs.map((log) => (
+          <div className="card-body p-0 km-member__logs">
+            {entranceLogs.length === 0 ? (
+              <div className="text-center text-muted py-5 px-3">
+                <LogIn size={28} className="mb-2 opacity-50" />
+                <div>Δεν υπαρχουν καταγραφες</div>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover mb-0 km-table">
+                  <thead className="table-light">
+                    <tr>
+                      <th className="border-0 ps-3">Ημ/νια</th>
+                      <th className="border-0">Τροπος</th>
+                      <th className="border-0">Κατασταση</th>
+                      <th className="border-0 pe-3">Μηνυμα</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {entranceLogs.map((log) => (
                       <tr key={log.id}>
-                        <td className="ps-4">
-                          <div className="d-flex align-items-center">
-                            <Calendar size={16} className="text-muted me-2" />
-                            <span className="fw-semibold">{formatTimestamp(log.timestamp)}</span>
-                          </div>
+                        <td className="ps-3">
+                          <span className="fw-semibold" style={{ fontSize: "0.85rem" }}>
+                            {formatTimestamp(log.timestamp)}
+                          </span>
                         </td>
                         <td>
-                          {log.entranceType === 'qr_scan' ? (
+                          {log.entranceType === "qr_scan" ? (
                             <StatusBadge
                               status="qr_scan"
                               icon={<QrCode size={12} />}
@@ -960,33 +702,122 @@ const SingleMember: React.FC = () => {
                         <td>
                           <StatusBadge status={log.validationStatus} />
                         </td>
-                        <td className="pe-4">
-                          <small className="text-muted">{log.validationMessage}</small>
+                        <td className="pe-3">
+                          <small className="text-muted">
+                            {stripAccents(log.validationMessage || "—")}
+                          </small>
                         </td>
                       </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Additional Info Card */}
-      <div className="card border-0 shadow-sm">
-        <div className="card-header border-0 py-3 pb-0">
-          <h5 className="mb-0">Προσθετες Πληροφοριες</h5>
-        </div>
-        <div className="card-body">
-          <div className="row g-3">
-            <div className="col-12 col-md-6">
-              <small className="text-muted d-block mb-1">ID Μελους</small>
-              <span className="fw-semibold">#{member.id}</span>
+        {/* Chart + mini stats */}
+        <div className="card border-0 shadow-sm km-member__panel">
+          <div className="card-header border-0 py-2 px-3">
+            <h6 className="card-title mb-0">Προσελευσεις ανα μηνα</h6>
+          </div>
+          <div className="card-body p-3 pt-2">
+            <div className="km-member__stats">
+              <div className="km-member__stat">
+                <div className="km-stat-label mb-1">Εβδομαδα</div>
+                <div className="km-member__stat-value">
+                  {attendanceStats.thisWeek}
+                </div>
+              </div>
+              <div className="km-member__stat">
+                <div className="km-stat-label mb-1">Μηνας</div>
+                <div className="km-member__stat-value">
+                  {attendanceStats.thisMonth}
+                </div>
+              </div>
+              <div className="km-member__stat">
+                <div className="km-stat-label mb-1">Ετος</div>
+                <div className="km-member__stat-value">
+                  {attendanceStats.thisYear}
+                </div>
+              </div>
             </div>
-            <div className="col-12 col-md-6">
-              <small className="text-muted d-block mb-1">Κατασταση Συνδρομης</small>
-              <div><StatusBadge status={member.status} /></div>
-            </div>
+
+            <Chart
+              options={{
+                chart: {
+                  type: "bar",
+                  toolbar: { show: false },
+                  fontFamily: "Barlow Condensed, Barlow, sans-serif",
+                  parentHeightOffset: 0,
+                },
+                colors: [BRAND.yellow],
+                plotOptions: {
+                  bar: {
+                    horizontal: false,
+                    columnWidth: "42%",
+                    borderRadius: 3,
+                    borderRadiusApplication: "end",
+                  },
+                },
+                dataLabels: {
+                  enabled: true,
+                  style: {
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    colors: [BRAND.ink],
+                  },
+                  offsetY: -14,
+                  formatter: (val: number) =>
+                    val > 0.1 ? String(Math.round(val)) : "",
+                },
+                stroke: { show: false },
+                xaxis: {
+                  categories: chartCategories,
+                  labels: {
+                    style: {
+                      colors: BRAND.muted,
+                      fontSize: "10px",
+                      fontWeight: 700,
+                    },
+                    rotate: 0,
+                  },
+                  axisBorder: { show: false },
+                  axisTicks: { show: false },
+                },
+                yaxis: {
+                  min: 0,
+                  max: yAxisMax,
+                  tickAmount: 4,
+                  labels: {
+                    style: {
+                      colors: BRAND.muted,
+                      fontSize: "10px",
+                      fontWeight: 700,
+                    },
+                    formatter: (val: number) => String(Math.round(val)),
+                  },
+                },
+                fill: { opacity: 1 },
+                grid: {
+                  borderColor: BRAND.canvas,
+                  strokeDashArray: 0,
+                  padding: { left: 4, right: 4 },
+                },
+                tooltip: {
+                  theme: "light",
+                  y: {
+                    formatter: (val: number) => {
+                      const actual = val < 0.1 ? 0 : Math.round(val);
+                      return `${actual} προσελευσεις`;
+                    },
+                  },
+                },
+              }}
+              series={[{ name: "Προσελευσεις", data: chartData }]}
+              type="bar"
+              height={210}
+            />
           </div>
         </div>
       </div>
@@ -1062,8 +893,8 @@ const SingleMember: React.FC = () => {
                             {capturedPhoto
                               ? "Αλλαγη Φωτογραφιας"
                               : useFileInput
-                              ? "Επιλογη Αρχειου"
-                              : "Ληψη Φωτογραφιας"}
+                                ? "Επιλογη Αρχειου"
+                                : "Ληψη Φωτογραφιας"}
                           </button>
                           {!useFileInput && (
                             <button

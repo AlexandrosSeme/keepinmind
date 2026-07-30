@@ -102,30 +102,29 @@ const GlobalQRScanner: React.FC = () => {
     }
   };
 
-  // Helper function to check if a modal is open
-  const isModalOpen = (): boolean => {
-    // Check for Bootstrap modals
-    const modals = document.querySelectorAll('.modal.show');
-    return modals.length > 0;
+  // Any real form field focused (not the hidden scanner capture input)
+  const isUserTypingInForm = (): boolean => {
+    const activeElement = document.activeElement as HTMLElement | null;
+    if (!activeElement) return false;
+    if (activeElement.id === "global-scanner-input-hidden") return false;
+
+    const tag = activeElement.tagName;
+    if (tag === "TEXTAREA" || tag === "SELECT") return true;
+    if (tag === "INPUT") {
+      const type = (activeElement.getAttribute("type") || "text").toLowerCase();
+      // Allow typing in normal fields; keep scanner only when nothing else focused
+      return type !== "hidden";
+    }
+    if (activeElement.isContentEditable) return true;
+    return false;
   };
 
-  // Helper function to check if user is typing in a form input
-  const isUserTypingInForm = (): boolean => {
-    const activeElement = document.activeElement as HTMLElement;
-    if (!activeElement) return false;
-    
-    // Check if it's an input, textarea, or select
-    const isFormField = activeElement.tagName === 'INPUT' || 
-                       activeElement.tagName === 'TEXTAREA' || 
-                       activeElement.tagName === 'SELECT';
-    
-    // Check if it's not our scanner input
-    const isNotScannerInput = activeElement.id !== 'global-scanner-input-hidden';
-    
-    // Check if it's inside a modal
-    const isInModal = activeElement.closest('.modal') !== null;
-    
-    return isFormField && isNotScannerInput && isInModal;
+  const shouldLeaveFocusAlone = (): boolean => isUserTypingInForm();
+
+  const focusScannerIfIdle = () => {
+    if (!scannerInputRef.current) return;
+    if (shouldLeaveFocusAlone()) return;
+    scannerInputRef.current.focus();
   };
 
   const processScannedData = async (scannedData: string) => {
@@ -169,9 +168,7 @@ const GlobalQRScanner: React.FC = () => {
           lastKeyTimeRef.current = Date.now();
           
           const refocusInput = () => {
-            if (scannerInputRef.current) {
-              scannerInputRef.current.focus();
-            }
+            focusScannerIfIdle();
           };
           requestAnimationFrame(refocusInput);
           setTimeout(refocusInput, 10);
@@ -276,11 +273,7 @@ const GlobalQRScanner: React.FC = () => {
       }
 
       // Clear and refocus scanner input for next scan - IMMEDIATELY
-      const refocusInput = () => {
-        if (scannerInputRef.current) {
-          scannerInputRef.current.focus();
-        }
-      };
+      const refocusInput = () => focusScannerIfIdle();
 
       // Clear input and buffer
       if (scannerInputRef.current) {
@@ -313,10 +306,17 @@ const GlobalQRScanner: React.FC = () => {
   // Handle plug and play QR scanner (USB barcode scanner)
   useEffect(() => {
     const handleScannerInput = (e: KeyboardEvent) => {
-      // Only process if not typing in an input field (unless it's our scanner input)
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' && target !== scannerInputRef.current) {
-        return; // User is typing in another input, ignore
+      // User typing in any form field — never hijack keys
+      if (
+        target &&
+        target !== scannerInputRef.current &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
       }
 
       const now = Date.now();
@@ -330,80 +330,52 @@ const GlobalQRScanner: React.FC = () => {
       lastKeyTimeRef.current = now;
 
       // Handle Enter key (scanner sends Enter at the end)
-      if (e.key === 'Enter' || e.code === 'Enter') {
+      if (e.key === "Enter" || e.code === "Enter") {
         e.preventDefault();
         e.stopPropagation();
-        
-        // Clear any pending timeout
+
         if (scannerTimeoutRef.current !== null) {
           clearTimeout(scannerTimeoutRef.current);
           scannerTimeoutRef.current = null;
         }
-        
+
         const scannedData = scannerBufferRef.current.trim();
-        
-        // Clear buffer immediately
         scannerBufferRef.current = "";
         lastKeyTimeRef.current = Date.now();
 
         if (scannedData.length > 0) {
           processScannedData(scannedData);
         } else {
-          // Refocus for next scan even if buffer is empty
-          setTimeout(() => {
-            if (scannerInputRef.current) {
-              scannerInputRef.current.focus();
-            }
-          }, 100);
+          setTimeout(() => focusScannerIfIdle(), 100);
         }
         return;
       }
 
-      // Handle regular characters (ignore special keys)
       if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        // Clear any existing timeout
         if (scannerTimeoutRef.current !== null) {
           clearTimeout(scannerTimeoutRef.current);
         }
 
-        // Add character to buffer
         scannerBufferRef.current += e.key;
 
-        // Set timeout to clear buffer if no more input comes
         scannerTimeoutRef.current = window.setTimeout(() => {
           scannerBufferRef.current = "";
         }, 2000);
       }
     };
 
-    // AGGRESSIVE focus on mount
-    const focusInput = () => {
-      if (scannerInputRef.current) {
-        scannerInputRef.current.focus();
-      }
-    };
+    const focusInput = () => focusScannerIfIdle();
 
-    // Focus immediately with multiple attempts
     focusInput();
     requestAnimationFrame(focusInput);
-    setTimeout(focusInput, 10);
     setTimeout(focusInput, 50);
-    setTimeout(focusInput, 100);
     setTimeout(focusInput, 200);
-    setTimeout(focusInput, 500);
-    setTimeout(focusInput, 1000);
 
-    // Also focus on window focus
-    const handleWindowFocus = () => {
-      focusInput();
-    };
-    window.addEventListener('focus', handleWindowFocus);
-    
-    // Also refocus on visibility change
+    const handleWindowFocus = () => focusScannerIfIdle();
+    window.addEventListener("focus", handleWindowFocus);
+
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        focusInput();
-      }
+      if (!document.hidden) focusScannerIfIdle();
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
@@ -420,42 +392,24 @@ const GlobalQRScanner: React.FC = () => {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // AGGRESSIVE Continuous focus monitoring - ensures input stays focused ALWAYS
+  // Keep scanner focused only when user is NOT typing in another field
   useEffect(() => {
     const forceFocus = () => {
-      if (scannerInputRef.current) {
-        // Don't refocus if a modal is open and user is typing in it
-        if (isModalOpen() && isUserTypingInForm()) {
-          return;
-        }
-        
-        // Only skip refocus if user is actively typing in manual input field
-        const activeElement = document.activeElement as HTMLElement;
-        const isManualInput = activeElement?.tagName === 'INPUT' && 
-                             activeElement?.getAttribute('type') === 'number' &&
-                             activeElement?.id !== 'global-scanner-input-hidden';
-        
-        if (!isManualInput && document.activeElement !== scannerInputRef.current) {
-          scannerInputRef.current.focus();
-        }
-      }
+      focusScannerIfIdle();
     };
-    
-    // Check focus VERY frequently (every 100ms) to ensure it stays focused
+
     const focusInterval = setInterval(forceFocus, 100);
-    
-    // Also use MutationObserver to refocus after DOM changes (re-renders)
+
     const observer = new MutationObserver(() => {
       setTimeout(forceFocus, 50);
     });
-    
-    // Observe the entire document for changes
+
     observer.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
     });
-    
+
     return () => {
       clearInterval(focusInterval);
       observer.disconnect();
@@ -469,57 +423,35 @@ const GlobalQRScanner: React.FC = () => {
       type="text"
       autoFocus
       style={{
-        position: 'fixed',
-        left: '-9999px',
-        width: '1px',
-        height: '1px',
+        position: "fixed",
+        left: "-9999px",
+        width: "1px",
+        height: "1px",
         opacity: 0,
-        pointerEvents: 'auto',
-        zIndex: 9999,
+        pointerEvents: "none",
+        zIndex: -1,
       }}
-      tabIndex={0}
+      tabIndex={-1}
       onBlur={(e) => {
-        const relatedTarget = e.relatedTarget as HTMLElement;
-        
-        // Check if user is clicking into a form field in a modal
-        const isModalFormField = relatedTarget?.closest('.modal') !== null &&
-                                 (relatedTarget?.tagName === 'INPUT' || 
-                                  relatedTarget?.tagName === 'TEXTAREA' || 
-                                  relatedTarget?.tagName === 'SELECT') &&
-                                 relatedTarget?.id !== 'global-scanner-input-hidden';
-        
-        const isManualInput = relatedTarget?.tagName === 'INPUT' && 
-                             relatedTarget?.getAttribute('type') === 'number' &&
-                             relatedTarget?.id !== 'global-scanner-input-hidden';
-        
-        // Don't refocus if user is typing in a modal form field
-        if (isModalFormField) {
+        const relatedTarget = e.relatedTarget as HTMLElement | null;
+
+        const isOtherFormField =
+          !!relatedTarget &&
+          relatedTarget.id !== "global-scanner-input-hidden" &&
+          (relatedTarget.tagName === "INPUT" ||
+            relatedTarget.tagName === "TEXTAREA" ||
+            relatedTarget.tagName === "SELECT" ||
+            relatedTarget.isContentEditable);
+
+        if (isOtherFormField || isUserTypingInForm()) {
           return;
         }
-        
-        if (!isManualInput) {
-          // ULTRA AGGRESSIVE refocusing
-          const refocus = () => {
-            if (scannerInputRef.current) {
-              // Don't refocus if modal is open and user is typing in it
-              if (isModalOpen() && isUserTypingInForm()) {
-                return;
-              }
-              scannerInputRef.current.focus();
-            }
-          };
-          
-          refocus(); // Immediate
-          requestAnimationFrame(refocus);
-          setTimeout(refocus, 5);
-          setTimeout(refocus, 10);
-          setTimeout(refocus, 20);
-          setTimeout(refocus, 50);
-          setTimeout(refocus, 100);
-          setTimeout(refocus, 200);
-          setTimeout(refocus, 300);
-          setTimeout(refocus, 500);
-        }
+
+        const refocus = () => focusScannerIfIdle();
+
+        requestAnimationFrame(refocus);
+        setTimeout(refocus, 50);
+        setTimeout(refocus, 150);
       }}
     />
   );
