@@ -42,7 +42,7 @@ const Settings: React.FC = () => {
   const handleSave = () => {
     // Validate email settings
     if (emailProvider.apiKey && (!emailProvider.fromEmail || emailProvider.fromEmail.trim() === '')) {
-      alert('Παρακαλώ εισάγετε ένα email address στο πεδίο "Αποστολέας Email". Το email πρέπει να είναι verified στο Maileroo account σας.');
+      alert('Παρακαλω εισαγετε ενα email address στο πεδιο "Αποστολεας Email". Το email πρεπει να ειναι verified στο Maileroo account σας.');
       return;
     }
 
@@ -95,26 +95,26 @@ const Settings: React.FC = () => {
       });
     }
 
-    alert('Οι ρυθμίσεις αποθηκεύτηκαν επιτυχώς!');
+    alert('Οι ρυθμισεις αποθηκευτηκαν επιτυχως!');
   };
 
   return (
     <div>
       {/* Header */}
       <div className="mb-4">
-        <h2 className="h4">Ρυθμίσεις</h2>
+        <h2 className="h4">Ρυθμισεις</h2>
       </div>
 
       <div className="row g-4">
         {/* Gym Information */}
         <div className="col-12 col-lg-6">
           <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom">
-              <h5 className="card-title mb-0">Στοιχεία Γυμναστηρίου</h5>
+            <div className="card-header border-0 py-3">
+              <h5 className="card-title mb-0">Στοιχεια Γυμναστηριου</h5>
             </div>
             <div className="card-body">
               <div className="mb-3">
-                <label className="form-label fw-semibold">Όνομα</label>
+                <label className="form-label fw-semibold">Ονομα</label>
                 <input 
                   type="text" 
                   className="form-control"
@@ -123,7 +123,7 @@ const Settings: React.FC = () => {
                 />
               </div>
               <div className="mb-3">
-                <label className="form-label fw-semibold">Τηλέφωνο</label>
+                <label className="form-label fw-semibold">Τηλεφωνο</label>
                 <input 
                   type="text" 
                   className="form-control"
@@ -147,7 +147,7 @@ const Settings: React.FC = () => {
         {/* SMS Provider */}
         <div className="col-12 col-lg-6">
           <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom">
+            <div className="card-header border-0 py-3">
               <h5 className="card-title mb-0">SMS Provider (SMSme.gr)</h5>
             </div>
             <div className="card-body">
@@ -161,7 +161,7 @@ const Settings: React.FC = () => {
                   onChange={(e) => setSmsProvider({...smsProvider, username: e.target.value})}
                 />
                 <small className="text-muted">
-                  Το email που χρησιμοποιείτε για login στο SMSme.gr
+                  Το email που χρησιμοποιειτε για login στο SMSme.gr
                 </small>
               </div>
               <div className="mb-3">
@@ -169,13 +169,13 @@ const Settings: React.FC = () => {
                 <input 
                   type="password" 
                   className="form-control"
-                  placeholder="Εισάγετε τον κωδικό πρόσβασης"
+                  placeholder="Εισαγετε τον κωδικο προσβασης"
                   value={smsProvider.password}
                   onChange={(e) => setSmsProvider({...smsProvider, password: e.target.value})}
                 />
                 <small className="text-muted">
                   <a href="https://smsme.gr" target="_blank" rel="noopener noreferrer">
-                    Δημιουργήστε λογαριασμό στο SMSme.gr
+                    Δημιουργηστε λογαριασμο στο SMSme.gr
                   </a>
                 </small>
               </div>
@@ -190,12 +190,12 @@ const Settings: React.FC = () => {
                   onChange={(e) => setSmsProvider({...smsProvider, senderId: e.target.value})}
                 />
                 <small className="text-muted d-block mt-1">
-                  Το όνομα που θα εμφανίζεται ως αποστολέας (μέχρι 11 χαρακτήρες, αλφαριθμητικό)
+                  Το ονομα που θα εμφανιζεται ως αποστολεας (μεχρι 11 χαρακτηρες, αλφαριθμητικο)
                 </small>
                 <small className="text-warning d-block mt-1">
-                  ⚠️ <strong>Σημαντικό:</strong> Τα alphanumeric sender IDs (όπως "ColosseumGym") πρέπει να είναι <strong>approved</strong> από το SMSme.gr support. 
-                  Εάν λαμβάνετε 500 error, πιθανότατα το sender ID δεν είναι approved. 
-                  Επικοινωνήστε με το SMSme.gr support για να approve το sender ID σας ή χρησιμοποιήστε numeric sender (π.χ. "1234567890").
+                  ⚠️ <strong>Σημαντικο:</strong> Τα alphanumeric sender IDs (οπως "ColosseumGym") πρεπει να ειναι <strong>approved</strong> απο το SMSme.gr support. 
+                  Εαν λαμβανετε 500 error, πιθανοτατα το sender ID δεν ειναι approved. 
+                  Επικοινωνηστε με το SMSme.gr support για να approve το sender ID σας η χρησιμοποιηστε numeric sender (π.χ. "1234567890").
                 </small>
               </div>
             </div>
@@ -205,7 +205,7 @@ const Settings: React.FC = () => {
         {/* Email Provider */}
         <div className="col-12 col-lg-6">
           <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom">
+            <div className="card-header border-0 py-3">
               <h5 className="card-title mb-0">Email Provider (Maileroo)</h5>
             </div>
             <div className="card-body">
@@ -214,18 +214,18 @@ const Settings: React.FC = () => {
                 <input 
                   type="password" 
                   className="form-control"
-                  placeholder="Εισάγετε το API Key από Maileroo"
+                  placeholder="Εισαγετε το API Key απο Maileroo"
                   value={emailProvider.apiKey}
                   onChange={(e) => setEmailProvider({...emailProvider, apiKey: e.target.value})}
                 />
                 <small className="text-muted">
                   <a href="https://maileroo.com" target="_blank" rel="noopener noreferrer">
-                    Δωρεάν: 3.000 emails/μήνα - Maileroo
+                    Δωρεαν: 3.000 emails/μηνα - Maileroo
                   </a>
                 </small>
               </div>
               <div className="mb-3">
-                <label className="form-label fw-semibold">Αποστολέας Email</label>
+                <label className="form-label fw-semibold">Αποστολεας Email</label>
                 <input 
                   type="email" 
                   className="form-control"
@@ -234,21 +234,21 @@ const Settings: React.FC = () => {
                   onChange={(e) => setEmailProvider({...emailProvider, fromEmail: e.target.value})}
                 />
                 <small className="text-muted d-block mt-1">
-                  ⚠️ <strong>Σημαντικό:</strong> Το Maileroo απαιτεί verified domain. Το Gmail δεν λειτουργεί σε sandbox mode.
+                  ⚠️ <strong>Σημαντικο:</strong> Το Maileroo απαιτει verified domain. Το Gmail δεν λειτουργει σε sandbox mode.
                 </small>
                 <small className="text-muted d-block mt-1">
-                  🌐 <strong>Λύση:</strong> Πρέπει να verify το domain σας (π.χ. fightingrooster.gr) στο{' '}
+                  🌐 <strong>Λυση:</strong> Πρεπει να verify το domain σας (π.χ. fightingrooster.gr) στο{' '}
                   <a href="https://app.maileroo.com" target="_blank" rel="noopener noreferrer">
                     Maileroo Dashboard → Domains
                   </a>
-                  {' '}προσθέτοντας DNS records (SPF, DKIM, DMARC).
+                  {' '}προσθετοντας DNS records (SPF, DKIM, DMARC).
                 </small>
                 <small className="text-muted d-block mt-1">
-                  📝 <strong>Βήματα:</strong> 1) Πρόσθεσε domain στο Maileroo, 2) Πρόσθεσε DNS records, 3) Verify, 4) Χρησιμοποίησε email@yourdomain.com
+                  📝 <strong>Βηματα:</strong> 1) Προσθεσε domain στο Maileroo, 2) Προσθεσε DNS records, 3) Verify, 4) Χρησιμοποιησε email@yourdomain.com
                 </small>
               </div>
               <div className="mb-0">
-                <label className="form-label fw-semibold">Όνομα Αποστολέα</label>
+                <label className="form-label fw-semibold">Ονομα Αποστολεα</label>
                 <input 
                   type="text" 
                   className="form-control"
@@ -264,8 +264,8 @@ const Settings: React.FC = () => {
         {/* Send Rate Settings */}
         <div className="col-12 col-lg-6">
           <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom">
-              <h5 className="card-title mb-0">Ρυθμός Αποστολής</h5>
+            <div className="card-header border-0 py-3">
+              <h5 className="card-title mb-0">Ρυθμος Αποστολης</h5>
             </div>
             <div className="card-body">
               <div className="mb-3">
@@ -287,16 +287,16 @@ const Settings: React.FC = () => {
                 </div>
                 <div className="mt-2">
                   <small className="text-muted">
-                    {sendRate === 1 && 'Πολύ αργή αποστολή (1 email/SMS ανά batch)'}
-                    {sendRate === 2 && 'Αργή αποστολή (2-5 emails/SMS ανά batch)'}
-                    {sendRate === 3 && 'Μέτρια αποστολή (5-10 emails/SMS ανά batch) - Προτεινόμενη'}
-                    {sendRate === 4 && 'Γρήγορη αποστολή (10-20 emails/SMS ανά batch)'}
-                    {sendRate === 5 && 'Πολύ γρήγορη αποστολή (20-50 emails/SMS ανά batch)'}
+                    {sendRate === 1 && 'Πολυ αργη αποστολη (1 email/SMS ανα batch)'}
+                    {sendRate === 2 && 'Αργη αποστολη (2-5 emails/SMS ανα batch)'}
+                    {sendRate === 3 && 'Μετρια αποστολη (5-10 emails/SMS ανα batch) - Προτεινομενη'}
+                    {sendRate === 4 && 'Γρηγορη αποστολη (10-20 emails/SMS ανα batch)'}
+                    {sendRate === 5 && 'Πολυ γρηγορη αποστολη (20-50 emails/SMS ανα batch)'}
                   </small>
                 </div>
                 <div className="mt-2">
                   <small className="text-muted d-block">
-                    <strong>Σημείωση:</strong> Χρησιμοποιείται για να ελέγξετε τον ρυθμό αποστολής και να αποφύγετε rate limits από τα APIs.
+                    <strong>Σημειωση:</strong> Χρησιμοποιειται για να ελεγξετε τον ρυθμο αποστολης και να αποφυγετε rate limits απο τα APIs.
                   </small>
                 </div>
               </div>
@@ -307,14 +307,14 @@ const Settings: React.FC = () => {
         {/* Automatic Notifications */}
         <div className="col-12 col-lg-6">
           <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom">
-              <h5 className="card-title mb-0">Αυτόματες Ειδοποιήσεις</h5>
+            <div className="card-header border-0 py-3">
+              <h5 className="card-title mb-0">Αυτοματες Ειδοποιησεις</h5>
             </div>
             <div className="card-body">
               <div className="mb-3">
                 <div className="form-check d-flex justify-content-between align-items-center">
                   <label className="form-check-label" htmlFor="sevenDays">
-                    7 ημέρες πριν λήξη
+                    7 ημερες πριν ληξη
                   </label>
                   <input 
                     className="form-check-input" 
@@ -328,7 +328,7 @@ const Settings: React.FC = () => {
               <div className="mb-3">
                 <div className="form-check d-flex justify-content-between align-items-center">
                   <label className="form-check-label" htmlFor="threeDays">
-                    3 ημέρες πριν λήξη
+                    3 ημερες πριν ληξη
                   </label>
                   <input 
                     className="form-check-input" 
@@ -342,7 +342,7 @@ const Settings: React.FC = () => {
               <div className="mb-3">
                 <div className="form-check d-flex justify-content-between align-items-center">
                   <label className="form-check-label" htmlFor="expiryDay">
-                    Ημέρα λήξης
+                    Ημερα ληξης
                   </label>
                   <input 
                     className="form-check-input" 
@@ -356,7 +356,7 @@ const Settings: React.FC = () => {
               <div className="mb-3">
                 <div className="form-check d-flex justify-content-between align-items-center">
                   <label className="form-check-label" htmlFor="threeDaysAfter">
-                    3 ημέρες μετά λήξη
+                    3 ημερες μετα ληξη
                   </label>
                   <input 
                     className="form-check-input" 
@@ -368,7 +368,7 @@ const Settings: React.FC = () => {
                 </div>
               </div>
               <div className="border-top pt-3">
-                <label className="form-label fw-semibold">Ώρα Αποστολής</label>
+                <label className="form-label fw-semibold">Ωρα Αποστολης</label>
                 <input 
                   type="time" 
                   className="form-control"
@@ -383,34 +383,34 @@ const Settings: React.FC = () => {
         {/* Appearance */}
         <div className="col-12 col-lg-6">
           <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom">
-              <h5 className="card-title mb-0">Εμφάνιση</h5>
+            <div className="card-header border-0 py-3">
+              <h5 className="card-title mb-0">Εμφανιση</h5>
             </div>
             <div className="card-body">
               <div className="mb-3">
-                <label className="form-label fw-semibold">Θέμα</label>
+                <label className="form-label fw-semibold">Θεμα</label>
                 <select 
                   className="form-select"
                   value={appearance.theme}
                   onChange={(e) => setAppearance({...appearance, theme: e.target.value})}
                 >
-                  <option value="light">Ανοιχτό</option>
-                  <option value="dark">Σκούρο</option>
+                  <option value="light">Ανοιχτο</option>
+                  <option value="dark">Σκουρο</option>
                 </select>
               </div>
               <div className="mb-3">
-                <label className="form-label fw-semibold">Γλώσσα</label>
+                <label className="form-label fw-semibold">Γλωσσα</label>
                 <select 
                   className="form-select"
                   value={appearance.language}
                   onChange={(e) => setAppearance({...appearance, language: e.target.value})}
                 >
-                  <option value="el">Ελληνικά</option>
+                  <option value="el">Ελληνικα</option>
                   <option value="en">English</option>
                 </select>
               </div>
               <div className="mb-0">
-                <label className="form-label fw-semibold">Νόμισμα</label>
+                <label className="form-label fw-semibold">Νομισμα</label>
                 <select 
                   className="form-select"
                   value={appearance.currency}
@@ -428,10 +428,10 @@ const Settings: React.FC = () => {
       {/* Save Button */}
       <div className="d-flex justify-content-end gap-2 mt-4">
         <button className="btn btn-outline-secondary">
-          Ακύρωση
+          Ακυρωση
         </button>
         <button className="btn btn-primary" onClick={handleSave}>
-          Αποθήκευση
+          Αποθηκευση
         </button>
       </div>
     </div>

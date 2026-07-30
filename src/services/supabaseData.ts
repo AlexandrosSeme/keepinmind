@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
-import type { Stats, Member, UpcomingExpiry, Debt, Package } from "../types";
+import type { Stats, Member, UpcomingExpiry, Debt, Package, Payment } from "../types";
 
 export interface AppDataResponse {
   stats: Stats;
@@ -7,6 +7,7 @@ export interface AppDataResponse {
   upcomingExpiries: UpcomingExpiry[];
   debts: Debt[];
   packages: Package[];
+  payments: Payment[];
 }
 
 // ==================== READ OPERATIONS ====================
@@ -16,15 +17,24 @@ export async function fetchAppData(): Promise<AppDataResponse | null> {
     return null;
   }
 
-  const [membersRes, upcomingRes, debtsRes, packagesRes] = await Promise.all([
-    supabase.from("members").select("*").order("id", { ascending: true }),
-    supabase.from("upcoming_expiries").select("*").order("id", { ascending: true }),
-    supabase.from("debts").select("*").order("id", { ascending: true }),
-    supabase.from("packages").select("*").order("id", { ascending: true }),
-  ]);
+  const [membersRes, upcomingRes, debtsRes, packagesRes, paymentsRes] =
+    await Promise.all([
+      supabase.from("members").select("*").order("id", { ascending: true }),
+      supabase
+        .from("upcoming_expiries")
+        .select("*")
+        .order("id", { ascending: true }),
+      supabase.from("debts").select("*").order("id", { ascending: true }),
+      supabase.from("packages").select("*").order("id", { ascending: true }),
+      supabase.from("payments").select("*").order("id", { ascending: false }),
+    ]);
 
+  // Payments table may not exist yet — don't fail the whole app load
   const hasError =
-    membersRes.error || upcomingRes.error || debtsRes.error || packagesRes.error;
+    membersRes.error ||
+    upcomingRes.error ||
+    debtsRes.error ||
+    packagesRes.error;
 
   if (hasError) {
     console.error("[Supabase] Error fetching data", {
@@ -36,10 +46,26 @@ export async function fetchAppData(): Promise<AppDataResponse | null> {
     return null;
   }
 
+  if (paymentsRes.error) {
+    console.warn(
+      "[Supabase] Payments unavailable (run supabase-payments-setup.sql):",
+      paymentsRes.error.message
+    );
+  }
+
   const members = (membersRes.data || []) as Member[];
   const upcomingExpiries = (upcomingRes.data || []) as UpcomingExpiry[];
   const debts = (debtsRes.data || []) as Debt[];
   const packages = (packagesRes.data || []) as Package[];
+  const payments = (paymentsRes.data || []) as Payment[];
+
+  const pendingSum = payments
+    .filter((p) => p.status === "pending")
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  const monthlyCompleted = payments
+    .filter((p) => p.status === "completed")
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
   const stats: Stats = {
     totalMembers: members.length,
@@ -48,9 +74,10 @@ export async function fetchAppData(): Promise<AppDataResponse | null> {
       0
     ),
     expiringThisWeek: upcomingExpiries.length,
-    overdueDebts: debts.filter((d) => d.status === "overdue").length,
-    monthlyRevenue: "0",
-    pendingPayments: "0",
+    overdueDebts: debts.filter((d) => d.status === "overdue" || d.status === "critical")
+      .length,
+    monthlyRevenue: String(monthlyCompleted),
+    pendingPayments: String(pendingSum),
   };
 
   return {
@@ -59,6 +86,7 @@ export async function fetchAppData(): Promise<AppDataResponse | null> {
     upcomingExpiries,
     debts,
     packages,
+    payments,
   };
 }
 
@@ -216,6 +244,61 @@ export async function deletePackage(id: number): Promise<boolean> {
 
   if (error) {
     console.error("[Supabase] Error deleting package:", error);
+    return false;
+  }
+
+  return true;
+}
+
+// ==================== PAYMENTS CRUD ====================
+
+export async function createPayment(
+  payment: Omit<Payment, "id">
+): Promise<Payment | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("payments")
+    .insert([payment])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("[Supabase] Error creating payment:", error);
+    return null;
+  }
+
+  return data as Payment;
+}
+
+export async function updatePayment(
+  id: number,
+  updates: Partial<Omit<Payment, "id">>
+): Promise<Payment | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("payments")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("[Supabase] Error updating payment:", error);
+    return null;
+  }
+
+  return data as Payment;
+}
+
+export async function deletePayment(id: number): Promise<boolean> {
+  if (!supabase) return false;
+
+  const { error } = await supabase.from("payments").delete().eq("id", id);
+
+  if (error) {
+    console.error("[Supabase] Error deleting payment:", error);
     return false;
   }
 

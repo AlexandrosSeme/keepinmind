@@ -105,7 +105,6 @@ export async function getEntranceLogs(): Promise<EntranceLog[]> {
 
       if (error) {
         console.error("[EntranceLog] Error fetching from Supabase:", error);
-        console.log("[EntranceLog] Returning cache instead, count:", entranceLogsCache.length);
         // Fallback to cache
         return [...entranceLogsCache];
       }
@@ -126,10 +125,8 @@ export async function getEntranceLogs(): Promise<EntranceLog[]> {
 
         // Update cache
         entranceLogsCache = logs;
-        console.log("[EntranceLog] Fetched", logs.length, "logs from Supabase");
         return logs;
       } else {
-        console.log("[EntranceLog] No logs found in Supabase, returning cache");
         return [...entranceLogsCache];
       }
     } catch (err) {
@@ -140,7 +137,6 @@ export async function getEntranceLogs(): Promise<EntranceLog[]> {
   }
 
   // Fallback to cache if Supabase is not available
-  console.log("[EntranceLog] Supabase not available, returning cache, count:", entranceLogsCache.length);
   return [...entranceLogsCache];
 }
 

@@ -54,7 +54,7 @@ class HomeAssistantService {
     options: RequestInit = {}
   ): Promise<T> {
     if (!this.config || !this.config.accessToken) {
-      throw new Error('Home Assistant δεν είναι ρυθμισμένο. Παρακαλώ εισάγετε Access Token.');
+      throw new Error('Home Assistant δεν ειναι ρυθμισμενο. Παρακαλω εισαγετε Access Token.');
     }
 
     // Use backend proxy server to avoid CORS issues
@@ -110,7 +110,7 @@ class HomeAssistantService {
           if (directError.message?.includes('Failed to fetch') || 
               directError.message?.includes('CORS') ||
               directError.message?.includes('NetworkError')) {
-            throw new Error(`Δεν ήταν δυνατή η σύνδεση με το Home Assistant.\n\nΠιθανές αιτίες:\n1. Το backend server (localhost:3010) δεν τρέχει\n2. Το Home Assistant δεν είναι προσβάσιμο στο ${this.config.baseUrl}\n3. Σφάλμα CORS (προσπαθήστε να προσθέσετε CORS headers στο Home Assistant)\n\nΛύση: Εκκινήστε το backend server με: node server.js`);
+            throw new Error(`Δεν ηταν δυνατη η συνδεση με το Home Assistant.\n\nΠιθανες αιτιες:\n1. Το backend server (localhost:3010) δεν τρεχει\n2. Το Home Assistant δεν ειναι προσβασιμο στο ${this.config.baseUrl}\n3. Σφαλμα CORS (προσπαθηστε να προσθεσετε CORS headers στο Home Assistant)\n\nΛυση: Εκκινηστε το backend server με: node server.js`);
           }
           throw directError;
         }
@@ -128,9 +128,9 @@ class HomeAssistantService {
         }
 
         if (response.status === 401) {
-          throw new Error('Μη έγκυρο Access Token. Παρακαλώ ελέγξτε το token στις ρυθμίσεις.');
+          throw new Error('Μη εγκυρο Access Token. Παρακαλω ελεγξτε το token στις ρυθμισεις.');
         } else if (response.status === 404) {
-          throw new Error(`Το Home Assistant δεν βρέθηκε στο ${this.config.baseUrl}. Ελέγξτε το URL.`);
+          throw new Error(`Το Home Assistant δεν βρεθηκε στο ${this.config.baseUrl}. Ελεγξτε το URL.`);
         }
 
         throw new Error(errorMessage);
@@ -146,7 +146,7 @@ class HomeAssistantService {
       // Handle network errors
       if (error.message?.includes('Failed to fetch') || 
           error.message?.includes('NetworkError')) {
-        throw new Error(`Σφάλμα σύνδεσης: Δεν ήταν δυνατή η σύνδεση με το Home Assistant.\n\nΕλέγξτε:\n1. Αν το Home Assistant είναι ενεργό στο ${this.config.baseUrl}\n2. Αν το backend server (localhost:3010) τρέχει\n3. Αν το Access Token είναι σωστό\n\nΓια να εκκινήσετε το backend server: node server.js`);
+        throw new Error(`Σφαλμα συνδεσης: Δεν ηταν δυνατη η συνδεση με το Home Assistant.\n\nΕλεγξτε:\n1. Αν το Home Assistant ειναι ενεργο στο ${this.config.baseUrl}\n2. Αν το backend server (localhost:3010) τρεχει\n3. Αν το Access Token ειναι σωστο\n\nΓια να εκκινησετε το backend server: node server.js`);
       }
       throw error;
     }

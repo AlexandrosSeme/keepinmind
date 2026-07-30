@@ -9,8 +9,6 @@ import {
   Mail,
   Calendar,
   Package,
-  CheckCircle,
-  Clock,
   XCircle,
   Camera,
   X,
@@ -19,6 +17,7 @@ import {
   QrCode,
   CalendarDays,
   CalendarCheck,
+  RefreshCw,
 } from "lucide-react";
 import Chart from "react-apexcharts";
 import { supabase } from "../lib/supabaseClient";
@@ -26,6 +25,7 @@ import type { Member, EntranceLog } from "../types";
 import { useAppData } from "../contexts/AppDataContext";
 import { uploadMemberPhoto } from "../services/photoService";
 import { getEntranceLogsByMember } from "../services/entranceLogService";
+import StatusBadge from "./ui/StatusBadge";
 
 const SingleMember: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +37,7 @@ const SingleMember: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [entranceLogs, setEntranceLogs] = useState<EntranceLog[]>([]);
+  const [refreshingLogs, setRefreshingLogs] = useState(false);
   const [attendanceStats, setAttendanceStats] = useState({
     thisWeek: 0,
     thisMonth: 0,
@@ -65,7 +66,7 @@ const SingleMember: React.FC = () => {
   useEffect(() => {
     const fetchMember = async () => {
       if (!id) {
-        setError("Δεν βρέθηκε ID μέλους");
+        setError("Δεν βρεθηκε ID μελους");
         setLoading(false);
         return;
       }
@@ -80,7 +81,7 @@ const SingleMember: React.FC = () => {
 
       // If not in context, fetch from Supabase
       if (!supabase) {
-        setError("Η σύνδεση με τη βάση δεδομένων δεν είναι διαθέσιμη");
+        setError("Η συνδεση με τη βαση δεδομενων δεν ειναι διαθεσιμη");
         setLoading(false);
         return;
       }
@@ -93,12 +94,12 @@ const SingleMember: React.FC = () => {
           .single();
 
         if (fetchError || !data) {
-          setError("Δεν βρέθηκε μέλος με αυτό το ID");
+          setError("Δεν βρεθηκε μελος με αυτο το ID");
         } else {
           setMember(data as Member);
         }
       } catch {
-        setError("Σφάλμα κατά τη φόρτωση των δεδομένων");
+        setError("Σφαλμα κατα τη φορτωση των δεδομενων");
       } finally {
         setLoading(false);
       }
@@ -108,13 +109,16 @@ const SingleMember: React.FC = () => {
   }, [id, members]);
 
   // Load entrance logs and calculate statistics
-  useEffect(() => {
-    const loadEntranceLogs = async () => {
-      if (!member) return;
+  const loadEntranceLogs = React.useCallback(async (showLoading = false) => {
+    if (!member) return;
 
-      try {
-        const logs = await getEntranceLogsByMember(member.id);
-        setEntranceLogs(logs);
+    if (showLoading) {
+      setRefreshingLogs(true);
+    }
+
+    try {
+      const logs = await getEntranceLogsByMember(member.id);
+      setEntranceLogs(logs);
 
         // Calculate statistics
         const now = new Date();
@@ -214,34 +218,27 @@ const SingleMember: React.FC = () => {
         setMonthlyAttendance(monthlyArray);
       } catch (error) {
         console.error("[SingleMember] Error loading entrance logs:", error);
+      } finally {
+        if (showLoading) {
+          setRefreshingLogs(false);
+        }
       }
-    };
+    }, [member]);
 
-    loadEntranceLogs();
-  }, [member]);
+  useEffect(() => {
+    loadEntranceLogs(false);
+  }, [member, loadEntranceLogs]);
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { class: "bg-success text-white", text: "Ενεργή", icon: CheckCircle },
-      expiring_soon: { class: "bg-warning text-dark", text: "Λήγει Σύντομα", icon: Clock },
-      expired: { class: "bg-danger text-white", text: "Ληγμένη", icon: XCircle },
-    };
+  // Auto-refresh entrance logs every 5 seconds
+  useEffect(() => {
+    if (!member) return;
 
-    const config = statusConfig[status as keyof typeof statusConfig] || {
-      class: "bg-secondary text-white",
-      text: status,
-      icon: User,
-    };
+    const interval = setInterval(() => {
+      loadEntranceLogs(false);
+    }, 5000); // Refresh every 5 seconds
 
-    const Icon = config.icon;
-
-    return (
-      <span className={`badge ${config.class} d-inline-flex align-items-center gap-1`}>
-        <Icon size={14} />
-        {config.text}
-      </span>
-    );
-  };
+    return () => clearInterval(interval);
+  }, [member, loadEntranceLogs]);
 
   const formatTimestamp = (timestamp: string) => {
     try {
@@ -254,19 +251,6 @@ const SingleMember: React.FC = () => {
       return `${day}/${month}/${year} ${hours}:${minutes}`;
     } catch {
       return timestamp;
-    }
-  };
-
-  const getValidationStatusBadge = (status: string) => {
-    switch (status) {
-      case 'valid':
-        return { class: 'bg-success text-white', text: 'Έγκυρο', icon: CheckCircle };
-      case 'invalid':
-        return { class: 'bg-danger text-white', text: 'Μη Έγκυρο', icon: XCircle };
-      case 'expiring_soon':
-        return { class: 'bg-warning text-dark', text: 'Λήγει Σύντομα', icon: Clock };
-      default:
-        return { class: 'bg-secondary text-white', text: status, icon: User };
     }
   };
 
@@ -290,7 +274,7 @@ const SingleMember: React.FC = () => {
   const handleDelete = async () => {
     if (!member) return;
     if (
-      window.confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το μέλος;")
+      window.confirm("Ειστε σιγουροι οτι θελετε να διαγραψετε αυτο το μελος;")
     ) {
       const success = await removeMember(member.id);
       if (success) {
@@ -327,7 +311,7 @@ const SingleMember: React.FC = () => {
   const startCamera = async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setCameraError(
-        "Το browser σας δεν υποστηρίζει πρόσβαση στην κάμερα. Χρησιμοποιήστε file upload."
+        "Το browser σας δεν υποστηριζει προσβαση στην καμερα. Χρησιμοποιηστε file upload."
       );
       setUseFileInput(true);
       return;
@@ -339,7 +323,7 @@ const SingleMember: React.FC = () => {
       window.location.hostname === "127.0.0.1";
     if (!isSecure) {
       setCameraError(
-        "Η κάμερα απαιτεί HTTPS connection. Χρησιμοποιήστε file upload."
+        "Η καμερα απαιτει HTTPS connection. Χρησιμοποιηστε file upload."
       );
       setUseFileInput(true);
       return;
@@ -382,7 +366,7 @@ const SingleMember: React.FC = () => {
             if (videoRef.current) {
               videoRef.current.play().catch((err) => {
                 console.error("[Camera] Error playing video:", err);
-                setCameraError("Σφάλμα κατά την αναπαραγωγή του video.");
+                setCameraError("Σφαλμα κατα την αναπαραγωγη του video.");
               });
             }
           };
@@ -390,7 +374,7 @@ const SingleMember: React.FC = () => {
       }, 100);
     } catch (error: unknown) {
       console.error("[Camera] Error accessing camera:", error);
-      setCameraError("Δεν ήταν δυνατή η πρόσβαση στην κάμερα.");
+      setCameraError("Δεν ηταν δυνατη η προσβαση στην καμερα.");
       setUseFileInput(true);
     }
   };
@@ -408,7 +392,7 @@ const SingleMember: React.FC = () => {
 
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) {
-      setCameraError("Σφάλμα: Δεν βρέθηκε video element.");
+      setCameraError("Σφαλμα: Δεν βρεθηκε video element.");
       return;
     }
 
@@ -416,13 +400,13 @@ const SingleMember: React.FC = () => {
     const canvas = canvasRef.current;
 
     if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
-      setCameraError("Η κάμερα δεν είναι έτοιμη. Παρακαλώ περιμένετε...");
+      setCameraError("Η καμερα δεν ειναι ετοιμη. Παρακαλω περιμενετε...");
       return;
     }
 
     const context = canvas.getContext("2d");
     if (!context) {
-      setCameraError("Σφάλμα κατά την λήψη της φωτογραφίας.");
+      setCameraError("Σφαλμα κατα την ληψη της φωτογραφιας.");
       return;
     }
 
@@ -449,11 +433,11 @@ const SingleMember: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Παρακαλώ επιλέξτε αρχείο εικόνας.");
+        alert("Παρακαλω επιλεξτε αρχειο εικονας.");
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        alert("Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 10MB.");
+        alert("Το αρχειο ειναι πολυ μεγαλο. Μεγιστο μεγεθος: 10MB.");
         return;
       }
       setPhotoFile(file);
@@ -478,7 +462,7 @@ const SingleMember: React.FC = () => {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "400px" }}>
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Φόρτωση...</span>
+          <span className="visually-hidden">Φορτωση...</span>
         </div>
       </div>
     );
@@ -489,11 +473,11 @@ const SingleMember: React.FC = () => {
       <div className="card border-0 shadow-sm">
         <div className="card-body text-center py-5">
           <XCircle size={48} className="text-danger mb-3" />
-          <h5 className="mb-2">Σφάλμα</h5>
-          <p className="text-muted mb-4">{error || "Δεν βρέθηκε μέλος"}</p>
+          <h5 className="mb-2">Σφαλμα</h5>
+          <p className="text-muted mb-4">{error || "Δεν βρεθηκε μελος"}</p>
           <button className="btn btn-primary" onClick={() => navigate("/members")}>
             <ArrowLeft size={16} className="me-2" />
-            Επιστροφή στη Λίστα
+            Επιστροφη στη Λιστα
           </button>
         </div>
       </div>
@@ -510,15 +494,15 @@ const SingleMember: React.FC = () => {
         >
           <ArrowLeft size={20} />
         </button>
-        <h2 className="h4 mb-0">Στοιχεία Μέλους</h2>
+        <h2 className="h4 mb-0">Στοιχεια Μελους</h2>
         <div className="ms-auto">
-          <button className="btn btn-outline-primary me-2" onClick={handleEdit}>
+          <button className="btn btn-outline-secondary me-2" onClick={handleEdit}>
             <Edit size={16} className="me-2" />
-            Επεξεργασία
+            Επεξεργασια
           </button>
           <button className="btn btn-outline-danger" onClick={handleDelete}>
             <Trash2 size={16} className="me-2" />
-            Διαγραφή
+            Διαγραφη
           </button>
         </div>
       </div>
@@ -588,7 +572,7 @@ const SingleMember: React.FC = () => {
                         </div>
                         <div className="flex-grow-1">
                           <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                            Τηλέφωνο
+                            Τηλεφωνο
                           </small>
                           <span className="fw-bold d-block" style={{ fontSize: "1rem", color: "#212529" }}>
                             {member.phone}
@@ -636,10 +620,10 @@ const SingleMember: React.FC = () => {
                         </div>
                         <div className="flex-grow-1">
                           <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                            Πακέτο
+                            Πακετο
                           </small>
                           <span className="fw-bold d-block" style={{ fontSize: "1rem", color: "#212529" }}>
-                            {member.package || "Δεν έχει οριστεί"}
+                            {member.package || "Δεν εχει οριστει"}
                           </span>
                         </div>
                       </div>
@@ -660,9 +644,9 @@ const SingleMember: React.FC = () => {
                         </div>
                         <div className="flex-grow-1">
                           <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                            Κατάσταση
+                            Κατασταση
                           </small>
-                          <div className="mt-1">{getStatusBadge(member.status)}</div>
+                          <div className="mt-1"><StatusBadge status={member.status} /></div>
                         </div>
                       </div>
                     </div>
@@ -682,10 +666,10 @@ const SingleMember: React.FC = () => {
                         </div>
                         <div className="flex-grow-1">
                           <small className="text-muted d-block mb-1" style={{ fontSize: "0.75rem", fontWeight: 500 }}>
-                            Ημερομηνία Λήξης
+                            Ημερομηνια Ληξης
                           </small>
                           <span className="fw-bold d-block" style={{ fontSize: "1rem", color: "#212529" }}>
-                            {member.expiry || "Δεν έχει οριστεί"}
+                            {member.expiry || "Δεν εχει οριστει"}
                           </span>
                         </div>
                       </div>
@@ -706,7 +690,7 @@ const SingleMember: React.FC = () => {
             <div className="mb-2">
               <h6 className="mb-0 d-flex align-items-center">
                 <TrendingUp size={16} className="me-2 text-primary" />
-                Προσελεύσεις ανά Μήνα
+                Προσελευσεις ανα Μηνα
               </h6>
             </div>
             {(() => {
@@ -775,7 +759,7 @@ const SingleMember: React.FC = () => {
                     },
                     yaxis: {
                       title: {
-                        text: "Αριθμός Προσελεύσεων",
+                        text: "Αριθμος Προσελευσεων",
                         style: {
                           fontSize: '12px',
                           fontWeight: 600,
@@ -817,14 +801,14 @@ const SingleMember: React.FC = () => {
                         formatter: function (val: number) {
                           // Convert 0.05 back to 0 for display
                           const actualVal = val < 0.1 ? 0 : Math.round(val);
-                          return actualVal + (actualVal === 1 ? " προσελεύση" : " προσελεύσεις");
+                          return actualVal + (actualVal === 1 ? " προσελευση" : " προσελευσεις");
                         },
                       },
                     },
                   }}
                     series={[
                       {
-                        name: "Προσελεύσεις",
+                        name: "Προσελευσεις",
                         data: monthlyAttendance.map(item => {
                           // Use 0.05 for visual bar (very small), but display as 0 everywhere
                           return item.count === 0 ? 0.10 : item.count;
@@ -842,7 +826,7 @@ const SingleMember: React.FC = () => {
           <div className="row g-3">
             {/* This Week */}
             <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm h-100" style={{ backgroundColor: '#f8f9fa' }}>
+              <div className="card border-0 shadow-sm h-100">
                 <div className="card-body p-3">
                   <div className="d-flex align-items-center">
                     <div className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '56px', height: '56px' }}>
@@ -850,7 +834,7 @@ const SingleMember: React.FC = () => {
                     </div>
                     <div className="flex-grow-1">
                       <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                        Αυτή τη Βδομάδα
+                        Αυτη τη Βδομαδα
                       </div>
                       <div className="h4 mb-0 fw-bold text-primary">{attendanceStats.thisWeek}</div>
                     </div>
@@ -861,7 +845,7 @@ const SingleMember: React.FC = () => {
             
             {/* This Month */}
             <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm h-100" style={{ backgroundColor: '#f8f9fa' }}>
+              <div className="card border-0 shadow-sm h-100">
                 <div className="card-body p-3">
                   <div className="d-flex align-items-center">
                     <div className="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '56px', height: '56px' }}>
@@ -869,7 +853,7 @@ const SingleMember: React.FC = () => {
                     </div>
                     <div className="flex-grow-1">
                       <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                        Αυτόν τον Μήνα
+                        Αυτον τον Μηνα
                       </div>
                       <div className="h4 mb-0 fw-bold text-success">{attendanceStats.thisMonth}</div>
                     </div>
@@ -880,7 +864,7 @@ const SingleMember: React.FC = () => {
             
             {/* This Year */}
             <div className="col-12 col-md-4">
-              <div className="card border-0 shadow-sm h-100" style={{ backgroundColor: '#f8f9fa' }}>
+              <div className="card border-0 shadow-sm h-100">
                 <div className="card-body p-3">
                   <div className="d-flex align-items-center">
                     <div className="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '56px', height: '56px' }}>
@@ -888,7 +872,7 @@ const SingleMember: React.FC = () => {
                     </div>
                     <div className="flex-grow-1">
                       <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                        Αυτό το Έτος
+                        Αυτο το Ετος
                       </div>
                       <div className="h4 mb-0 fw-bold text-info">{attendanceStats.thisYear}</div>
                     </div>
@@ -902,40 +886,55 @@ const SingleMember: React.FC = () => {
 
       {/* Entrance Logs Card */}
       <div className="card border-0 shadow-sm mb-4">
-        <div className="card-header bg-white border-0 pb-0">
-          <h5 className="mb-0 d-flex align-items-center">
-            <LogIn size={20} className="me-2 text-primary" />
-            Προσελεύσεις
-            {entranceLogs.length > 0 && (
-              <span className="badge bg-primary ms-2">{entranceLogs.length}</span>
-            )}
-          </h5>
+        <div className="card-header border-0 py-3 pb-0">
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-0 d-flex align-items-center">
+              <LogIn size={20} className="me-2 text-primary" />
+              Προσελευσεις
+              {entranceLogs.length > 0 && (
+                <span className="badge bg-primary ms-2">{entranceLogs.length}</span>
+              )}
+            </h5>
+            <button
+              className="btn btn-sm btn-outline-secondary d-flex align-items-center"
+              onClick={() => loadEntranceLogs(true)}
+              disabled={refreshingLogs}
+              title="Ανανεωση προσελευσεων"
+            >
+              <RefreshCw 
+                size={16} 
+                className="me-2"
+                style={refreshingLogs ? { 
+                  animation: "spin 1s linear infinite",
+                  transformOrigin: "center"
+                } : {}}
+              />
+              {refreshingLogs ? "Ανανεωση..." : "Ανανεωση"}
+            </button>
+          </div>
         </div>
         <div className="card-body p-0">
           {entranceLogs.length === 0 ? (
             <div className="text-center py-5">
               <LogIn size={48} className="text-muted mb-3" />
-              <p className="text-muted mb-0">Δεν υπάρχουν καταγραφές προσελεύσεων</p>
+              <p className="text-muted mb-0">Δεν υπαρχουν καταγραφες προσελευσεων</p>
             </div>
           ) : (
             <div 
               className="table-responsive"
               style={{ maxHeight: '250px', overflowY: 'auto' }}
             >
-              <table className="table table-hover mb-0">
+              <table className="table table-hover mb-0 km-table">
                 <thead className="table-light" style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#f8f9fa' }}>
                   <tr>
-                    <th className="border-0 ps-4 bg-light">Ημερομηνία & Ώρα</th>
-                    <th className="border-0 bg-light">Τρόπος Εισόδου</th>
-                    <th className="border-0 bg-light">Κατάσταση</th>
-                    <th className="border-0 pe-4 bg-light">Μήνυμα</th>
+                    <th className="border-0 ps-4 bg-light">Ημερομηνια & Ωρα</th>
+                    <th className="border-0 bg-light">Τροπος Εισοδου</th>
+                    <th className="border-0 bg-light">Κατασταση</th>
+                    <th className="border-0 pe-4 bg-light">Μηνυμα</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {entranceLogs.map((log) => {
-                    const validationBadge = getValidationStatusBadge(log.validationStatus);
-                    const ValidationIcon = validationBadge.icon;
-                    return (
+                  {entranceLogs.map((log) => (
                       <tr key={log.id}>
                         <td className="ps-4">
                           <div className="d-flex align-items-center">
@@ -945,29 +944,27 @@ const SingleMember: React.FC = () => {
                         </td>
                         <td>
                           {log.entranceType === 'qr_scan' ? (
-                            <span className="badge bg-info d-inline-flex align-items-center gap-1">
-                              <QrCode size={14} />
-                              QR Scan
-                            </span>
+                            <StatusBadge
+                              status="qr_scan"
+                              icon={<QrCode size={12} />}
+                              showDot={false}
+                            />
                           ) : (
-                            <span className="badge bg-secondary d-inline-flex align-items-center gap-1">
-                              <LogIn size={14} />
-                              Manual
-                            </span>
+                            <StatusBadge
+                              status="manual"
+                              icon={<LogIn size={12} />}
+                              showDot={false}
+                            />
                           )}
                         </td>
                         <td>
-                          <span className={`badge ${validationBadge.class} d-inline-flex align-items-center gap-1`}>
-                            <ValidationIcon size={14} />
-                            {validationBadge.text}
-                          </span>
+                          <StatusBadge status={log.validationStatus} />
                         </td>
                         <td className="pe-4">
                           <small className="text-muted">{log.validationMessage}</small>
                         </td>
                       </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -977,18 +974,18 @@ const SingleMember: React.FC = () => {
 
       {/* Additional Info Card */}
       <div className="card border-0 shadow-sm">
-        <div className="card-header bg-white border-0 pb-0">
-          <h5 className="mb-0">Πρόσθετες Πληροφορίες</h5>
+        <div className="card-header border-0 py-3 pb-0">
+          <h5 className="mb-0">Προσθετες Πληροφοριες</h5>
         </div>
         <div className="card-body">
           <div className="row g-3">
             <div className="col-12 col-md-6">
-              <small className="text-muted d-block mb-1">ID Μέλους</small>
+              <small className="text-muted d-block mb-1">ID Μελους</small>
               <span className="fw-semibold">#{member.id}</span>
             </div>
             <div className="col-12 col-md-6">
-              <small className="text-muted d-block mb-1">Κατάσταση Συνδρομής</small>
-              <div>{getStatusBadge(member.status)}</div>
+              <small className="text-muted d-block mb-1">Κατασταση Συνδρομης</small>
+              <div><StatusBadge status={member.status} /></div>
             </div>
           </div>
         </div>
@@ -1004,7 +1001,7 @@ const SingleMember: React.FC = () => {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Επεξεργασία Μέλους</h5>
+                <h5 className="modal-title">Επεξεργασια Μελους</h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -1015,7 +1012,7 @@ const SingleMember: React.FC = () => {
                 <div className="modal-body">
                   {/* Photo Section */}
                   <div className="mb-4">
-                    <label className="form-label">Φωτογραφία Προφίλ</label>
+                    <label className="form-label">Φωτογραφια Προφιλ</label>
                     <div className="d-flex flex-column gap-3">
                       <div className="d-flex align-items-center gap-3">
                         {capturedPhoto ? (
@@ -1058,15 +1055,15 @@ const SingleMember: React.FC = () => {
                         <div className="d-flex flex-column gap-2">
                           <button
                             type="button"
-                            className="btn btn-outline-primary"
+                            className="btn btn-outline-secondary"
                             onClick={useFileInput ? () => fileInputRef.current?.click() : startCamera}
                           >
                             <Camera size={16} className="me-2" />
                             {capturedPhoto
-                              ? "Αλλαγή Φωτογραφίας"
+                              ? "Αλλαγη Φωτογραφιας"
                               : useFileInput
-                              ? "Επιλογή Αρχείου"
-                              : "Λήψη Φωτογραφίας"}
+                              ? "Επιλογη Αρχειου"
+                              : "Ληψη Φωτογραφιας"}
                           </button>
                           {!useFileInput && (
                             <button
@@ -1074,7 +1071,7 @@ const SingleMember: React.FC = () => {
                               className="btn btn-outline-secondary btn-sm"
                               onClick={() => fileInputRef.current?.click()}
                             >
-                              Επιλογή από Αρχείο
+                              Επιλογη απο Αρχειο
                             </button>
                           )}
                         </div>
@@ -1097,7 +1094,7 @@ const SingleMember: React.FC = () => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Ονοματεπώνυμο</label>
+                    <label className="form-label">Ονοματεπωνυμο</label>
                     <input
                       type="text"
                       className="form-control"
@@ -1109,7 +1106,7 @@ const SingleMember: React.FC = () => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Τηλέφωνο</label>
+                    <label className="form-label">Τηλεφωνο</label>
                     <input
                       type="text"
                       className="form-control"
@@ -1132,7 +1129,7 @@ const SingleMember: React.FC = () => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Κατάσταση</label>
+                    <label className="form-label">Κατασταση</label>
                     <select
                       className="form-select"
                       value={formData.status}
@@ -1144,13 +1141,13 @@ const SingleMember: React.FC = () => {
                       }
                       required
                     >
-                      <option value="active">Ενεργή</option>
-                      <option value="expiring_soon">Λήγει Σύντομα</option>
-                      <option value="expired">Ληγμένη</option>
+                      <option value="active">Ενεργη</option>
+                      <option value="expiring_soon">Ληγει Συντομα</option>
+                      <option value="expired">Ληγμενη</option>
                     </select>
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Ημερομηνία Λήξης</label>
+                    <label className="form-label">Ημερομηνια Ληξης</label>
                     <input
                       type="text"
                       className="form-control"
@@ -1163,7 +1160,7 @@ const SingleMember: React.FC = () => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Πακέτο</label>
+                    <label className="form-label">Πακετο</label>
                     <input
                       type="text"
                       className="form-control"
@@ -1181,10 +1178,10 @@ const SingleMember: React.FC = () => {
                     className="btn btn-secondary"
                     onClick={() => setShowEditModal(false)}
                   >
-                    Ακύρωση
+                    Ακυρωση
                   </button>
                   <button type="submit" className="btn btn-primary">
-                    Αποθήκευση
+                    Αποθηκευση
                   </button>
                 </div>
               </form>
@@ -1202,7 +1199,7 @@ const SingleMember: React.FC = () => {
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content bg-dark border-0">
               <div className="modal-header border-secondary">
-                <h5 className="modal-title text-white">Λήψη Φωτογραφίας</h5>
+                <h5 className="modal-title text-white">Ληψη Φωτογραφιας</h5>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
@@ -1248,7 +1245,7 @@ const SingleMember: React.FC = () => {
                   className="btn btn-secondary"
                   onClick={stopCamera}
                 >
-                  Ακύρωση
+                  Ακυρωση
                 </button>
                 <button
                   type="button"
@@ -1256,7 +1253,7 @@ const SingleMember: React.FC = () => {
                   onClick={capturePhoto}
                 >
                   <Camera size={16} className="me-2" />
-                  Λήψη Φωτογραφίας
+                  Ληψη Φωτογραφιας
                 </button>
               </div>
             </div>
@@ -1274,7 +1271,7 @@ const SingleMember: React.FC = () => {
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content bg-dark border-0">
               <div className="modal-header border-secondary">
-                <h5 className="modal-title text-white">Φωτογραφία Προφίλ</h5>
+                <h5 className="modal-title text-white">Φωτογραφια Προφιλ</h5>
                 <button
                   type="button"
                   className="btn-close btn-close-white"

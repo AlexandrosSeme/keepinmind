@@ -38,37 +38,37 @@ const TIME_SLOTS = Array.from({ length: 18 }, (_, i) => {
 
 // Days of the week
 const DAYS_OF_WEEK = [
-  { key: 0, label: 'Δευτέρα', short: 'Δευ' },
-  { key: 1, label: 'Τρίτη', short: 'Τρί' },
-  { key: 2, label: 'Τετάρτη', short: 'Τετ' },
-  { key: 3, label: 'Πέμπτη', short: 'Πέμ' },
-  { key: 4, label: 'Παρασκευή', short: 'Παρ' },
-  { key: 5, label: 'Σάββατο', short: 'Σάβ' },
-  { key: 6, label: 'Κυριακή', short: 'Κυρ' }
+  { key: 0, label: 'Δευτερα', short: 'Δευ' },
+  { key: 1, label: 'Τριτη', short: 'Τρι' },
+  { key: 2, label: 'Τεταρτη', short: 'Τετ' },
+  { key: 3, label: 'Πεμπτη', short: 'Πεμ' },
+  { key: 4, label: 'Παρασκευη', short: 'Παρ' },
+  { key: 5, label: 'Σαββατο', short: 'Σαβ' },
+  { key: 6, label: 'Κυριακη', short: 'Κυρ' }
 ];
 
 // Color mapping for booking types
 const getBookingColor = (type: Booking['type']): string => {
   switch (type) {
     case 'class':
-      return '#3b82f6'; // Blue
+      return '#2a8bb8';
     case 'personal_training':
-      return '#10b981'; // Green
+      return '#1f9d63';
     case 'appointment':
-      return '#8b5cf6'; // Purple
+      return '#d4a800';
     case 'event':
-      return '#f59e0b'; // Orange
+      return '#f5c400';
     default:
-      return '#6b7280';
+      return '#6b6b6b';
   }
 };
 
 // Type labels in Greek
 const typeLabels: Record<Booking['type'], string> = {
-  class: 'Τάξη',
-  personal_training: 'Προσωπική Προπόνηση',
-  appointment: 'Ραντεβού',
-  event: 'Εκδήλωση'
+  class: 'Ταξη',
+  personal_training: 'Προσωπικη Προπονηση',
+  appointment: 'Ραντεβου',
+  event: 'Εκδηλωση'
 };
 
 const Calendar: React.FC = () => {
@@ -170,7 +170,7 @@ const Calendar: React.FC = () => {
 
   const handleCreateBooking = async () => {
     if (!formData.title.trim() || !formData.instructor.trim()) {
-      alert('Παρακαλώ συμπληρώστε τίτλο και προπονητή');
+      alert('Παρακαλω συμπληρωστε τιτλο και προπονητη');
       return;
     }
 
@@ -178,8 +178,8 @@ const Calendar: React.FC = () => {
       const bookingData: Omit<Booking, 'id' | 'created_at' | 'updated_at'> = {
         memberId: formData.memberId || 0,
         memberName: formData.memberId 
-          ? members.find(m => m.id === formData.memberId)?.name || 'Γενική Τάξη'
-          : 'Γενική Τάξη',
+          ? members.find(m => m.id === formData.memberId)?.name || 'Γενικη Ταξη'
+          : 'Γενικη Ταξη',
         memberPhone: formData.memberId 
           ? members.find(m => m.id === formData.memberId)?.phone || undefined
           : undefined,
@@ -200,11 +200,11 @@ const Calendar: React.FC = () => {
         await loadBookings();
         handleCloseModal();
       } else {
-        alert('Σφάλμα κατά τη δημιουργία κράτησης');
+        alert('Σφαλμα κατα τη δημιουργια κρατησης');
       }
     } catch (error) {
       console.error('Error creating booking:', error);
-      alert('Σφάλμα κατά τη δημιουργία κράτησης');
+      alert('Σφαλμα κατα τη δημιουργια κρατησης');
     }
   };
 
@@ -240,16 +240,16 @@ const Calendar: React.FC = () => {
         await loadBookings();
         handleCloseModal();
       } else {
-        alert('Σφάλμα κατά την ενημέρωση κράτησης');
+        alert('Σφαλμα κατα την ενημερωση κρατησης');
       }
     } catch (error) {
       console.error('Error updating booking:', error);
-      alert('Σφάλμα κατά την ενημέρωση κράτησης');
+      alert('Σφαλμα κατα την ενημερωση κρατησης');
     }
   };
 
   const handleDeleteBooking = async (bookingId: number) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την κράτηση;')) {
+    if (!confirm('Ειστε σιγουροι οτι θελετε να διαγραψετε αυτη την κρατηση;')) {
       return;
     }
 
@@ -260,11 +260,11 @@ const Calendar: React.FC = () => {
         setShowBookingDetails(false);
         setSelectedBooking(null);
       } else {
-        alert('Σφάλμα κατά τη διαγραφή κράτησης');
+        alert('Σφαλμα κατα τη διαγραφη κρατησης');
       }
     } catch (error) {
       console.error('Error deleting booking:', error);
-      alert('Σφάλμα κατά τη διαγραφή κράτησης');
+      alert('Σφαλμα κατα τη διαγραφη κρατησης');
     }
   };
 
@@ -335,8 +335,8 @@ const Calendar: React.FC = () => {
       <div className="schedule-header">
         <div className="header-content">
           <div>
-            <h2 className="page-title">Πρόγραμμα Προπονήσεων</h2>
-            <p className="page-subtitle">Τάξεις & Προπονήσεις - Εβδομαδιαίο Πρόγραμμα</p>
+            <h2 className="page-title">Προγραμμα Προπονησεων</h2>
+            <p className="page-subtitle">Ταξεις & Προπονησεις - Εβδομαδιαιο Προγραμμα</p>
           </div>
           <button 
             className="btn btn-primary btn-add-booking"
@@ -357,7 +357,7 @@ const Calendar: React.FC = () => {
             }}
           >
             <Plus size={20} />
-            Νέα Τάξη/Προπόνηση
+            Νεα Ταξη/Προπονηση
           </button>
         </div>
       </div>
@@ -370,7 +370,7 @@ const Calendar: React.FC = () => {
           </div>
           <div className="stat-content">
             <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Σύνολο Προπονήσεων</div>
+            <div className="stat-label">Συνολο Προπονησεων</div>
           </div>
         </div>
         <div className="stat-card">
@@ -379,7 +379,7 @@ const Calendar: React.FC = () => {
           </div>
           <div className="stat-content">
             <div className="stat-value">{stats.today}</div>
-            <div className="stat-label">Σήμερα</div>
+            <div className="stat-label">Σημερα</div>
           </div>
         </div>
         <div className="stat-card">
@@ -388,7 +388,7 @@ const Calendar: React.FC = () => {
           </div>
           <div className="stat-content">
             <div className="stat-value">{stats.thisWeek}</div>
-            <div className="stat-label">Αυτή την Εβδομάδα</div>
+            <div className="stat-label">Αυτη την Εβδομαδα</div>
           </div>
         </div>
         <div className="stat-card">
@@ -397,7 +397,7 @@ const Calendar: React.FC = () => {
           </div>
           <div className="stat-content">
             <div className="stat-value">{stats.coaches}</div>
-            <div className="stat-label">Προπονητές</div>
+            <div className="stat-label">Προπονητες</div>
           </div>
         </div>
       </div>
@@ -410,7 +410,7 @@ const Calendar: React.FC = () => {
           </button>
           <div className="week-display">
             <button className="btn-today" onClick={goToToday}>
-              Σήμερα
+              Σημερα
             </button>
             <h3 className="week-title">
               {currentWeek.format('DD MMMM')} - {currentWeek.clone().endOf('week').format('DD MMMM YYYY')}
@@ -426,7 +426,7 @@ const Calendar: React.FC = () => {
             <Search size={18} />
             <input
               type="text"
-              placeholder="Αναζήτηση τάξης, προπονητή ή μέλους..."
+              placeholder="Αναζητηση ταξης, προπονητη η μελους..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -439,18 +439,18 @@ const Calendar: React.FC = () => {
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as Booking['type'])}
             >
-              <option value="all">Όλοι οι τύποι</option>
-              <option value="class">Τάξη</option>
-              <option value="personal_training">Προσωπική Προπόνηση</option>
-              <option value="appointment">Ραντεβού</option>
-              <option value="event">Εκδήλωση</option>
+              <option value="all">Ολοι οι τυποι</option>
+              <option value="class">Ταξη</option>
+              <option value="personal_training">Προσωπικη Προπονηση</option>
+              <option value="appointment">Ραντεβου</option>
+              <option value="event">Εκδηλωση</option>
             </select>
             <select
               className="filter-select"
               value={filterCoach}
               onChange={(e) => setFilterCoach(e.target.value)}
             >
-              <option value="all">Όλοι οι προπονητές</option>
+              <option value="all">Ολοι οι προπονητες</option>
               {coaches.map(coach => (
                 <option key={coach} value={coach}>{coach}</option>
               ))}
@@ -464,7 +464,7 @@ const Calendar: React.FC = () => {
         {loading ? (
           <div className="loading-overlay">
             <Loader2 size={32} className="spinner" />
-            <p>Φόρτωση προγράμματος...</p>
+            <p>Φορτωση προγραμματος...</p>
           </div>
         ) : (
           <div className="schedule-grid">
@@ -506,9 +506,9 @@ const Calendar: React.FC = () => {
                         <div
                           key={booking.id}
                           className="booking-card"
-                          style={{ 
-                            backgroundColor: booking.color || getBookingColor(booking.type),
-                            borderLeft: `4px solid ${booking.color || getBookingColor(booking.type)}`
+                          style={{
+                            backgroundColor: `${(booking.color || getBookingColor(booking.type))}18`,
+                            borderLeft: `3px solid ${booking.color || getBookingColor(booking.type)}`,
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -522,7 +522,7 @@ const Calendar: React.FC = () => {
                               {booking.instructor}
                             </div>
                           )}
-                          {booking.memberName && booking.memberName !== 'Γενική Τάξη' && (
+                          {booking.memberName && booking.memberName !== 'Γενικη Ταξη' && (
                             <div className="booking-member">
                               <Users size={12} />
                               {booking.memberName}
@@ -552,7 +552,7 @@ const Calendar: React.FC = () => {
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{editingBooking ? 'Επεξεργασία Προπόνησης' : 'Νέα Τάξη/Προπόνηση'}</h3>
+              <h3>{editingBooking ? 'Επεξεργασια Προπονησης' : 'Νεα Ταξη/Προπονηση'}</h3>
               <button className="modal-close" onClick={handleCloseModal}>
                 <X size={20} />
               </button>
@@ -562,14 +562,14 @@ const Calendar: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">
                   <Dumbbell size={16} />
-                  Τίτλος Τάξης/Προπόνησης <span className="required">*</span>
+                  Τιτλος Ταξης/Προπονησης <span className="required">*</span>
                 </label>
                 <input
                   type="text"
                   className="form-control"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="π.χ. Boxing Class, Muay Thai, Προσωπική Προπόνηση"
+                  placeholder="π.χ. Boxing Class, Muay Thai, Προσωπικη Προπονηση"
                   required
                 />
               </div>
@@ -578,14 +578,14 @@ const Calendar: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">
                     <UserCheck size={16} />
-                    Προπονητής <span className="required">*</span>
+                    Προπονητης <span className="required">*</span>
                   </label>
                   <input
                     type="text"
                     className="form-control"
                     value={formData.instructor}
                     onChange={(e) => setFormData(prev => ({ ...prev, instructor: e.target.value }))}
-                    placeholder="Όνομα προπονητή"
+                    placeholder="Ονομα προπονητη"
                     required
                   />
                 </div>
@@ -593,17 +593,17 @@ const Calendar: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">
                     <Filter size={16} />
-                    Τύπος
+                    Τυπος
                   </label>
                   <select
                     className="form-control"
                     value={formData.type}
                     onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as Booking['type'] }))}
                   >
-                    <option value="class">Τάξη</option>
-                    <option value="personal_training">Προσωπική Προπόνηση</option>
-                    <option value="appointment">Ραντεβού</option>
-                    <option value="event">Εκδήλωση</option>
+                    <option value="class">Ταξη</option>
+                    <option value="personal_training">Προσωπικη Προπονηση</option>
+                    <option value="appointment">Ραντεβου</option>
+                    <option value="event">Εκδηλωση</option>
                   </select>
                 </div>
               </div>
@@ -612,7 +612,7 @@ const Calendar: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">
                     <Clock size={16} />
-                    Έναρξη <span className="required">*</span>
+                    Εναρξη <span className="required">*</span>
                   </label>
                   <input
                     type="datetime-local"
@@ -634,7 +634,7 @@ const Calendar: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">
                     <Clock size={16} />
-                    Λήξη <span className="required">*</span>
+                    Ληξη <span className="required">*</span>
                   </label>
                   <input
                     type="datetime-local"
@@ -650,14 +650,14 @@ const Calendar: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">
                     <User size={16} />
-                    Μέλος (Προαιρετικό)
+                    Μελος (Προαιρετικο)
                   </label>
                   <select
                     className="form-control"
                     value={formData.memberId || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, memberId: parseInt(e.target.value) || null }))}
                   >
-                    <option value="">Γενική Τάξη (Χωρίς συγκεκριμένο μέλος)</option>
+                    <option value="">Γενικη Ταξη (Χωρις συγκεκριμενο μελος)</option>
                     {members.map(member => (
                       <option key={member.id} value={member.id}>
                         {member.name} {member.status === 'active' ? '✓' : ''}
@@ -669,52 +669,52 @@ const Calendar: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">
                     <Users size={16} />
-                    Μέγιστος Αριθμός Συμμετεχόντων
+                    Μεγιστος Αριθμος Συμμετεχοντων
                   </label>
                   <input
                     type="number"
                     className="form-control"
                     value={formData.maxParticipants || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, maxParticipants: parseInt(e.target.value) || null }))}
-                    placeholder="Απεριόριστο"
+                    placeholder="Απεριοριστο"
                     min="1"
                   />
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Περιγραφή</label>
+                <label className="form-label">Περιγραφη</label>
                 <textarea
                   className="form-control"
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Περιγραφή της τάξης/προπόνησης..."
+                  placeholder="Περιγραφη της ταξης/προπονησης..."
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Σημειώσεις</label>
+                <label className="form-label">Σημειωσεις</label>
                 <textarea
                   className="form-control"
                   rows={2}
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Εσωτερικές σημειώσεις..."
+                  placeholder="Εσωτερικες σημειωσεις..."
                 />
               </div>
             </div>
 
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={handleCloseModal}>
-                Ακύρωση
+                Ακυρωση
               </button>
               <button 
                 className="btn btn-primary" 
                 onClick={editingBooking ? handleUpdateBooking : handleCreateBooking}
                 disabled={!formData.title.trim() || !formData.instructor.trim()}
               >
-                {editingBooking ? 'Αποθήκευση' : 'Δημιουργία'}
+                {editingBooking ? 'Αποθηκευση' : 'Δημιουργια'}
               </button>
             </div>
           </div>
@@ -738,7 +738,7 @@ const Calendar: React.FC = () => {
                   <div className="detail-item highlight">
                     <div className="detail-label">
                       <UserCheck size={18} />
-                      Προπονητής
+                      Προπονητης
                     </div>
                     <div className="detail-value coach-name">{selectedBooking.instructor}</div>
                   </div>
@@ -747,7 +747,7 @@ const Calendar: React.FC = () => {
                 <div className="detail-item">
                   <div className="detail-label">
                     <Filter size={18} />
-                    Τύπος
+                    Τυπος
                   </div>
                   <div className="detail-value">
                     <span className="badge badge-type">{typeLabels[selectedBooking.type]}</span>
@@ -757,7 +757,7 @@ const Calendar: React.FC = () => {
                 <div className="detail-item">
                   <div className="detail-label">
                     <Clock size={18} />
-                    Ημερομηνία & Ώρα
+                    Ημερομηνια & Ωρα
                   </div>
                   <div className="detail-value">
                     {moment(selectedBooking.startTime).format('dddd, DD MMMM YYYY')}
@@ -766,11 +766,11 @@ const Calendar: React.FC = () => {
                   </div>
                 </div>
 
-                {selectedBooking.memberName && selectedBooking.memberName !== 'Γενική Τάξη' && (
+                {selectedBooking.memberName && selectedBooking.memberName !== 'Γενικη Ταξη' && (
                   <div className="detail-item">
                     <div className="detail-label">
                       <User size={18} />
-                      Μέλος
+                      Μελος
                     </div>
                     <div className="detail-value">{selectedBooking.memberName}</div>
                   </div>
@@ -780,7 +780,7 @@ const Calendar: React.FC = () => {
                   <div className="detail-item">
                     <div className="detail-label">
                       <Users size={18} />
-                      Συμμετέχοντες
+                      Συμμετεχοντες
                     </div>
                     <div className="detail-value">
                       {selectedBooking.currentParticipants || 0} / {selectedBooking.maxParticipants}
@@ -790,14 +790,14 @@ const Calendar: React.FC = () => {
 
                 {selectedBooking.description && (
                   <div className="detail-item">
-                    <div className="detail-label">Περιγραφή</div>
+                    <div className="detail-label">Περιγραφη</div>
                     <div className="detail-value">{selectedBooking.description}</div>
                   </div>
                 )}
 
                 {selectedBooking.notes && (
                   <div className="detail-item">
-                    <div className="detail-label">Σημειώσεις</div>
+                    <div className="detail-label">Σημειωσεις</div>
                     <div className="detail-value">{selectedBooking.notes}</div>
                   </div>
                 )}
@@ -807,14 +807,14 @@ const Calendar: React.FC = () => {
             <div className="modal-footer">
               <button className="btn btn-danger" onClick={() => handleDeleteBooking(selectedBooking.id)}>
                 <Trash2 size={18} />
-                Διαγραφή
+                Διαγραφη
               </button>
               <button className="btn btn-secondary" onClick={() => setShowBookingDetails(false)}>
-                Κλείσιμο
+                Κλεισιμο
               </button>
               <button className="btn btn-primary" onClick={handleEditBooking}>
                 <Edit2 size={18} />
-                Επεξεργασία
+                Επεξεργασια
               </button>
             </div>
           </div>

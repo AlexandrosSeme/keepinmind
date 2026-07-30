@@ -304,7 +304,7 @@ class SMSService {
           // User should use web interface directly or add balance
         }
         
-        let errorMessage = `Αποτυχία αποστολής SMS (${response.status} ${response.statusText})`;
+        let errorMessage = `Αποτυχια αποστολης SMS (${response.status} ${response.statusText})`;
         
         // Parse error text (may be plain text or JSON)
         let apiErrorMessage = '';
@@ -322,40 +322,40 @@ class SMSService {
             lowerErrorMessage.includes('insufficient') ||
             lowerErrorMessage.includes('no credit') ||
             lowerErrorMessage.includes('account is out')) {
-          errorMessage = 'Ο λογαριασμός σας δεν έχει διαθέσιμα credits στο REST API. Παρακαλώ:\n' +
-            '1. Προσθέστε balance στο SMSme.gr account (https://smsme.gr/MyAccount.aspx)\n' +
-            '2. Ή χρησιμοποιήστε το web interface του SMSme.gr για αποστολή (https://smsme.gr) - μπορεί να έχει διαθέσιμα δωρεάν SMS credits\n' +
-            '3. Ελέγξτε το balance σας στο SMSme.gr account\n' +
-            '\nΣημείωση: Το web interface μπορεί να έχει διαθέσιμα δωρεάν SMS credits που δεν φαίνονται στο REST API.';
+          errorMessage = 'Ο λογαριασμος σας δεν εχει διαθεσιμα credits στο REST API. Παρακαλω:\n' +
+            '1. Προσθεστε balance στο SMSme.gr account (https://smsme.gr/MyAccount.aspx)\n' +
+            '2. Η χρησιμοποιηστε το web interface του SMSme.gr για αποστολη (https://smsme.gr) - μπορει να εχει διαθεσιμα δωρεαν SMS credits\n' +
+            '3. Ελεγξτε το balance σας στο SMSme.gr account\n' +
+            '\nΣημειωση: Το web interface μπορει να εχει διαθεσιμα δωρεαν SMS credits που δεν φαινονται στο REST API.';
         } else if (apiErrorMessage.toLowerCase().includes('sender') && 
                    (apiErrorMessage.toLowerCase().includes('not approved') || 
                     apiErrorMessage.toLowerCase().includes('invalid'))) {
-          errorMessage = 'Το Sender ID δεν είναι approved. Τα alphanumeric sender IDs (όπως "ColosseumGy") πρέπει να εγκριθούν από το SMSme.gr support. Επικοινωνήστε με την υποστήριξη για να approve το sender ID σας.';
+          errorMessage = 'Το Sender ID δεν ειναι approved. Τα alphanumeric sender IDs (οπως "ColosseumGy") πρεπει να εγκριθουν απο το SMSme.gr support. Επικοινωνηστε με την υποστηριξη για να approve το sender ID σας.';
         } else if (apiErrorMessage.toLowerCase().includes('invalid recipient') ||
                    apiErrorMessage.toLowerCase().includes('invalid phone')) {
-          errorMessage = 'Μη έγκυρος αριθμός παραλήπτη. Παρακαλώ ελέγξτε τη μορφή του αριθμού τηλεφώνου.';
+          errorMessage = 'Μη εγκυρος αριθμος παραληπτη. Παρακαλω ελεγξτε τη μορφη του αριθμου τηλεφωνου.';
         } else if (apiErrorMessage.toLowerCase().includes('authentication') ||
                    apiErrorMessage.toLowerCase().includes('unauthorized')) {
-          errorMessage = 'Αποτυχία authentication. Παρακαλώ ελέγξτε τα credentials σας στο Settings.';
+          errorMessage = 'Αποτυχια authentication. Παρακαλω ελεγξτε τα credentials σας στο Settings.';
         } else if (apiErrorMessage) {
           // Use the API error message if available
           errorMessage = apiErrorMessage;
         }
         
         // Provide specific error messages for common status codes if no specific message found
-        if (errorMessage === `Αποτυχία αποστολής SMS (${response.status} ${response.statusText})`) {
+        if (errorMessage === `Αποτυχια αποστολης SMS (${response.status} ${response.statusText})`) {
           if (response.status === 400) {
-            errorMessage = 'Μη έγκυρο αίτημα. Παρακαλώ ελέγξτε το sender ID, τους παραλήπτες και τη μορφή του μηνύματος.';
+            errorMessage = 'Μη εγκυρο αιτημα. Παρακαλω ελεγξτε το sender ID, τους παραληπτες και τη μορφη του μηνυματος.';
           } else if (response.status === 401) {
-            errorMessage = 'Αποτυχία authentication. Παρακαλώ ελέγξτε τα SMSme.gr credentials σας στο Settings.';
+            errorMessage = 'Αποτυχια authentication. Παρακαλω ελεγξτε τα SMSme.gr credentials σας στο Settings.';
           } else if (response.status === 403) {
-            errorMessage = 'Απαγορευμένη πρόσβαση. Ο λογαριασμός σας μπορεί να μην έχει άδεια αποστολής SMS ή το sender ID δεν είναι approved.';
+            errorMessage = 'Απαγορευμενη προσβαση. Ο λογαριασμος σας μπορει να μην εχει αδεια αποστολης SMS η το sender ID δεν ειναι approved.';
           } else if (response.status === 500) {
-            errorMessage = 'Σφάλμα SMSme.gr server. Αυτό μπορεί να οφείλεται σε:\n' +
-              '1. Sender ID δεν είναι approved (τα alphanumeric sender IDs πρέπει να εγκριθούν από το SMSme.gr support)\n' +
-              '2. Ανεπαρκές balance/credits\n' +
-              '3. Μη έγκυρη μορφή παραλήπτη\n' +
-              'Παρακαλώ ελέγξτε τις ρυθμίσεις του SMSme.gr account σας ή επικοινωνήστε με την υποστήριξη.';
+            errorMessage = 'Σφαλμα SMSme.gr server. Αυτο μπορει να οφειλεται σε:\n' +
+              '1. Sender ID δεν ειναι approved (τα alphanumeric sender IDs πρεπει να εγκριθουν απο το SMSme.gr support)\n' +
+              '2. Ανεπαρκες balance/credits\n' +
+              '3. Μη εγκυρη μορφη παραληπτη\n' +
+              'Παρακαλω ελεγξτε τις ρυθμισεις του SMSme.gr account σας η επικοινωνηστε με την υποστηριξη.';
           }
         }
         

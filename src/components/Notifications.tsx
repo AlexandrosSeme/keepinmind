@@ -1,13 +1,14 @@
 import React from 'react';
 import { Bell, Clock, CheckCircle } from 'lucide-react';
+import StatusBadge from './ui/StatusBadge';
 
 const Notifications: React.FC = () => {
   const notifications = [
     {
       id: 1,
       type: 'expiry_warning',
-      title: '7 ημέρες πριν λήξη',
-      message: 'Μαρία Γεωργίου - Η συνδρομή σας λήγει σε 7 ημέρες',
+      title: '7 ημερες πριν ληξη',
+      message: 'Μαρια Γεωργιου - Η συνδρομη σας ληγει σε 7 ημερες',
       channel: 'SMS',
       status: 'scheduled',
       scheduledFor: '13/10/2025 10:00',
@@ -18,8 +19,8 @@ const Notifications: React.FC = () => {
     {
       id: 2,
       type: 'expiry_today',
-      title: 'Ημέρα λήξης',
-      message: 'Νίκος Παπαδόπουλος - Η συνδρομή σας λήγει σήμερα',
+      title: 'Ημερα ληξης',
+      message: 'Νικος Παπαδοπουλος - Η συνδρομη σας ληγει σημερα',
       channel: 'SMS',
       status: 'sent',
       sentAt: '13/10/2025 10:05',
@@ -29,74 +30,62 @@ const Notifications: React.FC = () => {
     }
   ];
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      scheduled: { class: 'bg-warning text-dark', text: 'Εκκρεμεί' },
-      sent: { class: 'bg-success text-white', text: 'Σταλμένο' },
-      failed: { class: 'bg-danger text-white', text: 'Αποτυχία' }
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || { class: 'bg-secondary text-white', text: status };
-    
-    return (
-      <span className={`badge ${config.class}`}>
-        {config.text}
-      </span>
-    );
-  };
-
   return (
     <div>
-      {/* Header */}
-      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
-        <h2 className="h4 mb-3 mb-md-0">Ειδοποιήσεις</h2>
+      <div className="km-page-header">
+        <h2 className="km-page-title">Ειδοποιησεις</h2>
         <button className="btn btn-primary">
           <Bell size={16} className="me-2" />
-          Νέα Ειδοποίηση
+          Νεα Ειδοποιηση
         </button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="card border-0 shadow-sm mb-4">
+      <div className="card border-0 shadow-sm mb-4 km-toolbar-card">
         <div className="card-body">
-          <div className="btn-group w-100" role="group">
-            <button className="btn btn-primary">Όλες</button>
-            <button className="btn btn-outline-secondary">Προγραμματισμένες</button>
-            <button className="btn btn-outline-secondary">Σταλμένες</button>
-            <button className="btn btn-outline-secondary">Αποτυχημένες</button>
+          <div className="d-flex flex-wrap gap-2">
+            <button className="btn btn-primary btn-sm">Ολες</button>
+            <button className="btn btn-outline-secondary btn-sm">Προγραμματισμενες</button>
+            <button className="btn btn-outline-secondary btn-sm">Σταλμενες</button>
+            <button className="btn btn-outline-secondary btn-sm">Αποτυχημενες</button>
           </div>
         </div>
       </div>
 
-      {/* Notifications List */}
       <div className="card border-0 shadow-sm">
         <div className="card-body p-0">
           {notifications.map(notification => {
             const IconComponent = notification.icon;
             return (
-              <div key={notification.id} className="border-bottom p-4 hover-bg-light">
-                <div className="d-flex align-items-start justify-content-between">
+              <div key={notification.id} className="km-list-row">
+                <div className="d-flex align-items-start justify-content-between gap-3">
                   <div className="d-flex align-items-start gap-3">
-                    <div className={`p-2 rounded-circle d-inline-flex align-items-center justify-content-center ${notification.iconBg}`}>
+                    <div className={`p-2 rounded-2 d-inline-flex align-items-center justify-content-center ${notification.iconBg}`}>
                       <IconComponent size={20} className={notification.iconColor} />
                     </div>
                     <div className="flex-grow-1">
                       <h6 className="mb-1 text-dark">{notification.title}</h6>
                       <p className="text-muted mb-2 small">{notification.message}</p>
-                      <div className="d-flex align-items-center gap-2">
-                        <span className="badge bg-info text-white">{notification.channel}</span>
+                      <div className="d-flex align-items-center gap-2 flex-wrap">
+                        <StatusBadge tone="info" label={notification.channel} />
                         <small className="text-muted">
-                          {notification.status === 'scheduled' 
-                            ? `Προγραμματισμένο για ${notification.scheduledFor}`
-                            : `Στάλθηκε ${notification.sentAt}`
+                          {notification.status === 'scheduled'
+                            ? `Προγραμματισμενο για ${notification.scheduledFor}`
+                            : `Σταλθηκε ${notification.sentAt}`
                           }
                         </small>
                       </div>
                     </div>
                   </div>
-                  <div className="text-end">
-                    {getStatusBadge(notification.status)}
-                  </div>
+                  <StatusBadge
+                    status={notification.status}
+                    label={
+                      notification.status === 'scheduled'
+                        ? 'Εκκρεμει'
+                        : notification.status === 'sent'
+                          ? 'Σταλμενο'
+                          : undefined
+                    }
+                  />
                 </div>
               </div>
             );
@@ -104,16 +93,10 @@ const Notifications: React.FC = () => {
         </div>
       </div>
 
-      {/* Empty State */}
       {notifications.length === 0 && (
         <div className="text-center py-5">
-          <div className="mb-4">
-            <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '80px', height: '80px' }}>
-              <Bell size={32} className="text-muted" />
-            </div>
-          </div>
-          <h5 className="text-muted">Δεν υπάρχουν ειδοποιήσεις</h5>
-          <p className="text-muted mb-4">Όλες οι ειδοποιήσεις θα εμφανίζονται εδώ</p>
+          <Bell size={48} className="text-muted mb-3" />
+          <h5 className="text-muted">Δεν υπαρχουν ειδοποιησεις</h5>
         </div>
       )}
     </div>

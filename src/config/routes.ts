@@ -12,10 +12,18 @@ import Attendance from "../components/Attendance";
 import QRScanner from "../components/QRScanner";
 import UserQRCode from "../components/UserQRCode";
 import ViewQRCode from "../components/ViewQRCode";
-import HomeAssistant from "../components/HomeAssistant";
+// import HomeAssistant from "../components/HomeAssistant";
+import PrintAllQRCodes from "../components/PrintAllQRCodes";
 
 import type { ComponentType } from "react";
-import type { Stats, Member, UpcomingExpiry, Debt, Package } from "../types";
+import type {
+  Stats,
+  Member,
+  UpcomingExpiry,
+  Debt,
+  Package,
+  Payment,
+} from "../types";
 
 export interface ChildRouteConfig {
   path: string;
@@ -36,6 +44,7 @@ export interface AppData {
   upcomingExpiries: UpcomingExpiry[];
   debts: Debt[];
   packages: Package[];
+  payments: Payment[];
 }
 
 export const createRoutes = (data: AppData): RouteConfig[] => [
@@ -46,6 +55,7 @@ export const createRoutes = (data: AppData): RouteConfig[] => [
       stats: data.stats,
       upcomingExpiries: data.upcomingExpiries,
       debts: data.debts,
+      payments: data.payments,
     },
   },
   {
@@ -69,10 +79,16 @@ export const createRoutes = (data: AppData): RouteConfig[] => [
   {
     path: "payments",
     element: Payments,
+    props: {
+      payments: data.payments,
+    },
   },
   {
     path: "debts",
     element: Debts,
+    props: {
+      debts: data.debts,
+    },
   },
   {
     path: "calendar",
@@ -107,7 +123,7 @@ export const createRoutes = (data: AppData): RouteConfig[] => [
     element: ViewQRCode,
   },
   {
-    path: "home-assistant",
-    element: HomeAssistant,
+    path: "print-qr-codes",
+    element: PrintAllQRCodes,
   },
 ];

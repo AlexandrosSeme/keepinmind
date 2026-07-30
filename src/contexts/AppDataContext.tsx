@@ -1,5 +1,12 @@
 import { createContext, useContext, type ReactNode } from "react";
-import type { Stats, Member, UpcomingExpiry, Debt, Package } from "../types";
+import type {
+  Stats,
+  Member,
+  UpcomingExpiry,
+  Debt,
+  Package,
+  Payment,
+} from "../types";
 import {
   fetchAppData,
   createMember,
@@ -11,6 +18,9 @@ import {
   createPackage,
   updatePackage,
   deletePackage,
+  createPayment,
+  updatePayment,
+  deletePayment,
   createUpcomingExpiry,
   updateUpcomingExpiry,
   deleteUpcomingExpiry,
@@ -23,6 +33,7 @@ interface AppDataContextType {
   upcomingExpiries: UpcomingExpiry[];
   debts: Debt[];
   packages: Package[];
+  payments: Payment[];
   loading: boolean;
 
   // Refresh function
@@ -31,22 +42,44 @@ interface AppDataContextType {
   // CRUD Operations
   // Members
   addMember: (member: Omit<Member, "id">) => Promise<Member | null>;
-  editMember: (id: number, updates: Partial<Omit<Member, "id">>) => Promise<Member | null>;
+  editMember: (
+    id: number,
+    updates: Partial<Omit<Member, "id">>
+  ) => Promise<Member | null>;
   removeMember: (id: number) => Promise<boolean>;
 
   // Debts
   addDebt: (debt: Omit<Debt, "id">) => Promise<Debt | null>;
-  editDebt: (id: number, updates: Partial<Omit<Debt, "id">>) => Promise<Debt | null>;
+  editDebt: (
+    id: number,
+    updates: Partial<Omit<Debt, "id">>
+  ) => Promise<Debt | null>;
   removeDebt: (id: number) => Promise<boolean>;
 
   // Packages
   addPackage: (pkg: Omit<Package, "id">) => Promise<Package | null>;
-  editPackage: (id: number, updates: Partial<Omit<Package, "id">>) => Promise<Package | null>;
+  editPackage: (
+    id: number,
+    updates: Partial<Omit<Package, "id">>
+  ) => Promise<Package | null>;
   removePackage: (id: number) => Promise<boolean>;
 
+  // Payments
+  addPayment: (payment: Omit<Payment, "id">) => Promise<Payment | null>;
+  editPayment: (
+    id: number,
+    updates: Partial<Omit<Payment, "id">>
+  ) => Promise<Payment | null>;
+  removePayment: (id: number) => Promise<boolean>;
+
   // Upcoming Expiries
-  addUpcomingExpiry: (expiry: Omit<UpcomingExpiry, "id">) => Promise<UpcomingExpiry | null>;
-  editUpcomingExpiry: (id: number, updates: Partial<Omit<UpcomingExpiry, "id">>) => Promise<UpcomingExpiry | null>;
+  addUpcomingExpiry: (
+    expiry: Omit<UpcomingExpiry, "id">
+  ) => Promise<UpcomingExpiry | null>;
+  editUpcomingExpiry: (
+    id: number,
+    updates: Partial<Omit<UpcomingExpiry, "id">>
+  ) => Promise<UpcomingExpiry | null>;
   removeUpcomingExpiry: (id: number) => Promise<boolean>;
 }
 
@@ -66,7 +99,9 @@ interface AppDataProviderProps {
 }
 
 export function AppDataProvider({ children, value }: AppDataProviderProps) {
-  return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
+  return (
+    <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>
+  );
 }
 
 // Helper function to create context value
@@ -76,12 +111,14 @@ export function createAppDataContextValue(
   upcomingExpiries: UpcomingExpiry[],
   debts: Debt[],
   packages: Package[],
+  payments: Payment[],
   loading: boolean,
   setStats: (stats: Stats) => void,
   setMembers: (members: Member[]) => void,
   setUpcomingExpiries: (expiries: UpcomingExpiry[]) => void,
   setDebts: (debts: Debt[]) => void,
   setPackages: (packages: Package[]) => void,
+  setPayments: (payments: Payment[]) => void,
   setLoading: (loading: boolean) => void
 ): AppDataContextType {
   const refreshData = async () => {
@@ -93,6 +130,7 @@ export function createAppDataContextValue(
       setUpcomingExpiries(data.upcomingExpiries);
       setDebts(data.debts);
       setPackages(data.packages);
+      setPayments(data.payments);
     }
     setLoading(false);
   };
@@ -103,6 +141,7 @@ export function createAppDataContextValue(
     upcomingExpiries,
     debts,
     packages,
+    payments,
     loading,
     refreshData,
 
@@ -175,6 +214,29 @@ export function createAppDataContextValue(
       return success;
     },
 
+    // Payments CRUD
+    addPayment: async (payment) => {
+      const newPayment = await createPayment(payment);
+      if (newPayment) {
+        await refreshData();
+      }
+      return newPayment;
+    },
+    editPayment: async (id, updates) => {
+      const updated = await updatePayment(id, updates);
+      if (updated) {
+        await refreshData();
+      }
+      return updated;
+    },
+    removePayment: async (id) => {
+      const success = await deletePayment(id);
+      if (success) {
+        await refreshData();
+      }
+      return success;
+    },
+
     // Upcoming Expiries CRUD
     addUpcomingExpiry: async (expiry) => {
       const newExpiry = await createUpcomingExpiry(expiry);
@@ -199,4 +261,3 @@ export function createAppDataContextValue(
     },
   };
 }
-

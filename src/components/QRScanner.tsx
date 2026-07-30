@@ -27,6 +27,7 @@ const QRScanner: React.FC = () => {
   const [availableCameras, setAvailableCameras] = useState<CameraDevice[]>([]);
   const [loadingCameras, setLoadingCameras] = useState(false);
   const [scanQuality, setScanQuality] = useState<'fast' | 'balanced' | 'accurate'>('fast');
+  const [inputFocused, setInputFocused] = useState(false);
   
   // For plug and play QR scanner (USB barcode scanner)
   const scannerInputRef = useRef<HTMLInputElement | null>(null);
@@ -43,7 +44,7 @@ const QRScanner: React.FC = () => {
         if (devices && devices.length > 0) {
           const cameras: CameraDevice[] = devices.map((device, index) => ({
             id: device.id,
-            label: device.label || `Κάμερα ${index + 1}`,
+            label: device.label || `Καμερα ${index + 1}`,
           }));
           setAvailableCameras(cameras);
           // Set default camera if none selected
@@ -51,11 +52,11 @@ const QRScanner: React.FC = () => {
             setCameraId(cameras[0].id);
           }
         } else {
-          setError("Δεν βρέθηκαν κάμερες");
+          setError("Δεν βρεθηκαν καμερες");
         }
       } catch (err) {
         console.error("Error loading cameras:", err);
-        setError("Σφάλμα κατά τη φόρτωση των καμερών");
+        setError("Σφαλμα κατα τη φορτωση των καμερων");
       } finally {
         setLoadingCameras(false);
       }
@@ -87,12 +88,12 @@ const QRScanner: React.FC = () => {
   // These scanners work as keyboard input - they type the QR code content and press Enter
   useEffect(() => {
     const handleScannerInput = (e: KeyboardEvent) => {
-      console.log('[Scanner] Key pressed:', e.key, 'Target:', (e.target as HTMLElement)?.tagName);
+      console.log('[USB Scanner] 🔑 Key pressed:', e.key, '| Code:', e.code, '| Target:', (e.target as HTMLElement)?.tagName, '| Is our input?', (e.target as HTMLElement) === scannerInputRef.current);
       
       // Only process if not typing in an input field (unless it's our scanner input)
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' && target !== scannerInputRef.current) {
-        console.log('[Scanner] Ignoring - user typing in another input');
+        console.log('[USB Scanner] ⚠️ Ignoring - user typing in another input field');
         return; // User is typing in another input, ignore
       }
 
@@ -102,7 +103,7 @@ const QRScanner: React.FC = () => {
       // If more than 2000ms passed since last key, it's probably manual typing, not scanner
       // Scanners send keys very quickly (< 50ms between keys) but we allow more time for slow scanners
       if (timeSinceLastKey > 2000 && scannerBufferRef.current.length > 0) {
-        console.log('[Scanner] Resetting buffer - manual typing detected (timeout:', timeSinceLastKey, 'ms)');
+        console.log('[USB Scanner] ⏱️ Resetting buffer - manual typing detected (timeout:', timeSinceLastKey, 'ms)');
         // Reset buffer - this was probably manual typing
         scannerBufferRef.current = "";
       }
@@ -110,7 +111,7 @@ const QRScanner: React.FC = () => {
       lastKeyTimeRef.current = now;
 
       // Handle Enter key (scanner sends Enter at the end)
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.code === 'Enter') {
         e.preventDefault();
         e.stopPropagation();
         
@@ -121,7 +122,8 @@ const QRScanner: React.FC = () => {
         }
         
         const scannedData = scannerBufferRef.current.trim();
-        console.log('[Scanner] Enter pressed, buffer:', scannedData);
+        console.log('[USB Scanner] ✅ Enter pressed! Buffer content:', scannedData);
+        console.log('[USB Scanner] 📏 Buffer length:', scannedData.length);
         
         // Clear buffer immediately
         scannerBufferRef.current = "";
@@ -130,15 +132,16 @@ const QRScanner: React.FC = () => {
         lastKeyTimeRef.current = Date.now();
 
         if (scannedData.length > 0) {
-          console.log('[Scanner] Processing scanned data:', scannedData);
+          console.log('[USB Scanner] 🚀 Processing scanned data:', scannedData);
           // Process the scanned data
           processScannedData(scannedData);
         } else {
-          console.log('[Scanner] Empty buffer, ignoring');
+          console.log('[USB Scanner] ⚠️ Empty buffer, ignoring Enter press');
           // Refocus for next scan even if buffer is empty
           setTimeout(() => {
             if (scannerInputRef.current) {
               scannerInputRef.current.focus();
+              console.log('[USB Scanner] 🔄 Refocused input after empty scan');
             }
           }, 100);
         }
@@ -154,36 +157,146 @@ const QRScanner: React.FC = () => {
 
         // Add character to buffer
         scannerBufferRef.current += e.key;
-        console.log('[Scanner] Added to buffer:', e.key, 'Buffer now:', scannerBufferRef.current);
+        console.log('[USB Scanner] ➕ Added char:', e.key, '| Buffer now:', scannerBufferRef.current, '| Length:', scannerBufferRef.current.length);
 
         // Set timeout to clear buffer if no more input comes (manual typing detection)
         // Increased to 2000ms to allow scanner to complete
         scannerTimeoutRef.current = window.setTimeout(() => {
-          console.log('[Scanner] Timeout - clearing buffer (no input for 2 seconds)');
+          console.log('[USB Scanner] ⏰ Timeout - clearing buffer (no input for 2 seconds)');
           scannerBufferRef.current = "";
         }, 2000);
+      } else {
+        console.log('[USB Scanner] ⏭️ Ignoring special key:', e.key, '| Code:', e.code);
       }
     };
 
-    // Focus the hidden input on mount
-    if (scannerInputRef.current) {
-      scannerInputRef.current.focus();
-    }
+    // AGGRESSIVE focus on mount - multiple attempts to ensure it works
+    const focusInput = () => {
+      if (scannerInputRef.current) {
+        scannerInputRef.current.focus();
+        console.log('[USB Scanner] 🎯 Hidden input focused and ready for scanning');
+      } else {
+        console.log('[USB Scanner] ⚠️ Hidden input ref is null!');
+      }
+    };
+
+    // Focus immediately with multiple attempts
+    focusInput();
+    requestAnimationFrame(focusInput);
+    setTimeout(focusInput, 10);
+    setTimeout(focusInput, 50);
+    setTimeout(focusInput, 100);
+    setTimeout(focusInput, 200);
+    setTimeout(focusInput, 500);
+    setTimeout(focusInput, 1000);
+
+    // Also focus on window focus (when user comes back to tab)
+    const handleWindowFocus = () => {
+      console.log('[USB Scanner] 👁️ Window focused, refocusing input');
+      focusInput();
+    };
+    window.addEventListener('focus', handleWindowFocus);
+    
+    // Also refocus on visibility change (when tab becomes visible)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('[USB Scanner] 👁️ Tab became visible, refocusing input');
+        focusInput();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Add global keyboard listener
     window.addEventListener('keydown', handleScannerInput);
+    console.log('[USB Scanner] 🎧 Global keyboard listener attached');
 
     return () => {
       window.removeEventListener('keydown', handleScannerInput);
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (scannerTimeoutRef.current !== null) {
         clearTimeout(scannerTimeoutRef.current);
       }
+      console.log('[USB Scanner] 🧹 Cleanup: listeners removed');
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // AGGRESSIVE Continuous focus monitoring - ensures input stays focused ALWAYS
+  useEffect(() => {
+    const forceFocus = () => {
+      if (scannerInputRef.current) {
+        // Only skip refocus if user is actively typing in manual input field
+        const activeElement = document.activeElement as HTMLElement;
+        const isManualInput = activeElement?.tagName === 'INPUT' && 
+                             activeElement?.getAttribute('type') === 'number' &&
+                             activeElement?.id !== 'scanner-input-hidden';
+        
+        if (!isManualInput && document.activeElement !== scannerInputRef.current) {
+          scannerInputRef.current.focus();
+          console.log('[USB Scanner] 🔄 Force-focused (aggressive monitoring)');
+        }
+      }
+    };
+    
+    // Check focus VERY frequently (every 100ms) to ensure it stays focused
+    const focusInterval = setInterval(forceFocus, 100);
+    
+    // Also use MutationObserver to refocus after DOM changes (re-renders)
+    const observer = new MutationObserver(() => {
+      // Small delay to let React finish rendering
+      setTimeout(forceFocus, 50);
+    });
+    
+    // Observe the entire document for changes
+    if (scannerInputRef.current) {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      });
+    }
+    
+    return () => {
+      clearInterval(focusInterval);
+      observer.disconnect();
+    };
+  }, []);
+
+  // Refocus whenever validation result changes (after scan completes) OR any state changes
+  useEffect(() => {
+    // Force focus after ANY state change (validationResult, error, scanning, etc.)
+    const forceRefocus = () => {
+      if (scannerInputRef.current) {
+        const activeElement = document.activeElement as HTMLElement;
+        const isManualInput = activeElement?.tagName === 'INPUT' && 
+                             activeElement?.getAttribute('type') === 'number' &&
+                             activeElement?.id !== 'scanner-input-hidden';
+        
+        if (!isManualInput) {
+          scannerInputRef.current.focus();
+          console.log('[USB Scanner] 🔄 Force-refocused after state change');
+        }
+      }
+    };
+    
+    // Multiple aggressive attempts
+    requestAnimationFrame(forceRefocus);
+    setTimeout(forceRefocus, 10);
+    setTimeout(forceRefocus, 50);
+    setTimeout(forceRefocus, 100);
+    setTimeout(forceRefocus, 200);
+    setTimeout(forceRefocus, 300);
+    setTimeout(forceRefocus, 500);
+  }, [validationResult, error, scanning, cameraId]); // Refocus on ANY state change
+
   const processScannedData = async (scannedData: string) => {
-    console.log('[Scanner] processScannedData called with:', scannedData);
-    console.log('[Scanner] Full buffer length:', scannedData.length);
+    console.log('========================================');
+    console.log('[QR Scanner] 🔍 PROCESSING SCANNED DATA');
+    console.log('[QR Scanner] 📥 Raw scanned data:', scannedData);
+    console.log('[QR Scanner] 📏 Data length:', scannedData.length);
+    console.log('[QR Scanner] 📋 Data type:', typeof scannedData);
+    console.log('========================================');
+    
     try {
       setError(null);
       setValidationResult(null);
@@ -319,8 +432,8 @@ const QRScanner: React.FC = () => {
             setValidationResult({
               valid: false,
               member: null,
-              message: "Μη έγκυρο QR Code",
-              reason: `Το QR code δεν περιέχει έγκυρα δεδομένα. Δεδομένα: ${scannedData.substring(0, 100)}`,
+              message: "Μη εγκυρο QR Code",
+              reason: `Το QR code δεν περιεχει εγκυρα δεδομενα. Δεδομενα: ${scannedData.substring(0, 100)}`,
             });
             return;
           }
@@ -332,30 +445,57 @@ const QRScanner: React.FC = () => {
         setValidationResult({
           valid: false,
           member: null,
-          message: "Μη έγκυρο QR Code",
-          reason: `Δεν βρέθηκε έγκυρο Member ID. Δεδομένα: ${scannedData.substring(0, 100)}`,
+          message: "Μη εγκυρο QR Code",
+          reason: `Δεν βρεθηκε εγκυρο Member ID. Δεδομενα: ${scannedData.substring(0, 100)}`,
         });
         return;
       }
 
       // Log the extracted member ID
-      console.log('QR Scanner - Member ID:', memberId);
+      console.log('[QR Scanner] ✅ Extracted Member ID:', memberId);
+      console.log('[QR Scanner] 🔢 Member ID type:', typeof memberId, '| Valid?', !isNaN(memberId) && memberId > 0);
 
       // Validate member
+      console.log('[QR Scanner] 🔎 Validating member with ID:', memberId);
       const result = await validateMember(memberId);
       setValidationResult(result);
       
-      // Log the user that was scanned - CLEAR AND SIMPLE
+      // Aggressive refocus after validation - multiple attempts to ensure it works
+      const refocusAfterValidation = () => {
+        if (scannerInputRef.current) {
+          scannerInputRef.current.focus();
+          console.log('[USB Scanner] 🔄 Refocused after validation (in processScannedData)');
+        }
+      };
+      
+      // Immediate refocus with multiple attempts
+      requestAnimationFrame(refocusAfterValidation);
+      setTimeout(refocusAfterValidation, 50);
+      setTimeout(refocusAfterValidation, 100);
+      setTimeout(refocusAfterValidation, 200);
+      setTimeout(refocusAfterValidation, 300);
+      
+      // Log the user that was scanned - DETAILED LOGGING
       if (result.member) {
         console.log('========================================');
-        console.log('QR SCANNER - USER SCANNED:');
-        console.log('ID:', result.member.id);
-        console.log('Name:', result.member.name);
-        console.log('Phone:', result.member.phone);
-        console.log('Status:', result.member.status);
-        console.log('Valid:', result.valid);
+        console.log('🎯 QR SCANNER - USER SCANNED SUCCESSFULLY');
+        console.log('========================================');
+        console.log('👤 USER DETAILS:');
+        console.log('   📋 ID:', result.member.id);
+        console.log('   👨‍💼 Name:', result.member.name);
+        console.log('   📞 Phone:', result.member.phone);
+        console.log('   📧 Email:', result.member.email || 'N/A');
+        console.log('   📦 Package:', result.member.package || 'N/A');
+        console.log('   📅 Expiry:', result.member.expiry || 'N/A');
+        console.log('   ✅ Status:', result.member.status);
+        console.log('   🎫 Validation Status:', result.valid ? 'VALID' : 'INVALID');
+        console.log('   💬 Message:', result.message);
+        if (result.reason) {
+          console.log('   📝 Reason:', result.reason);
+        }
         console.log('========================================');
         
+        console.log('[QR Scanner] 💾 Logging entrance to database...');
         const loggedEntrance = await logEntrance(
           result.member.id,
           result.member.name,
@@ -368,38 +508,72 @@ const QRScanner: React.FC = () => {
         );
         
         if (loggedEntrance) {
-          console.log('Entrance logged - Member ID:', result.member.id);
+          console.log('========================================');
+          console.log('✅ ENTRANCE LOGGED SUCCESSFULLY');
+          console.log('========================================');
+          console.log('📊 Log Details:');
+          console.log('   🆔 Log ID:', loggedEntrance.id);
+          console.log('   👤 Member ID:', loggedEntrance.memberId);
+          console.log('   👨‍💼 Member Name:', loggedEntrance.memberName);
+          console.log('   📞 Member Phone:', loggedEntrance.memberPhone);
+          console.log('   📅 Timestamp:', loggedEntrance.timestamp);
+          console.log('   🎫 Validation Status:', loggedEntrance.validationStatus);
+          console.log('   📝 Validation Message:', loggedEntrance.validationMessage);
+          console.log('   🔍 Entrance Type:', loggedEntrance.entranceType);
+          console.log('========================================');
+        } else {
+          console.error('❌ [QR Scanner] Failed to log entrance!');
         }
       } else {
-        console.log('QR Scanner - No member found for ID:', memberId);
+        console.log('========================================');
+        console.log('❌ QR SCANNER - NO MEMBER FOUND');
+        console.log('========================================');
+        console.log('🔍 Searched for Member ID:', memberId);
+        console.log('💬 Validation Message:', result.message);
+        if (result.reason) {
+          console.log('📝 Reason:', result.reason);
+        }
+        console.log('========================================');
       }
 
-      // Clear and refocus scanner input for next scan
+      // Clear and refocus scanner input for next scan - IMMEDIATELY
+      // This ensures continuous scanning without manual clicks
+      const refocusInput = () => {
+        if (scannerInputRef.current) {
+          scannerInputRef.current.focus();
+          console.log('[USB Scanner] 🔄 Refocused input for next scan');
+        }
+      };
+
+      // Clear input and buffer
       if (scannerInputRef.current) {
         scannerInputRef.current.value = "";
-        // Clear buffer
-        scannerBufferRef.current = "";
-        // Clear timeout
-        if (scannerTimeoutRef.current !== null) {
-          clearTimeout(scannerTimeoutRef.current);
-          scannerTimeoutRef.current = null;
-        }
-        // Reset last key time
-        lastKeyTimeRef.current = Date.now();
-        // Refocus immediately
-        setTimeout(() => {
-          if (scannerInputRef.current) {
-            scannerInputRef.current.focus();
-            console.log('[Scanner] Refocused input for next scan');
-          }
-        }, 200);
       }
+      scannerBufferRef.current = "";
+      
+      // Clear timeout
+      if (scannerTimeoutRef.current !== null) {
+        clearTimeout(scannerTimeoutRef.current);
+        scannerTimeoutRef.current = null;
+      }
+      
+      // Reset last key time
+      lastKeyTimeRef.current = Date.now();
+      
+      // Aggressive refocus - multiple attempts with different timings to ensure it works
+      requestAnimationFrame(refocusInput);
+      setTimeout(refocusInput, 10);
+      setTimeout(refocusInput, 50);
+      setTimeout(refocusInput, 100);
+      setTimeout(refocusInput, 200);
+      setTimeout(refocusInput, 300);
+      setTimeout(refocusInput, 500);
     } catch {
       setValidationResult({
         valid: false,
         member: null,
-        message: "Σφάλμα Επεξεργασίας",
-        reason: "Σφάλμα κατά την επεξεργασία του QR code",
+        message: "Σφαλμα Επεξεργασιας",
+        reason: "Σφαλμα κατα την επεξεργασια του QR code",
       });
     }
   };
@@ -409,8 +583,8 @@ const QRScanner: React.FC = () => {
       return {
         valid: false,
         member: null,
-        message: "Σφάλμα σύνδεσης",
-        reason: "Η σύνδεση με τη βάση δεδομένων δεν είναι διαθέσιμη",
+        message: "Σφαλμα συνδεσης",
+        reason: "Η συνδεση με τη βαση δεδομενων δεν ειναι διαθεσιμη",
       };
     }
 
@@ -425,20 +599,30 @@ const QRScanner: React.FC = () => {
         return {
           valid: false,
           member: null,
-          message: "Μη έγκυρο QR Code",
-          reason: "Δεν βρέθηκε μέλος με αυτό το ID",
+          message: "Μη εγκυρο QR Code",
+          reason: "Δεν βρεθηκε μελος με αυτο το ID",
         };
       }
 
       const member = data as Member;
+
+      // Check if card is lost/revoked
+      if (member.card_lost === true) {
+        return {
+          valid: false,
+          member,
+          message: "Καρτα Ακυρωμενη",
+          reason: "Η καρτα εχει σημειωθει ως χαμενη/ακυρωμενη. Παρακαλω επικοινωνηστε με τον διαχειριστη.",
+        };
+      }
 
       // Check if subscription is active
       if (member.status === "expired") {
         return {
           valid: false,
           member,
-          message: "Ληγμένη Συνδρομή",
-          reason: `Η συνδρομή έληξε στις ${member.expiry}`,
+          message: "Ληγμενη Συνδρομη",
+          reason: `Η συνδρομη εληξε στις ${member.expiry}`,
         };
       }
 
@@ -447,8 +631,8 @@ const QRScanner: React.FC = () => {
         return {
           valid: true,
           member,
-          message: "Ενεργή Συνδρομή (Λήγει Σύντομα)",
-          reason: `Η συνδρομή λήγει στις ${member.expiry}`,
+          message: "Ενεργη Συνδρομη (Ληγει Συντομα)",
+          reason: `Η συνδρομη ληγει στις ${member.expiry}`,
         };
       }
 
@@ -457,22 +641,22 @@ const QRScanner: React.FC = () => {
         return {
           valid: true,
           member,
-          message: "Ενεργή Συνδρομή",
+          message: "Ενεργη Συνδρομη",
         };
       }
 
       return {
         valid: false,
         member,
-        message: "Μη έγκυρη Κατάσταση",
-        reason: "Η κατάσταση της συνδρομής δεν είναι έγκυρη",
+        message: "Μη εγκυρη Κατασταση",
+        reason: "Η κατασταση της συνδρομης δεν ειναι εγκυρη",
       };
     } catch {
       return {
         valid: false,
         member: null,
-        message: "Σφάλμα Επικύρωσης",
-        reason: "Σφάλμα κατά την επικοινωνία με τη βάση δεδομένων",
+        message: "Σφαλμα Επικυρωσης",
+        reason: "Σφαλμα κατα την επικοινωνια με τη βαση δεδομενων",
       };
     }
   };
@@ -512,7 +696,7 @@ const QRScanner: React.FC = () => {
 
   const startScanning = async () => {
     if (!cameraId) {
-      setError("Παρακαλώ επιλέξτε κάμερα");
+      setError("Παρακαλω επιλεξτε καμερα");
       return;
     }
 
@@ -546,8 +730,8 @@ const QRScanner: React.FC = () => {
                 setValidationResult({
                   valid: false,
                   member: null,
-                  message: "Μη έγκυρο QR Code",
-                  reason: "Το QR code δεν περιέχει έγκυρα δεδομένα",
+                  message: "Μη εγκυρο QR Code",
+                  reason: "Το QR code δεν περιεχει εγκυρα δεδομενα",
                 });
                 return;
               }
@@ -591,8 +775,8 @@ const QRScanner: React.FC = () => {
               setValidationResult({
                 valid: false,
                 member: null,
-                message: "Μη έγκυρο QR Code",
-                reason: "Δεν ήταν δυνατή η ανάγνωση του QR code",
+                message: "Μη εγκυρο QR Code",
+                reason: "Δεν ηταν δυνατη η αναγνωση του QR code",
               });
             }
           },
@@ -603,7 +787,7 @@ const QRScanner: React.FC = () => {
 
         setScanning(true);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Σφάλμα κατά την έναρξη της σάρωσης";
+      const errorMessage = err instanceof Error ? err.message : "Σφαλμα κατα την εναρξη της σαρωσης";
       setError(errorMessage);
       setScanning(false);
     }
@@ -629,7 +813,7 @@ const QRScanner: React.FC = () => {
         }, 500);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Σφάλμα κατά την αλλαγή κάμερας";
+      const errorMessage = err instanceof Error ? err.message : "Σφαλμα κατα την αλλαγη καμερας";
       setError(errorMessage);
       setScanning(false);
     }
@@ -656,7 +840,7 @@ const QRScanner: React.FC = () => {
   const handleManualValidation = async () => {
     const id = parseInt(manualId);
     if (isNaN(id) || id <= 0) {
-      setError("Παρακαλώ εισάγετε έγκυρο ID μέλους");
+      setError("Παρακαλω εισαγετε εγκυρο ID μελους");
       return;
     }
 
@@ -683,7 +867,7 @@ const QRScanner: React.FC = () => {
     <div className="container mt-4">
       <div className="row">
         <div className="col-12">
-          <h2 className="mb-4">Σάρωση QR Code</h2>
+          <h2 className="mb-4">Σαρωση QR Code</h2>
         </div>
       </div>
 
@@ -694,9 +878,9 @@ const QRScanner: React.FC = () => {
             <div className="card-body">
               {/* Camera Selection */}
               <div className="mb-3">
-                <label className="form-label fw-semibold">Επιλογή Κάμερας</label>
+                <label className="form-label fw-semibold">Επιλογη Καμερας</label>
                 {loadingCameras ? (
-                  <div className="text-muted small">Φόρτωση καμερών...</div>
+                  <div className="text-muted small">Φορτωση καμερων...</div>
                 ) : availableCameras.length > 0 ? (
                   <select
                     className="form-select"
@@ -712,7 +896,7 @@ const QRScanner: React.FC = () => {
                   </select>
                 ) : (
                   <div className="alert alert-warning mb-0" role="alert">
-                    Δεν βρέθηκαν διαθέσιμες κάμερες
+                    Δεν βρεθηκαν διαθεσιμες καμερες
                   </div>
                 )}
               </div>
@@ -722,27 +906,27 @@ const QRScanner: React.FC = () => {
                 <div className="mb-3">
                   <label className="form-label fw-semibold">
                     <Settings className="me-1" size={16} />
-                    Ποιότητα Σάρωσης
+                    Ποιοτητα Σαρωσης
                   </label>
                   <select
                     className="form-select"
                     value={scanQuality}
                     onChange={(e) => setScanQuality(e.target.value as 'fast' | 'balanced' | 'accurate')}
                   >
-                    <option value="fast">⚡ Γρήγορη (30 FPS, Μεγάλο QR Box)</option>
-                    <option value="balanced">⚖️ Ισορροπημένη (20 FPS, Μέτριο QR Box)</option>
-                    <option value="accurate">🎯 Ακριβής (15 FPS, Μικρό QR Box)</option>
+                    <option value="fast">⚡ Γρηγορη (30 FPS, Μεγαλο QR Box)</option>
+                    <option value="balanced">⚖️ Ισορροπημενη (20 FPS, Μετριο QR Box)</option>
+                    <option value="accurate">🎯 Ακριβης (15 FPS, Μικρο QR Box)</option>
                   </select>
                   <small className="text-muted d-block mt-1">
-                    {scanQuality === 'fast' && 'Γρήγορη σάρωση με μεγάλο scanning area - Προτεινόμενη'}
-                    {scanQuality === 'balanced' && 'Ισορροπημένη ταχύτητα και ακρίβεια'}
-                    {scanQuality === 'accurate' && 'Πιο ακριβής αλλά πιο αργή σάρωση'}
+                    {scanQuality === 'fast' && 'Γρηγορη σαρωση με μεγαλο scanning area - Προτεινομενη'}
+                    {scanQuality === 'balanced' && 'Ισορροπημενη ταχυτητα και ακριβεια'}
+                    {scanQuality === 'accurate' && 'Πιο ακριβης αλλα πιο αργη σαρωση'}
                   </small>
                 </div>
               )}
 
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0">Σάρωση</h5>
+                <h5 className="mb-0">Σαρωση</h5>
                 {!scanning ? (
                   <button
                     className="btn btn-primary"
@@ -750,14 +934,14 @@ const QRScanner: React.FC = () => {
                     disabled={scanning || !cameraId || availableCameras.length === 0}
                   >
                     <Camera className="me-2" size={18} />
-                    Έναρξη Σάρωσης
+                    Εναρξη Σαρωσης
                   </button>
                 ) : (
                   <button
                     className="btn btn-danger"
                     onClick={stopScanning}
                   >
-                    Διακοπή Σάρωσης
+                    Διακοπη Σαρωσης
                   </button>
                 )}
               </div>
@@ -777,22 +961,67 @@ const QRScanner: React.FC = () => {
                 </div>
               )}
 
-              {/* Hidden input for plug and play QR scanner */}
+              {/* Hidden input for plug and play QR scanner - ALWAYS FOCUSED */}
               <input
+                id="scanner-input-hidden"
                 ref={scannerInputRef}
                 type="text"
                 autoFocus
                 className="position-absolute"
-                onFocus={() => console.log('[Scanner] Hidden input focused')}
-                onBlur={() => {
-                  console.log('[Scanner] Hidden input blurred - refocusing...');
-                  // Refocus immediately if blurred (to keep scanner input ready)
-                  setTimeout(() => {
-                    if (scannerInputRef.current) {
-                      scannerInputRef.current.focus();
-                      console.log('[Scanner] Refocused after blur');
-                    }
-                  }, 50);
+                onFocus={() => {
+                  setInputFocused(true);
+                  console.log('[USB Scanner] ✅ Hidden input FOCUSED - Ready to receive scans');
+                }}
+                onMouseEnter={() => {
+                  if (scannerInputRef.current && document.activeElement !== scannerInputRef.current) {
+                    scannerInputRef.current.focus();
+                    console.log('[USB Scanner] 🔄 Refocused on mouse enter');
+                  }
+                }}
+                onBlur={(e) => {
+                  setInputFocused(false);
+                  console.log('[USB Scanner] ⚠️ Hidden input BLURRED - FORCE REFOCUSING IMMEDIATELY...');
+                  
+                  // ALWAYS refocus - except if user is actively typing in manual input field
+                  const relatedTarget = e.relatedTarget as HTMLElement;
+                  const isManualInput = relatedTarget?.tagName === 'INPUT' && 
+                                       relatedTarget?.getAttribute('type') === 'number' &&
+                                       relatedTarget?.id !== 'scanner-input-hidden';
+                  
+                  if (!isManualInput) {
+                    // ULTRA AGGRESSIVE refocusing - many attempts to ensure it ALWAYS works
+                    const refocus = () => {
+                      if (scannerInputRef.current) {
+                        scannerInputRef.current.focus();
+                        console.log('[USB Scanner] ✅ Force-refocused after blur');
+                      }
+                    };
+                    
+                    // Immediate refocus with MANY attempts
+                    refocus(); // Immediate
+                    requestAnimationFrame(refocus);
+                    setTimeout(refocus, 5);
+                    setTimeout(refocus, 10);
+                    setTimeout(refocus, 20);
+                    setTimeout(refocus, 50);
+                    setTimeout(refocus, 100);
+                    setTimeout(refocus, 200);
+                    setTimeout(refocus, 300);
+                    setTimeout(refocus, 500);
+                  } else {
+                    console.log('[USB Scanner] ⏸️ Not refocusing - user is typing in manual input field');
+                    // But still refocus after a delay to be ready for next scan
+                    setTimeout(() => {
+                      if (scannerInputRef.current && document.activeElement?.tagName !== 'INPUT') {
+                        scannerInputRef.current.focus();
+                        console.log('[USB Scanner] ✅ Refocused after manual input delay');
+                      }
+                    }, 2000);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  // Also log when keys are pressed directly on the input
+                  console.log('[USB Scanner] ⌨️ Direct input keydown:', e.key, '| Code:', e.code);
                 }}
                 style={{
                   position: 'absolute',
@@ -800,26 +1029,33 @@ const QRScanner: React.FC = () => {
                   width: '1px',
                   height: '1px',
                   opacity: 0,
-                  pointerEvents: 'none',
+                  pointerEvents: 'auto', // Changed to 'auto' to allow focus
                 }}
+                tabIndex={0}
               />
 
               {/* Manual Input */}
               <div className="mt-4 border-top pt-3">
                 <h6 className="mb-3">
-                  Plug & Play QR Scanner (USB) ή χειροκίνητη εισαγωγή:
+                  Plug & Play QR Scanner (USB) η χειροκινητη εισαγωγη:
                 </h6>
                 <div className="alert alert-info mb-3" role="alert">
                   <small>
-                    <strong>Plug & Play Scanner:</strong> Συνδέστε το USB QR scanner και σκανάρετε απευθείας. 
-                    Το scanner λειτουργεί αυτόματα - απλά σκανάρετε το QR code!
+                    <strong>Plug & Play Scanner:</strong> Συνδεστε το USB QR scanner και σκαναρετε απευθειας. 
+                    Το scanner λειτουργει αυτοματα - απλα σκαναρετε το QR code!
+                    <br />
+                    <strong>Debug:</strong> Ανοιξε το Console (F12) για να δεις τα logs της σαρωσης.
+                    <br />
+                    <span className={inputFocused ? "text-success" : "text-warning"}>
+                      {inputFocused ? "✅ Scanner Input: FOCUSED (Ready)" : "⚠️ Scanner Input: NOT FOCUSED"}
+                    </span>
                   </small>
                 </div>
                 <div className="input-group">
                   <input
                     type="number"
                     className="form-control"
-                    placeholder="ID μέλους (ή σκανάρετε με USB scanner)"
+                    placeholder="ID μελους (η σκαναρετε με USB scanner)"
                     value={manualId}
                     onChange={(e) => setManualId(e.target.value)}
                     onKeyPress={(e) => {
@@ -833,7 +1069,7 @@ const QRScanner: React.FC = () => {
                     type="button"
                     onClick={handleManualValidation}
                   >
-                    Επικύρωση
+                    Επικυρωση
                   </button>
                 </div>
               </div>
@@ -845,12 +1081,12 @@ const QRScanner: React.FC = () => {
         <div className="col-12 col-md-6 mb-4">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h5 className="mb-3">Αποτέλεσμα Επικύρωσης</h5>
+              <h5 className="mb-3">Αποτελεσμα Επικυρωσης</h5>
 
               {!validationResult ? (
                 <div className="text-center text-muted py-5">
                   <AlertCircle size={48} className="mb-3 opacity-50" />
-                  <p>Σαρώστε ένα QR code για να δείτε το αποτέλεσμα</p>
+                  <p>Σαρωστε ενα QR code για να δειτε το αποτελεσμα</p>
                 </div>
               ) : (
                 <div>
@@ -879,7 +1115,7 @@ const QRScanner: React.FC = () => {
 
                   {validationResult.member && (
                     <div className="mt-3">
-                      <h6>Στοιχεία Μέλους:</h6>
+                      <h6>Στοιχεια Μελους:</h6>
                       <div className="border-top pt-3">
                         <div className="mb-2">
                           <small className="text-muted">ID:</small>
@@ -888,25 +1124,25 @@ const QRScanner: React.FC = () => {
                           </p>
                         </div>
                         <div className="mb-2">
-                          <small className="text-muted">Όνομα:</small>
+                          <small className="text-muted">Ονομα:</small>
                           <p className="mb-0 fw-semibold">
                             {validationResult.member.name}
                           </p>
                         </div>
                         <div className="mb-2">
-                          <small className="text-muted">Τηλέφωνο:</small>
+                          <small className="text-muted">Τηλεφωνο:</small>
                           <p className="mb-0">
                             {validationResult.member.phone}
                           </p>
                         </div>
                         <div className="mb-2">
-                          <small className="text-muted">Πακέτο:</small>
+                          <small className="text-muted">Πακετο:</small>
                           <p className="mb-0">
                             {validationResult.member.package}
                           </p>
                         </div>
                         <div>
-                          <small className="text-muted">Λήξη:</small>
+                          <small className="text-muted">Ληξη:</small>
                           <p className="mb-0">
                             {validationResult.member.expiry}
                           </p>
@@ -917,10 +1153,10 @@ const QRScanner: React.FC = () => {
 
                   <div className="mt-3">
                     <button
-                      className="btn btn-outline-primary w-100"
+                      className="btn btn-outline-secondary w-100"
                       onClick={resetValidation}
                     >
-                      Νέα Σάρωση
+                      Νεα Σαρωση
                     </button>
                   </div>
                 </div>

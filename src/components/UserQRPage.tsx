@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
+import Barcode from "react-barcode";
 import { supabase } from "../lib/supabaseClient";
 import type { Member } from "../types";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Clock, ScanLine } from "lucide-react";
+
+// Helper function to check if member uses barcode (IDs 1001-1005)
+const isBarcodeMember = (memberId: number): boolean => {
+  return memberId >= 1001 && memberId <= 1005;
+};
 
 const UserQRPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -16,13 +22,13 @@ const UserQRPage: React.FC = () => {
   useEffect(() => {
     const fetchMember = async () => {
       if (!memberId && !phone) {
-        setError("Δεν βρέθηκε ID ή τηλέφωνο μέλους");
+        setError("Δεν βρεθηκε ID η τηλεφωνο μελους");
         setLoading(false);
         return;
       }
 
       if (!supabase) {
-        setError("Η σύνδεση με τη βάση δεδομένων δεν είναι διαθέσιμη");
+        setError("Η συνδεση με τη βαση δεδομενων δεν ειναι διαθεσιμη");
         setLoading(false);
         return;
       }
@@ -39,12 +45,12 @@ const UserQRPage: React.FC = () => {
         const { data, error: fetchError } = await query.single();
 
         if (fetchError || !data) {
-          setError("Δεν βρέθηκε μέλος");
+          setError("Δεν βρεθηκε μελος");
         } else {
           setMember(data as Member);
         }
       } catch (err) {
-        setError("Σφάλμα κατά τη φόρτωση των δεδομένων");
+        setError("Σφαλμα κατα τη φορτωση των δεδομενων");
       } finally {
         setLoading(false);
       }
@@ -60,21 +66,21 @@ const UserQRPage: React.FC = () => {
       case "active":
         return {
           icon: <CheckCircle className="text-success" size={24} />,
-          text: "Ενεργή Συνδρομή",
+          text: "Ενεργη Συνδρομη",
           color: "text-success",
           bgColor: "bg-success bg-opacity-10",
         };
       case "expiring_soon":
         return {
           icon: <Clock className="text-warning" size={24} />,
-          text: "Λήγει Σύντομα",
+          text: "Ληγει Συντομα",
           color: "text-warning",
           bgColor: "bg-warning bg-opacity-10",
         };
       case "expired":
         return {
           icon: <XCircle className="text-danger" size={24} />,
-          text: "Ληγμένη Συνδρομή",
+          text: "Ληγμενη Συνδρομη",
           color: "text-danger",
           bgColor: "bg-danger bg-opacity-10",
         };
@@ -95,9 +101,9 @@ const UserQRPage: React.FC = () => {
             role="status"
             style={{ width: "3rem", height: "3rem" }}
           >
-            <span className="visually-hidden">Φόρτωση...</span>
+            <span className="visually-hidden">Φορτωση...</span>
           </div>
-          <p className="text-muted">Φόρτωση...</p>
+          <p className="text-muted">Φορτωση...</p>
         </div>
       </div>
     );
@@ -115,8 +121,8 @@ const UserQRPage: React.FC = () => {
               <div className="card border-0 shadow-sm">
                 <div className="card-body text-center p-5">
                   <XCircle className="text-danger mb-3" size={64} />
-                  <h4 className="mb-3">Σφάλμα</h4>
-                  <p className="text-muted">{error || "Δεν βρέθηκε μέλος"}</p>
+                  <h4 className="mb-3">Σφαλμα</h4>
+                  <p className="text-muted">{error || "Δεν βρεθηκε μελος"}</p>
                 </div>
               </div>
             </div>
@@ -127,6 +133,7 @@ const UserQRPage: React.FC = () => {
   }
 
   const statusInfo = getStatusInfo();
+  const isBarcode = isBarcodeMember(member.id);
   const qrValue = JSON.stringify({
     id: member.id,
     memberId: member.id,
@@ -149,7 +156,9 @@ const UserQRPage: React.FC = () => {
               <div className="card-body p-5">
                 {/* Header */}
                 <div className="text-center mb-4">
-                  <h2 className="mb-3 fw-bold">Το QR Code μου</h2>
+                  <h2 className="mb-3 fw-bold">
+                    {isBarcode ? "Το Barcode μου" : "Το QR Code μου"}
+                  </h2>
                   <div className="d-flex justify-content-center mb-3">
                     {member.photo_url ? (
                       <img
@@ -171,15 +180,34 @@ const UserQRPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* QR Code - Large and Centered */}
+                {/* QR Code or Barcode - Large and Centered */}
                 <div className="d-flex justify-content-center mb-4">
                   <div className="p-4 bg-white border rounded-3 shadow-sm">
-                    <QRCodeSVG
-                      value={qrValue}
-                      size={320}
-                      level="H"
-                      includeMargin={true}
-                    />
+                    {isBarcode ? (
+                      <div className="d-flex flex-column align-items-center">
+                        <Barcode
+                          value={member.id.toString()}
+                          format="CODE128"
+                          width={2}
+                          height={100}
+                          displayValue={true}
+                          fontSize={20}
+                        />
+                        <div className="mt-3 text-center">
+                          <ScanLine size={24} className="text-info mb-2" />
+                          <p className="mb-0 small text-muted">
+                            Barcode ID: <strong>{member.id}</strong>
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <QRCodeSVG
+                        value={qrValue}
+                        size={320}
+                        level="H"
+                        includeMargin={true}
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -187,19 +215,19 @@ const UserQRPage: React.FC = () => {
                 <div className="border-top pt-4">
                   <div className="row g-3">
                     <div className="col-6">
-                      <small className="text-muted d-block mb-1">Όνομα</small>
+                      <small className="text-muted d-block mb-1">Ονομα</small>
                       <p className="mb-0 fw-semibold">{member.name}</p>
                     </div>
                     <div className="col-6">
-                      <small className="text-muted d-block mb-1">Τηλέφωνο</small>
+                      <small className="text-muted d-block mb-1">Τηλεφωνο</small>
                       <p className="mb-0">{member.phone}</p>
                     </div>
                     <div className="col-6">
-                      <small className="text-muted d-block mb-1">Πακέτο</small>
+                      <small className="text-muted d-block mb-1">Πακετο</small>
                       <p className="mb-0">{member.package}</p>
                     </div>
                     <div className="col-6">
-                      <small className="text-muted d-block mb-1">Λήξη</small>
+                      <small className="text-muted d-block mb-1">Ληξη</small>
                       <p className="mb-0">{member.expiry}</p>
                     </div>
                   </div>
@@ -209,10 +237,12 @@ const UserQRPage: React.FC = () => {
                 <div className="mt-4 text-center">
                   <div className="alert alert-light border mb-0" role="alert">
                     <small className="d-block mb-1">
-                      <strong>📱 Οδηγίες:</strong>
+                      <strong>📱 Οδηγιες:</strong>
                     </small>
                     <small className="text-muted">
-                      Δείξτε αυτό το QR code στον διαχειριστή για να εισέλθετε στο γυμναστήριο
+                      {isBarcode
+                        ? "Δειξτε αυτο το barcode στον διαχειριστη για να εισελθετε στο γυμναστηριο"
+                        : "Δειξτε αυτο το QR code στον διαχειριστη για να εισελθετε στο γυμναστηριο"}
                     </small>
                   </div>
                 </div>

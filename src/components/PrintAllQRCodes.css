@@ -1,0 +1,437 @@
+/* Credit Card Dimensions: 85.60mm x 53.98mm (3.375" x 2.125") */
+.credit-card-container {
+  padding: 0.25rem !important;
+}
+
+.credit-card {
+  width: 85.60mm;
+  height: 53.98mm;
+  background: 
+    linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%),
+    radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  background-size: 100% 100%, 150% 150%, 150% 150%;
+  border-radius: 8px;
+  padding: 4mm;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  color: white;
+  margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.credit-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  pointer-events: none;
+  animation: shimmer 8s ease-in-out infinite;
+}
+
+.credit-card::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -30%;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  animation: shimmer 10s ease-in-out infinite reverse;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.card-header-custom {
+  margin-bottom: 3mm;
+  z-index: 1;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+}
+
+.logo-placeholder {
+  display: flex;
+  align-items: center;
+}
+
+.logo-g {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12mm;
+  height: 12mm;
+}
+
+.logo-g svg {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.logo-image {
+  width: 12mm;
+  height: 12mm;
+  object-fit: contain;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5mm;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.logo-image:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.5),
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.card-checkbox {
+  position: absolute;
+  top: 2mm;
+  right: 2mm;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.card-selected {
+  border: 2px solid #4ade80 !important;
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3) !important;
+}
+
+.card-unselected {
+  opacity: 0.6;
+}
+
+.card-unselected:hover {
+  opacity: 0.9;
+}
+
+.card-lost {
+  position: relative;
+  border: 2px solid #dc3545 !important;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.3) !important;
+  opacity: 0.85;
+}
+
+.card-lost::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(220, 53, 69, 0.1) 10px,
+    rgba(220, 53, 69, 0.1) 20px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-lost-badge {
+  position: absolute;
+  top: 2mm;
+  left: 2mm;
+  z-index: 10;
+  background: #dc3545;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 2.5mm;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.card-actions {
+  position: absolute;
+  bottom: 2mm;
+  right: 2mm;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 60px;
+}
+
+.card-actions .btn {
+  font-size: 2.5mm;
+  padding: 2px 6px;
+  line-height: 1.2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.card-actions .btn.mb-1 {
+  margin-bottom: 2px !important;
+}
+
+.gym-name {
+  flex: 1;
+}
+
+.gym-name-main {
+  font-size: 5mm;
+  font-weight: 900;
+  letter-spacing: 0.5mm;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.gym-name-sub {
+  font-size: 3mm;
+  font-weight: 600;
+  letter-spacing: 0.3mm;
+  color: #ffd700;
+  margin-top: 0.5mm;
+}
+
+.card-body-custom {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
+.member-name {
+  font-size: 4mm;
+  font-weight: 700;
+  margin-bottom: 2mm;
+  text-align: center;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1mm 0;
+}
+
+.qr-container {
+  background: white;
+  padding: 2mm;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.barcode-container {
+  background: white;
+  padding: 1mm 2mm;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.member-info {
+  font-size: 2.5mm;
+  margin-top: auto;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5mm;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #ffd700;
+  min-width: 8mm;
+}
+
+.info-value {
+  color: #fff;
+  font-weight: 500;
+}
+
+.info-value-small {
+  color: #fff;
+  font-weight: 500;
+  font-size: 2mm;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 1mm;
+  margin-top: 1mm;
+  padding-top: 1mm;
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.status-dot {
+  width: 2mm;
+  height: 2mm;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.status-active {
+  background: #4ade80;
+  box-shadow: 0 0 3px #4ade80;
+}
+
+.status-dot.status-warning {
+  background: #fbbf24;
+  box-shadow: 0 0 3px #fbbf24;
+}
+
+.status-dot.status-expired {
+  background: #f87171;
+  box-shadow: 0 0 3px #f87171;
+}
+
+.status-text {
+  font-size: 2.5mm;
+  font-weight: 700;
+  letter-spacing: 0.2mm;
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body {
+    background: white !important;
+  }
+  
+  /* Hide navigation and layout elements */
+  header,
+  .bg-dark,
+  nav,
+  .sidebar,
+  .d-print-none {
+    display: none !important;
+  }
+  
+  /* Hide main layout header */
+  .flex-grow-1 > header,
+  .bg-dark.shadow-sm,
+  .container-fluid > .row:first-child {
+    display: none !important;
+  }
+  
+  /* Remove padding from main content */
+  main {
+    padding: 0 !important;
+  }
+  
+  .container-fluid {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  
+  #print-cards.row {
+    margin: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-auto-rows: 53.98mm !important;
+    gap: 4mm !important;
+    width: 100% !important;
+    justify-items: center !important;
+    align-items: start !important;
+  }
+  
+  /* Ensure unselected cards are completely hidden during print */
+  .credit-card-container.d-print-none {
+    display: none !important;
+  }
+  
+  .credit-card-container {
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    min-height: 53.98mm !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  
+  .credit-card-container.page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+  
+  .credit-card {
+    width: 85.60mm !important;
+    height: 53.98mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    flex-shrink: 0 !important;
+  }
+  
+  @page {
+    margin: 10mm;
+    size: A4 landscape;
+  }
+}
+
+@media screen {
+  .credit-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .credit-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
+  }
+}
+

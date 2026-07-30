@@ -3,9 +3,19 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import UserQRPage from "./components/UserQRPage";
 import { createRoutes } from "./config/routes";
-import type { Stats, Member, UpcomingExpiry, Debt, Package } from "./types";
+import type {
+  Stats,
+  Member,
+  UpcomingExpiry,
+  Debt,
+  Package,
+  Payment,
+} from "./types";
 import { fetchAppData } from "./services/supabaseData";
-import { AppDataProvider, createAppDataContextValue } from "./contexts/AppDataContext";
+import {
+  AppDataProvider,
+  createAppDataContextValue,
+} from "./contexts/AppDataContext";
 
 // Empty initial state - all data comes from Supabase
 const emptyStats: Stats = {
@@ -20,30 +30,34 @@ const emptyStats: Stats = {
 function App() {
   const [stats, setStats] = useState<Stats>(emptyStats);
   const [members, setMembers] = useState<Member[]>([]);
-  const [upcomingExpiries, setUpcomingExpiries] = useState<UpcomingExpiry[]>([]);
+  const [upcomingExpiries, setUpcomingExpiries] = useState<UpcomingExpiry[]>(
+    []
+  );
   const [debts, setDebts] = useState<Debt[]>([]);
   const [packages, setPackages] = useState<Package[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     const data = await fetchAppData();
-    
+
     if (data) {
       setStats(data.stats);
       setMembers(data.members);
       setUpcomingExpiries(data.upcomingExpiries);
       setDebts(data.debts);
       setPackages(data.packages);
+      setPayments(data.payments);
     } else {
-      // If Supabase is not configured, show empty state
       setStats(emptyStats);
       setMembers([]);
       setUpcomingExpiries([]);
       setDebts([]);
       setPackages([]);
+      setPayments([]);
     }
-    
+
     setLoading(false);
   }, []);
 
@@ -57,12 +71,14 @@ function App() {
     upcomingExpiries,
     debts,
     packages,
+    payments,
     loading,
     setStats,
     setMembers,
     setUpcomingExpiries,
     setDebts,
     setPackages,
+    setPayments,
     setLoading
   );
 
@@ -72,6 +88,7 @@ function App() {
     upcomingExpiries,
     debts,
     packages,
+    payments,
   });
 
   return (
@@ -79,7 +96,7 @@ function App() {
       <Routes>
         {/* Standalone User QR Page - No Layout */}
         <Route path="/my-qr" element={<UserQRPage />} />
-        
+
         {/* Admin Routes with MainLayout */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />

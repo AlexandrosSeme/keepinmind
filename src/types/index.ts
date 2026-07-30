@@ -7,6 +7,7 @@ export interface Member {
   expiry: string;
   package: string;
   photo_url?: string;
+  card_lost?: boolean;
 }
 
 export interface UpcomingExpiry {
@@ -36,6 +37,15 @@ export interface Package {
   duration: string;
   price: number;
   active: number;
+}
+
+export interface Payment {
+  id: number;
+  memberName: string;
+  amount: number;
+  date: string;
+  status: 'completed' | 'pending' | 'failed';
+  method: string;
 }
 
 export interface CalendarEvent {

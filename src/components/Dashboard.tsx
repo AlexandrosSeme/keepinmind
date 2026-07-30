@@ -1,444 +1,610 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Users,
   CheckCircle,
   Clock,
-  TrendingUp,
-  Euro,
   AlertCircle,
+  Euro,
+  TrendingUp,
+  Plus,
+  CreditCard,
+  QrCode,
+  UserPlus,
+  Package,
 } from "lucide-react";
 import Chart from "react-apexcharts";
-import type { Stats, UpcomingExpiry, Debt } from "../types";
+import type { ApexOptions } from "apexcharts";
+import type { Stats, UpcomingExpiry, Debt, Payment } from "../types";
 import { useNavigate } from "react-router-dom";
+import { useAppData } from "../contexts/AppDataContext";
+import StatusBadge from "./ui/StatusBadge";
+import "./Dashboard.scss";
 
 interface DashboardProps {
   stats: Stats;
   upcomingExpiries: UpcomingExpiry[];
   debts: Debt[];
+  payments?: Payment[];
+}
+
+const GREEK_MONTHS = [
+  "Ιαν",
+  "Φεβ",
+  "Μαρ",
+  "Απρ",
+  "Μαι",
+  "Ιουν",
+  "Ιουλ",
+  "Αυγ",
+  "Σεπ",
+  "Οκτ",
+  "Νοε",
+  "Δεκ",
+];
+
+const BRAND = {
+  yellow: "#f5c400",
+  yellowStrong: "#d4a800",
+  yellowSoft: "#ffe566",
+  ink: "#111111",
+  charcoal: "#2a2a2a",
+  slate: "#5c5c5c",
+  muted: "#8a8680",
+  canvas: "#e8e5df",
+  /** Member / payment semantic tones aligned to Melos */
+  active: "#1a1a1a",
+  expiring: "#f5c400",
+  expired: "#8a8680",
+  paid: "#111111",
+  pending: "#f5c400",
+  failed: "#5c5c5c",
+};
+
+function parsePaymentDate(dateStr: string): Date | null {
+  const parts = dateStr.trim().split(/[./-]/);
+  if (parts.length !== 3) return null;
+  const [dd, mm, yyyy] = parts.map(Number);
+  if (!dd || !mm || !yyyy) return null;
+  const d = new Date(yyyy, mm - 1, dd);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function lastSixMonthBuckets() {
+  const now = new Date();
+  const buckets: { key: string; label: string }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    buckets.push({
+      key: `${d.getFullYear()}-${d.getMonth()}`,
+      label: GREEK_MONTHS[d.getMonth()],
+    });
+  }
+  return buckets;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
   stats,
   upcomingExpiries,
   debts,
+  payments: paymentsProp = [],
 }) => {
   const navigate = useNavigate();
-  const StatCard: React.FC<{
+  const { payments: paymentsCtx, members } = useAppData();
+  const payments = paymentsCtx.length > 0 ? paymentsCtx : paymentsProp;
+
+  const todayLabel = new Date().toLocaleDateString("el-GR", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+
+  const sortedExpiries = useMemo(
+    () => [...upcomingExpiries].sort((a, b) => a.days - b.days).slice(0, 6),
+    [upcomingExpiries]
+  );
+
+  const sortedDebts = useMemo(
+    () =>
+      [...debts]
+        .sort((a, b) => b.daysOverdue - a.daysOverdue || b.amount - a.amount)
+        .slice(0, 6),
+    [debts]
+  );
+
+  const memberDistribution = useMemo(() => {
+    const active = members.filter((m) => m.status === "active").length;
+    const expiring = members.filter((m) => m.status === "expiring_soon").length;
+    const expired = members.filter((m) => m.status === "expired").length;
+    const total = active + expiring + expired;
+    return {
+      series: total > 0 ? [active, expiring, expired] : [0, 0, 0],
+      total,
+      labels: ["Ενεργα", "Ληγουν", "Ληγμενα"],
+    };
+  }, [members]);
+
+  /** Demo series when Supabase payments table is empty */
+  const sampleRevenue = useMemo(() => {
+    const base = Math.max(members.length, 8);
+    return [
+      Math.round(base * 72),
+      Math.round(base * 85),
+      Math.round(base * 78),
+      Math.round(base * 98),
+      Math.round(base * 105),
+      Math.round(base * 118),
+    ];
+  }, [members.length]);
+
+  const samplePaymentStatus = useMemo(
+    () => [
+      Math.max(12, Math.round(members.length * 1.4)),
+      Math.max(2, Math.round(members.length * 0.25)),
+      Math.max(1, Math.round(members.length * 0.08)),
+    ],
+    [members.length]
+  );
+
+  const revenueSeries = useMemo(() => {
+    const buckets = lastSixMonthBuckets();
+    const totals = buckets.map(() => 0);
+
+    payments.forEach((p) => {
+      if (p.status !== "completed") return;
+      const d = parsePaymentDate(p.date);
+      if (!d) return;
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const idx = buckets.findIndex((b) => b.key === key);
+      if (idx >= 0) totals[idx] += Number(p.amount) || 0;
+    });
+
+    const hasReal = totals.some((v) => v > 0);
+    return {
+      categories: buckets.map((b) => b.label),
+      data: hasReal ? totals : sampleRevenue,
+      hasReal,
+    };
+  }, [payments, sampleRevenue]);
+
+  const paymentStatus = useMemo(() => {
+    const completed = payments.filter((p) => p.status === "completed").length;
+    const pending = payments.filter((p) => p.status === "pending").length;
+    const failed = payments.filter((p) => p.status === "failed").length;
+    const total = completed + pending + failed;
+    const hasReal = total > 0;
+    return {
+      series: hasReal ? [completed, pending, failed] : samplePaymentStatus,
+      total: hasReal ? total : samplePaymentStatus.reduce((a, b) => a + b, 0),
+      hasReal,
+      labels: ["Ολοκληρωμενες", "Εκκρεμεις", "Αποτυχιες"],
+    };
+  }, [payments, samplePaymentStatus]);
+
+  const displayRevenue = revenueSeries.hasReal
+    ? stats.monthlyRevenue
+    : String(sampleRevenue[sampleRevenue.length - 1]);
+  const displayPending = paymentStatus.hasReal
+    ? stats.pendingPayments
+    : String(Math.round(sampleRevenue[sampleRevenue.length - 1] * 0.12));
+
+  const donutMembersOptions: ApexOptions = {
+    chart: {
+      type: "donut",
+      toolbar: { show: false },
+      fontFamily: "Barlow Condensed, Barlow, sans-serif",
+    },
+    colors: [BRAND.active, BRAND.expiring, BRAND.expired],
+    labels: memberDistribution.labels,
+    legend: {
+      position: "bottom",
+      fontSize: "11px",
+      fontWeight: 700,
+      fontFamily: "Barlow Condensed, sans-serif",
+      markers: { size: 6, shape: "circle" },
+      itemMargin: { horizontal: 8, vertical: 2 },
+      labels: { colors: BRAND.charcoal },
+    },
+    dataLabels: { enabled: false },
+    plotOptions: {
+      pie: {
+        expandOnClick: false,
+        donut: {
+          size: "72%",
+          labels: {
+            show: true,
+            name: { show: false },
+            value: {
+              show: true,
+              fontSize: "1.35rem",
+              fontFamily: "Barlow Condensed, sans-serif",
+              fontWeight: 800,
+              color: BRAND.ink,
+            },
+            total: {
+              show: true,
+              label: "ΜΕΛΗ",
+              fontSize: "0.65rem",
+              fontFamily: "Barlow Condensed, sans-serif",
+              fontWeight: 700,
+              color: BRAND.muted,
+              formatter: () => String(memberDistribution.total),
+            },
+          },
+        },
+      },
+    },
+    stroke: { width: 2, colors: ["#ffffff"] },
+    tooltip: {
+      theme: "light",
+      y: { formatter: (val) => `${val} μελη` },
+    },
+  };
+
+  const revenueOptions: ApexOptions = {
+    chart: {
+      type: "area",
+      toolbar: { show: false },
+      fontFamily: "Barlow Condensed, Barlow, sans-serif",
+      zoom: { enabled: false },
+      parentHeightOffset: 0,
+    },
+    colors: [BRAND.yellow],
+    dataLabels: { enabled: false },
+    stroke: { curve: "smooth", width: 3, colors: [BRAND.yellowStrong] },
+    fill: {
+      type: "solid",
+      colors: [BRAND.yellow],
+      opacity: 0.22,
+    },
+    markers: {
+      size: 4,
+      colors: [BRAND.yellow],
+      strokeColors: BRAND.ink,
+      strokeWidth: 2,
+      hover: { size: 6 },
+    },
+    grid: {
+      borderColor: BRAND.canvas,
+      strokeDashArray: 0,
+      padding: { left: 8, right: 8, top: 0, bottom: 0 },
+    },
+    xaxis: {
+      categories: revenueSeries.categories,
+      labels: {
+        style: {
+          colors: BRAND.muted,
+          fontSize: "11px",
+          fontWeight: 700,
+          fontFamily: "Barlow Condensed, sans-serif",
+        },
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      min: 0,
+      tickAmount: 4,
+      labels: {
+        style: {
+          colors: BRAND.muted,
+          fontSize: "11px",
+          fontWeight: 700,
+          fontFamily: "Barlow Condensed, sans-serif",
+        },
+        formatter: (val) => `€${Math.round(val)}`,
+      },
+    },
+    tooltip: {
+      theme: "light",
+      y: { formatter: (val) => `€${val}` },
+    },
+  };
+
+  const paymentMeters = [
+    {
+      label: "Ολοκληρωμενες",
+      value: paymentStatus.series[0],
+      color: BRAND.paid,
+    },
+    {
+      label: "Εκκρεμεις",
+      value: paymentStatus.series[1],
+      color: BRAND.pending,
+    },
+    {
+      label: "Αποτυχιες",
+      value: paymentStatus.series[2],
+      color: BRAND.failed,
+    },
+  ];
+  const paymentMeterMax = Math.max(...paymentMeters.map((m) => m.value), 1);
+
+  const kpis: {
     title: string;
     value: string | number;
     icon: React.ReactNode;
-    color: string;
-    bgColor: string;
-  }> = ({ title, value, icon, color, bgColor }) => (
-    <div className="col-6 col-md-4 col-lg-2 mb-3">
-      <div className="card h-100 border-0 shadow-sm">
-        <div className="card-body p-3">
-          <div className="d-flex align-items-center justify-content-between">
-            <div>
-              <p
-                className="card-text text-muted small mb-1"
-                style={{ fontSize: "0.75rem" }}
-              >
-                {title}
-              </p>
-              <h5 className={`card-title mb-0 ${color}`}>{value}</h5>
-            </div>
-            <div className={`p-2 rounded-circle ${bgColor}`}>
-              <div style={{ fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {icon}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    to: string;
+  }[] = [
+    {
+      title: "Μελη",
+      value: stats.totalMembers,
+      icon: <Users size={16} />,
+      to: "/members",
+    },
+    {
+      title: "Ενεργες",
+      value: stats.activeSubscriptions,
+      icon: <CheckCircle size={16} />,
+      to: "/subscriptions",
+    },
+    {
+      title: "Ληγουν",
+      value: stats.expiringThisWeek,
+      icon: <Clock size={16} />,
+      to: "/members",
+    },
+    {
+      title: "Οφειλες",
+      value: stats.overdueDebts,
+      icon: <AlertCircle size={16} />,
+      to: "/debts",
+    },
+    {
+      title: "Εσοδα",
+      value: `€${displayRevenue}`,
+      icon: <TrendingUp size={16} />,
+      to: "/payments",
+    },
+    {
+      title: "Εκκρεμη",
+      value: `€${displayPending}`,
+      icon: <Euro size={16} />,
+      to: "/payments",
+    },
+  ];
+
+  const quickActions = [
+    { label: "Μελος", icon: <UserPlus size={14} />, to: "/members" },
+    { label: "Πληρωμη", icon: <CreditCard size={14} />, to: "/payments" },
+    { label: "QR", icon: <QrCode size={14} />, to: "/qr-scanner" },
+    { label: "Οφειλη", icon: <Plus size={14} />, to: "/debts" },
+  ];
 
   return (
-    <div>
-      {/* Stats Grid */}
-      <div className="row mb-4">
-        <StatCard
-          title="Σύνολο Μελών"
-          value={stats.totalMembers}
-          icon={<Users size={24} className="text-primary" />}
-          color="text-dark"
-          bgColor="bg-primary bg-opacity-10"
-        />
-        <StatCard
-          title="Ενεργές Συνδρομές"
-          value={stats.activeSubscriptions}
-          icon={<CheckCircle size={24} className="text-success" />}
-          color="text-success"
-          bgColor="bg-success bg-opacity-10"
-        />
-        <StatCard
-          title="Λήγουν Αυτή την Εβδομάδα"
-          value={stats.expiringThisWeek}
-          icon={<Clock size={24} className="text-warning" />}
-          color="text-warning"
-          bgColor="bg-warning bg-opacity-10"
-        />
-        <StatCard
-          title="Μηνιαία Έσοδα"
-          value={`€${stats.monthlyRevenue}`}
-          icon={<TrendingUp size={24} className="text-info" />}
-          color="text-info"
-          bgColor="bg-info bg-opacity-10"
-        />
-        <StatCard
-          title="Εκκρεμείς Πληρωμές"
-          value={`€${stats.pendingPayments}`}
-          icon={<Euro size={24} className="text-warning" />}
-          color="text-warning"
-          bgColor="bg-warning bg-opacity-10"
-        />
-        <StatCard
-          title="Ληξιπρόθεσμες Οφειλές"
-          value={stats.overdueDebts}
-          icon={<AlertCircle size={24} className="text-danger" />}
-          color="text-danger"
-          bgColor="bg-danger bg-opacity-10"
-        />
+    <div className="km-dashboard">
+      <div className="km-dashboard__top">
+        <div className="km-dashboard__heading">
+          <h2 className="km-page-title mb-0">Dashboard</h2>
+          <span className="km-dashboard__date">{todayLabel}</span>
+        </div>
+        <div className="km-dashboard__actions">
+          {quickActions.map((action) => (
+            <button
+              key={action.label}
+              type="button"
+              className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
+              onClick={() => navigate(action.to)}
+            >
+              {action.icon}
+              <span className="d-none d-sm-inline">{action.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Main Content Row */}
-      <div className="row">
-        {/* Left Column - Lists */}
-        <div className="col-12 col-md-6 col-lg-5 mb-3">
-          {/* Upcoming Expiries */}
-          <div className="card border-0 shadow-sm mb-3">
-            <div className="card-header bg-white border-bottom py-2 d-flex align-items-center justify-content-between">
-              <h6 className="card-title mb-0">Επερχόμενες Λήξεις</h6>
-              <button
-                className="btn btn-link btn-sm text-primary p-0"
-                style={{ fontSize: "0.75rem" }}
-                onClick={() => navigate("/debts")}
+      <div className="km-dashboard__kpis">
+        {kpis.map((kpi) => (
+          <button
+            key={kpi.title}
+            type="button"
+            className="card border-0 shadow-sm km-dash-kpi km-dashboard__kpi"
+            onClick={() => navigate(kpi.to)}
+          >
+            <div className="card-body p-2 d-flex align-items-center justify-content-between gap-2">
+              <div className="min-w-0">
+                <div className="km-stat-label mb-0">{kpi.title}</div>
+                <div className="km-dashboard__kpi-value">{kpi.value}</div>
+              </div>
+              <div
+                className="km-avatar-soft"
+                style={{ width: 32, height: 32 }}
               >
-                Προβολή Όλων
-              </button>
+                {kpi.icon}
+              </div>
             </div>
-            <div className="card-body p-3 overflow-auto" style={{ maxHeight: "240px", minHeight: "240px" }}>
-              {upcomingExpiries.map((exp) => (
+          </button>
+        ))}
+      </div>
+
+      <div className="km-dashboard__body">
+        {/* Expiries */}
+        <div className="card border-0 shadow-sm km-dashboard__panel">
+          <div className="card-header border-0 py-2 px-3 d-flex align-items-center justify-content-between">
+            <h6 className="card-title mb-0">Επερχομενες Ληξεις</h6>
+            <button
+              type="button"
+              className="btn btn-link btn-sm km-action-link p-0"
+              onClick={() => navigate("/members")}
+            >
+              Ολα
+            </button>
+          </div>
+          <div className="card-body p-0 km-dashboard__scroll">
+            {sortedExpiries.length === 0 ? (
+              <div className="km-dashboard__empty">
+                <Package size={22} className="mb-1 opacity-50" />
+                <span>Καμια ληξη</span>
+              </div>
+            ) : (
+              sortedExpiries.map((exp) => (
                 <div
                   key={exp.id}
-                  className="d-flex align-items-center justify-content-between p-2 bg-warning bg-opacity-10 rounded mb-2"
+                  className="km-dashboard__row d-flex align-items-center justify-content-between gap-2"
                 >
-                  <div className="flex-grow-1">
-                    <div
-                      className="text-dark"
-                      style={{ fontSize: "0.85rem", fontWeight: "500" }}
-                    >
+                  <div className="min-w-0">
+                    <div className="fw-semibold text-dark text-truncate">
                       {exp.name}
                     </div>
-                    <small
-                      className="text-muted"
-                      style={{ fontSize: "0.75rem" }}
-                    >
+                    <small className="text-muted text-truncate d-block">
                       {exp.package}
                     </small>
                   </div>
-                  <div className="text-end">
-                    <div
-                      className="fw-semibold text-warning"
-                      style={{ fontSize: "0.8rem" }}
-                    >
-                      Σε {exp.days} ημέρες
-                    </div>
-                    <small
-                      className="text-muted"
-                      style={{ fontSize: "0.7rem" }}
-                    >
-                      {exp.expiry}
-                    </small>
-                  </div>
+                  <StatusBadge
+                    tone={exp.days <= 3 ? "danger" : "warning"}
+                    label={`${exp.days}η`}
+                    showDot={false}
+                  />
                 </div>
-              ))}
-            </div>
+              ))
+            )}
           </div>
         </div>
 
-        {/* Members Distribution */}
-        <div className="col-12 col-md-6 col-lg-2 mb-3">
-          <div className="card border-0 shadow-sm">
-            <div className="card-header bg-white border-bottom py-2">
-              <h6 className="card-title mb-0">Κατανομή Μελών</h6>
-            </div>
-            <div className="card-body p-3">
+        {/* Member distribution chart */}
+        <div className="card border-0 shadow-sm km-dashboard__panel">
+          <div className="card-header border-0 py-2 px-3">
+            <h6 className="card-title mb-0">Κατανομη Μελων</h6>
+          </div>
+          <div className="card-body p-2 d-flex align-items-center justify-content-center km-dashboard__chart">
+            {memberDistribution.total === 0 ? (
+              <div className="km-dashboard__empty">
+                <Users size={22} className="mb-1 opacity-50" />
+                <span>Χωρις μελη ακομη</span>
+              </div>
+            ) : (
               <Chart
-                options={{
-                  chart: {
-                    type: "donut",
-                    height: 200,
-                  },
-                  colors: ["#28a745", "#ffc107", "#dc3545", "#17a2b8"],
-                  labels: ["Ενεργά", "Λήγουν Σύντομα", "Ανενεργά", "Νέα"],
-                  legend: {
-                    position: "bottom",
-                  },
-                  plotOptions: {
-                    pie: {
-                      donut: {
-                        size: "30%",
-                      },
-                    },
-                  },
-                  dataLabels: {
-                    enabled: true,
-                    formatter: function (val) {
-                      return val + "%";
-                    },
-                  },
-                }}
-                series={[45, 20, 25, 10]}
+                options={donutMembersOptions}
+                series={memberDistribution.series}
                 type="donut"
-                height={200}
+                height={190}
+                width="100%"
               />
-            </div>
+            )}
           </div>
         </div>
-        {/* Overdue Debts */}
-        <div className="col-12 col-md-6 col-lg-5 mb-3">
-          <div className="card border-0 shadow-sm">
-            <div className="card-header bg-white border-bottom py-2 d-flex align-items-center justify-content-between">
-              <h6 className="card-title mb-0">Ληξιπρόθεσμες Οφειλές</h6>
-              <button
-                className="btn btn-link btn-sm text-primary p-0"
-                style={{ fontSize: "0.75rem" }}
-                onClick={() => navigate("/debts")}
-              >
-                Προβολή Όλων
-              </button>
-            </div>
-            <div className="card-body p-3 overflow-auto" style={{ maxHeight: "240px", minHeight: "240px" }}>
-              {debts.map((debt) => (
+
+        {/* Debts */}
+        <div className="card border-0 shadow-sm km-dashboard__panel">
+          <div className="card-header border-0 py-2 px-3 d-flex align-items-center justify-content-between">
+            <h6 className="card-title mb-0">Οφειλες</h6>
+            <button
+              type="button"
+              className="btn btn-link btn-sm km-action-link p-0"
+              onClick={() => navigate("/debts")}
+            >
+              Ολα
+            </button>
+          </div>
+          <div className="card-body p-0 km-dashboard__scroll">
+            {sortedDebts.length === 0 ? (
+              <div className="km-dashboard__empty">
+                <CheckCircle size={22} className="mb-1 opacity-50" />
+                <span>Καμια οφειλη</span>
+              </div>
+            ) : (
+              sortedDebts.map((debt) => (
                 <div
                   key={debt.id}
-                  className="d-flex align-items-center justify-content-between p-2 bg-danger bg-opacity-10 rounded mb-2"
+                  className="km-dashboard__row d-flex align-items-center justify-content-between gap-2"
                 >
-                  <div className="flex-grow-1">
-                    <div
-                      className="text-dark"
-                      style={{ fontSize: "0.85rem", fontWeight: "500" }}
-                    >
+                  <div className="min-w-0">
+                    <div className="fw-semibold text-dark text-truncate">
                       {debt.name}
                     </div>
-                    <small
-                      className="text-muted"
-                      style={{ fontSize: "0.75rem" }}
-                    >
-                      {debt.daysOverdue} ημέρες καθυστέρηση
+                    <small className="text-muted">
+                      {debt.daysOverdue} ημ. ·{" "}
+                      <button
+                        type="button"
+                        className="btn btn-link btn-sm km-action-link p-0 align-baseline"
+                        onClick={() => navigate("/payments")}
+                      >
+                        Πληρωμη
+                      </button>
                     </small>
                   </div>
-                  <div className="text-end">
-                    <div
-                      className="fw-bold text-danger"
-                      style={{ fontSize: "0.85rem" }}
-                    >
+                  <div className="text-end flex-shrink-0">
+                    <div className="fw-bold text-danger" style={{ fontSize: "0.9rem" }}>
                       €{debt.amount}
                     </div>
-                    <button
-                      className="btn btn-link btn-sm text-primary p-0"
-                      style={{ fontSize: "0.7rem" }}
-                    >
-                      Καταγραφή Πληρωμής
-                    </button>
+                    <StatusBadge status={debt.status} showDot={false} />
                   </div>
                 </div>
-              ))}
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Revenue + payment status charts stacked in one panel on large screens — split into revenue */}
+        <div className="card border-0 shadow-sm km-dashboard__panel">
+          <div className="card-header border-0 py-2 px-3 d-flex align-items-center justify-content-between gap-2">
+            <div className="d-flex align-items-center gap-2 min-w-0">
+              <h6 className="card-title mb-0">Εσοδα (6 μηνες)</h6>
+              {!revenueSeries.hasReal && (
+                <span className="km-badge km-badge--neutral" title="Δειγμα δεδομενων μεχρι να καταχωρηθουν πληρωμες">
+                  <span className="km-badge__label">Δειγμα</span>
+                </span>
+              )}
             </div>
+            <button
+              type="button"
+              className="btn btn-link btn-sm km-action-link p-0 flex-shrink-0"
+              onClick={() => navigate("/payments")}
+            >
+              Πληρωμες
+            </button>
+          </div>
+          <div className="card-body p-2 km-dashboard__chart">
+            <Chart
+              options={revenueOptions}
+              series={[{ name: "Εσοδα", data: revenueSeries.data }]}
+              type="area"
+              height={190}
+              width="100%"
+            />
           </div>
         </div>
       </div>
-      {/* Bottom Charts Row */}
-      <div className="row">
-        {/* Revenue Chart */}
-        <div className="col-12 col-sm-6 col-lg-4 mb-3">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom py-2">
-              <h6 className="card-title mb-0">Μηνιαία Έσοδα</h6>
-            </div>
-            <div className="card-body p-3">
-              <Chart
-                options={{
-                  chart: {
-                    type: "area",
-                    height: 200,
-                    toolbar: {
-                      show: false,
-                    },
-                  },
-                  colors: ["#007bff"],
-                  dataLabels: {
-                    enabled: true,
-                  },
-                  stroke: {
-                    curve: "smooth",
-                    width: 2,
-                  },
-                  xaxis: {
-                    categories: ["Ιαν", "Φεβ", "Μαρ", "Απρ", "Μαι", "Ιουν"],
-                  },
-                  yaxis: {
-                    title: {
-                      text: "Έσοδα (€)",
-                    },
-                  },
-                  fill: {
-                    type: "gradient",
-                    gradient: {
-                      shadeIntensity: 1,
-                      opacityFrom: 0.7,
-                      opacityTo: 0.3,
-                      stops: [0, 90, 100],
-                    },
-                  },
-                  tooltip: {
-                    y: {
-                      formatter: function (val) {
-                        return "€" + val;
-                      },
-                    },
-                  },
-                }}
-                series={[
-                  {
-                    name: "Έσοδα",
-                    data: [1200, 1500, 1800, 1600, 2000, 2200],
-                  },
-                ]}
-                type="area"
-                height={250}
-              />
-            </div>
-          </div>
-        </div>
 
-        {/* Payment Status */}
-        <div className="col-12 col-sm-6 col-lg-4 mb-3">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom py-2">
-              <h6 className="card-title mb-0">Κατάσταση Πληρωμών</h6>
+      <div className="card border-0 shadow-sm km-dashboard__payments-bar">
+        <div className="km-dashboard__pay-status">
+          <div className="km-dashboard__pay-status-head">
+            <div className="d-flex align-items-center gap-2">
+              <div className="km-stat-label mb-0">Κατασταση πληρωμων</div>
+              {!paymentStatus.hasReal && (
+                <span className="km-badge km-badge--neutral">
+                  <span className="km-badge__label">Δειγμα</span>
+                </span>
+              )}
             </div>
-            <div className="card-body p-3">
-              <Chart
-                options={{
-                  chart: {
-                    type: "bar",
-                    height: 200,
-                    toolbar: {
-                      show: false,
-                    },
-                  },
-                  colors: ["#28a745", "#ffc107", "#dc3545"],
-                  plotOptions: {
-                    bar: {
-                      horizontal: false,
-                      columnWidth: "100%",
-                      borderRadius: 4,
-                    },
-                  },
-                  dataLabels: {
-                    enabled: true,
-                  },
-                  stroke: {
-                    show: true,
-                    width: 2,
-                    colors: ["transparent"],
-                  },
-                  xaxis: {
-                    categories: ["Ιαν", "Φεβ", "Μαρ", "Απρ", "Μαι", "Ιουν"],
-                  },
-                  yaxis: {
-                    title: {
-                      text: "Αριθμός Πληρωμών",
-                    },
-                  },
-                  fill: {
-                    opacity: 1,
-                  },
-                  legend: {
-                    position: "top",
-                  },
-                }}
-                series={[
-                  {
-                    name: "Εγκαίρως",
-                    data: [45, 52, 48, 55, 60, 58],
-                  },
-                  {
-                    name: "Καθυστέρηση",
-                    data: [8, 12, 10, 6, 5, 7],
-                  },
-                  {
-                    name: "Ληξιπρόθεσμες",
-                    data: [3, 2, 4, 2, 1, 2],
-                  },
-                ]}
-                type="bar"
-                height={250}
-              />
-            </div>
+            <button
+              type="button"
+              className="btn btn-link btn-sm km-action-link p-0"
+              onClick={() => navigate("/payments")}
+            >
+              Λεπτομερειες
+            </button>
           </div>
-        </div>
-
-        {/* Subscription Trends */}
-        <div className="col-12 col-sm-6 col-lg-4 mb-3">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom py-2">
-              <h6 className="card-title mb-0">Τάσεις Συνδρομών</h6>
-            </div>
-            <div className="card-body p-3">
-              <Chart
-                options={{
-                  chart: {
-                    type: "line",
-                    height: 200,
-                    toolbar: {
-                      show: false,
-                    },
-                  },
-                  colors: ["#28a745", "#ffc107", "#dc3545"],
-                  stroke: {
-                    width: 3,
-                    curve: "smooth",
-                  },
-                  xaxis: {
-                    categories: ["Ιαν", "Φεβ", "Μαρ", "Απρ", "Μαι", "Ιουν"],
-                  },
-                  yaxis: {
-                    title: {
-                      text: "Αριθμός Συνδρομών",
-                    },
-                  },
-                  legend: {
-                    position: "top",
-                  },
-                  markers: {
-                    size: 6,
-                    hover: {
-                      size: 8,
-                    },
-                  },
-                }}
-                series={[
-                  {
-                    name: "Νέες Συνδρομές",
-                    data: [12, 15, 18, 14, 20, 22],
-                  },
-                  {
-                    name: "Ανανεώσεις",
-                    data: [8, 12, 10, 15, 18, 16],
-                  },
-                  {
-                    name: "Ακυρώσεις",
-                    data: [2, 3, 4, 2, 3, 1],
-                  },
-                ]}
-                type="line"
-                height={250}
-              />
-            </div>
+          <div className="km-dashboard__meters">
+            {paymentMeters.map((meter) => (
+              <div key={meter.label} className="km-dashboard__meter">
+                <div className="km-dashboard__meter-meta">
+                  <span className="km-dashboard__meter-label">{meter.label}</span>
+                  <span className="km-dashboard__meter-value">{meter.value}</span>
+                </div>
+                <div className="km-dashboard__meter-track">
+                  <div
+                    className="km-dashboard__meter-fill"
+                    style={{
+                      width: `${Math.max(
+                        6,
+                        (meter.value / paymentMeterMax) * 100
+                      )}%`,
+                      backgroundColor: meter.color,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

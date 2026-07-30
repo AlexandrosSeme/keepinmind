@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, QrCode } from "lucide-react";
+import { Search, QrCode, ScanLine } from "lucide-react";
 import { useAppData } from "../contexts/AppDataContext";
+
+// Helper function to check if member uses barcode (IDs 1001-1005)
+const isBarcodeMember = (memberId: number): boolean => {
+  return memberId >= 1001 && memberId <= 1005;
+};
 
 const ViewQRCode: React.FC = () => {
   const { members } = useAppData();
@@ -13,7 +18,8 @@ const ViewQRCode: React.FC = () => {
   const filteredMembers = members.filter(
     (member) =>
       member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.phone.includes(searchTerm)
+      member.phone.includes(searchTerm) ||
+      member.id.toString().includes(searchTerm)
   );
 
   const handleViewQR = (memberId: number) => {
@@ -23,7 +29,7 @@ const ViewQRCode: React.FC = () => {
   const handleManualView = () => {
     const id = parseInt(manualId);
     if (isNaN(id) || id <= 0) {
-      alert("Παρακαλώ εισάγετε έγκυρο ID μέλους");
+      alert("Παρακαλω εισαγετε εγκυρο ID μελους");
       return;
     }
     navigate(`/user-qr?id=${id}`);
@@ -35,7 +41,7 @@ const ViewQRCode: React.FC = () => {
         <div className="col-12">
           <h2 className="mb-4">
             <QrCode className="me-2" size={28} />
-            Προβολή QR Code Μέλους
+            Προβολη QR Code Μελους
           </h2>
         </div>
       </div>
@@ -45,11 +51,11 @@ const ViewQRCode: React.FC = () => {
         <div className="col-12 col-md-6 mb-4">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h5 className="mb-3">Επιλογή Μέλους</h5>
+              <h5 className="mb-3">Επιλογη Μελους</h5>
 
               {/* Search */}
               <div className="mb-3">
-                <label className="form-label">Αναζήτηση Μέλους</label>
+                <label className="form-label">Αναζητηση Μελους</label>
                 <div className="input-group">
                   <span className="input-group-text">
                     <Search size={18} />
@@ -57,7 +63,7 @@ const ViewQRCode: React.FC = () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Αναζήτηση με όνομα ή τηλέφωνο..."
+                    placeholder="Αναζητηση με ονομα η τηλεφωνο..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -71,47 +77,67 @@ const ViewQRCode: React.FC = () => {
               >
                 {filteredMembers.length === 0 ? (
                   <div className="p-3 text-center text-muted">
-                    <p className="mb-0">Δεν βρέθηκαν μέλη</p>
+                    <p className="mb-0">Δεν βρεθηκαν μελη</p>
                   </div>
                 ) : (
                   <div className="list-group list-group-flush">
-                    {filteredMembers.map((member) => (
-                      <button
-                        key={member.id}
-                        type="button"
-                        className={`list-group-item list-group-item-action ${
-                          selectedMemberId === member.id.toString()
-                            ? "active"
-                            : ""
-                        }`}
-                        onClick={() => {
-                          setSelectedMemberId(member.id.toString());
-                          handleViewQR(member.id);
-                        }}
-                      >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div>
-                            <div className="fw-semibold">{member.name}</div>
-                            <small className="text-muted">
-                              {member.phone} • {member.package}
-                            </small>
+                    {filteredMembers.map((member) => {
+                      const isBarcode = isBarcodeMember(member.id);
+                      return (
+                        <button
+                          key={member.id}
+                          type="button"
+                          className={`list-group-item list-group-item-action ${
+                            selectedMemberId === member.id.toString()
+                              ? "active"
+                              : ""
+                          } ${isBarcode ? "border-start border-3 border-info" : ""}`}
+                          onClick={() => {
+                            setSelectedMemberId(member.id.toString());
+                            handleViewQR(member.id);
+                          }}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div className="flex-grow-1">
+                              <div className="d-flex align-items-center gap-2">
+                                <div className="fw-semibold">{member.name}</div>
+                                {isBarcode && (
+                                  <span className="badge bg-info text-dark">
+                                    <ScanLine size={12} className="me-1" />
+                                    Barcode
+                                  </span>
+                                )}
+                              </div>
+                              <small className="text-muted d-block">
+                                {member.phone} • {member.package}
+                              </small>
+                              {isBarcode && (
+                                <small className="text-info d-block mt-1">
+                                  <strong>Barcode ID:</strong> {member.id}
+                                </small>
+                              )}
+                            </div>
+                            {isBarcode ? (
+                              <ScanLine size={20} className="text-info" />
+                            ) : (
+                              <QrCode size={20} />
+                            )}
                           </div>
-                          <QrCode size={20} />
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
 
               {/* Manual ID Input */}
               <div className="mt-4 pt-3 border-top">
-                <label className="form-label">Ή εισάγετε ID μέλους:</label>
+                <label className="form-label">Η εισαγετε ID μελους:</label>
                 <div className="input-group">
                   <input
                     type="number"
                     className="form-control"
-                    placeholder="ID μέλους"
+                    placeholder="ID μελους"
                     value={manualId}
                     onChange={(e) => setManualId(e.target.value)}
                     onKeyPress={(e) => {
@@ -125,7 +151,7 @@ const ViewQRCode: React.FC = () => {
                     type="button"
                     onClick={handleManualView}
                   >
-                    Προβολή QR
+                    Προβολη QR
                   </button>
                 </div>
               </div>
@@ -137,15 +163,15 @@ const ViewQRCode: React.FC = () => {
         <div className="col-12 col-md-6 mb-4">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h5 className="mb-3">Οδηγίες</h5>
+              <h5 className="mb-3">Οδηγιες</h5>
               <div className="alert alert-info mb-0">
                 <p className="mb-2">
                   <strong>Για τον Admin:</strong>
                 </p>
                 <ul className="mb-0 ps-3">
-                  <li>Επιλέξτε μέλος από τη λίστα ή εισάγετε ID</li>
-                  <li>Θα ανοίξει η σελίδα με το QR code του μέλους</li>
-                  <li>Μπορείτε να το σαρώσετε με το QR Scanner</li>
+                  <li>Επιλεξτε μελος απο τη λιστα η εισαγετε ID</li>
+                  <li>Θα ανοιξει η σελιδα με το QR code του μελους</li>
+                  <li>Μπορειτε να το σαρωσετε με το QR Scanner</li>
                 </ul>
               </div>
 
@@ -155,13 +181,13 @@ const ViewQRCode: React.FC = () => {
                   <code className="small">
                     /my-qr?id=123
                     <br />
-                    ή
+                    η
                     <br />
                     /my-qr?phone=6912345678
                   </code>
                 </div>
                 <p className="small text-muted mb-0">
-                  Στείλτε αυτό το link στους χρήστες για να δουν το QR code τους
+                  Στειλτε αυτο το link στους χρηστες για να δουν το QR code τους
                 </p>
               </div>
             </div>

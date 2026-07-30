@@ -11,10 +11,14 @@ import {
   Camera,
   X,
   Eye,
+  CreditCard,
+  Printer,
+  AlertTriangle,
 } from "lucide-react";
 import type { Member } from "../types";
 import { useAppData } from "../contexts/AppDataContext";
 import { uploadMemberPhoto } from "../services/photoService";
+import StatusBadge from "./ui/StatusBadge";
 
 interface MembersProps {
   members: Member[];
@@ -46,21 +50,6 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { class: "bg-success text-white", text: "Ενεργή" },
-      expiring_soon: { class: "bg-warning text-dark", text: "Λήγει Σύντομα" },
-      expired: { class: "bg-danger text-white", text: "Ληγμένη" },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || {
-      class: "bg-secondary text-white",
-      text: status,
-    };
-
-    return <span className={`badge ${config.class}`}>{config.text}</span>;
-  };
 
   // Use members from context if available, otherwise use prop
   const displayMembers = members.length > 0 ? members : membersProp;
@@ -101,10 +90,35 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
 
   const handleDelete = async (id: number) => {
     if (
-      window.confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το μέλος;")
+      window.confirm("Ειστε σιγουροι οτι θελετε να διαγραψετε αυτο το μελος;")
     ) {
       await removeMember(id);
     }
+  };
+
+  const handleToggleCardLost = async (member: Member) => {
+    const isCurrentlyLost = member.card_lost === true;
+    const confirmMessage = isCurrentlyLost
+      ? `Ειστε σιγουροι οτι θελετε να ενεργοποιησετε την καρτα του ${member.name};`
+      : `Ειστε σιγουροι οτι θελετε να ακυρωσετε την καρτα του ${member.name};\n\nΑυτο θα εμποδισει τη χρηση της καρτας μεχρι να εκτυπωθει νεα.`;
+
+    if (window.confirm(confirmMessage)) {
+      const updated = await editMember(member.id, {
+        card_lost: !isCurrentlyLost,
+      });
+      if (updated) {
+        alert(
+          isCurrentlyLost
+            ? `Η καρτα του ${member.name} ενεργοποιηθηκε επιτυχως.`
+            : `Η καρτα του ${member.name} ακυρωθηκε. Μπορειτε να εκτυπωσετε νεα καρτα.`
+        );
+      }
+    }
+  };
+
+  const handlePrintNewCard = (member: Member) => {
+    // Navigate to print page with member ID
+    navigate(`/print-qr-codes?id=${member.id}`);
   };
 
   const handleSubmitAdd = async (e: React.FormEvent) => {
@@ -182,7 +196,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
     // Check if browser supports camera API
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setCameraError(
-        "Το browser σας δεν υποστηρίζει πρόσβαση στην κάμερα. Χρησιμοποιήστε file upload."
+        "Το browser σας δεν υποστηριζει προσβαση στην καμερα. Χρησιμοποιηστε file upload."
       );
       setUseFileInput(true);
       return;
@@ -195,7 +209,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
       window.location.hostname === "127.0.0.1";
     if (!isSecure) {
       setCameraError(
-        "Η κάμερα απαιτεί HTTPS connection. Χρησιμοποιήστε file upload."
+        "Η καμερα απαιτει HTTPS connection. Χρησιμοποιηστε file upload."
       );
       setUseFileInput(true);
       return;
@@ -255,14 +269,14 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                 .play()
                 .catch((err) => {
                   console.error("[Camera] Error playing video:", err);
-                  setCameraError("Σφάλμα κατά την αναπαραγωγή του video.");
+                  setCameraError("Σφαλμα κατα την αναπαραγωγη του video.");
                 });
             }
           };
 
           videoRef.current.onerror = (e) => {
             console.error("[Camera] Video error:", e);
-            setCameraError("Σφάλμα κατά την προβολή της κάμερας.");
+            setCameraError("Σφαλμα κατα την προβολη της καμερας.");
           };
 
           // Try to play immediately as well
@@ -278,7 +292,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
       }, 100);
     } catch (error: unknown) {
       console.error("[Camera] Error accessing camera:", error);
-      let errorMessage = "Δεν ήταν δυνατή η πρόσβαση στην κάμερα.";
+      let errorMessage = "Δεν ηταν δυνατη η προσβαση στην καμερα.";
       let showInstructions = false;
 
       const errorObj = error as { name?: string; message?: string };
@@ -286,33 +300,33 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
         errorObj.name === "NotAllowedError" ||
         errorObj.name === "PermissionDeniedError"
       ) {
-        errorMessage = "Δεν δόθηκε άδεια πρόσβασης στην κάμερα.";
+        errorMessage = "Δεν δοθηκε αδεια προσβασης στην καμερα.";
         showInstructions = true;
       } else if (
         errorObj.name === "NotFoundError" ||
         errorObj.name === "DevicesNotFoundError"
       ) {
         errorMessage =
-          "Δεν βρέθηκε κάμερα. Παρακαλώ χρησιμοποιήστε file upload.";
+          "Δεν βρεθηκε καμερα. Παρακαλω χρησιμοποιηστε file upload.";
       } else if (
         errorObj.name === "NotReadableError" ||
         errorObj.name === "TrackStartError"
       ) {
         errorMessage =
-          "Η κάμερα χρησιμοποιείται από άλλη εφαρμογή. Παρακαλώ κλείστε την άλλη εφαρμογή.";
+          "Η καμερα χρησιμοποιειται απο αλλη εφαρμογη. Παρακαλω κλειστε την αλλη εφαρμογη.";
       } else if (
         errorObj.name === "OverconstrainedError" ||
         errorObj.name === "ConstraintNotSatisfiedError"
       ) {
-        errorMessage = "Η κάμερα δεν υποστηρίζει τις απαιτούμενες ρυθμίσεις.";
+        errorMessage = "Η καμερα δεν υποστηριζει τις απαιτουμενες ρυθμισεις.";
       } else if (errorObj.name === "SecurityError") {
         errorMessage =
-          "Σφάλμα ασφαλείας. Βεβαιωθείτε ότι χρησιμοποιείτε HTTPS.";
+          "Σφαλμα ασφαλειας. Βεβαιωθειτε οτι χρησιμοποιειτε HTTPS.";
       }
 
       if (showInstructions) {
         errorMessage +=
-          '\n\nΟδηγίες για Chrome:\n1. Κάντε κλικ στο εικονίδιο κλειδώματος (🔒) στην αριστερή πλευρά της γραμμής διευθύνσεων\n2. Βρείτε "Camera" και επιλέξτε "Allow"\n3. Κάντε refresh τη σελίδα';
+          '\n\nΟδηγιες για Chrome:\n1. Καντε κλικ στο εικονιδιο κλειδωματος (🔒) στην αριστερη πλευρα της γραμμης διευθυνσεων\n2. Βρειτε "Camera" και επιλεξτε "Allow"\n3. Καντε refresh τη σελιδα';
       }
 
       setCameraError(errorMessage);
@@ -335,7 +349,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
     if (!videoRef.current || !canvasRef.current) {
       console.error("[Camera] Video or canvas ref is missing");
       setCameraError(
-        "Σφάλμα: Δεν βρέθηκε video element. Παρακαλώ δοκιμάστε ξανά."
+        "Σφαλμα: Δεν βρεθηκε video element. Παρακαλω δοκιμαστε ξανα."
       );
       return;
     }
@@ -345,7 +359,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
 
     // Check if video is ready
     if (video.readyState < 2) {
-      setCameraError("Η κάμερα δεν είναι έτοιμη. Παρακαλώ περιμένετε...");
+      setCameraError("Η καμερα δεν ειναι ετοιμη. Παρακαλω περιμενετε...");
       setTimeout(() => {
         setCameraError(null);
         capturePhoto();
@@ -356,7 +370,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
     if (video.videoWidth === 0 || video.videoHeight === 0) {
       console.error("[Camera] Video dimensions are zero");
       setCameraError(
-        "Η κάμερα δεν βγάζει εικόνα. Παρακαλώ ελέγξτε τη σύνδεση της κάμερας."
+        "Η καμερα δεν βγαζει εικονα. Παρακαλω ελεγξτε τη συνδεση της καμερας."
       );
       return;
     }
@@ -364,7 +378,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
     const context = canvas.getContext("2d");
     if (!context) {
       console.error("[Camera] Could not get canvas context");
-      setCameraError("Σφάλμα κατά την λήψη της φωτογραφίας.");
+      setCameraError("Σφαλμα κατα την ληψη της φωτογραφιας.");
       return;
     }
 
@@ -384,7 +398,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
             setCameraError(null);
           } else {
             console.error("[Camera] Failed to create blob");
-            setCameraError("Σφάλμα κατά την αποθήκευση της φωτογραφίας.");
+            setCameraError("Σφαλμα κατα την αποθηκευση της φωτογραφιας.");
           }
         },
         "image/jpeg",
@@ -392,7 +406,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
       );
     } catch (error) {
       console.error("[Camera] Error capturing photo:", error);
-      setCameraError("Σφάλμα κατά την λήψη της φωτογραφίας.");
+      setCameraError("Σφαλμα κατα την ληψη της φωτογραφιας.");
     }
   };
 
@@ -401,7 +415,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
     setPhotoFile(null);
     setCameraError(null);
     setUseFileInput(false);
-    setFormData({ ...formData, photo_url: undefined });
+    setFormData((prev) => ({ ...prev, photo_url: undefined }));
   };
 
   // Handle file input change
@@ -410,13 +424,13 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        alert("Παρακαλώ επιλέξτε αρχείο εικόνας.");
+        alert("Παρακαλω επιλεξτε αρχειο εικονας.");
         return;
       }
 
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert("Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 10MB.");
+        alert("Το αρχειο ειναι πολυ μεγαλο. Μεγιστο μεγεθος: 10MB.");
         return;
       }
 
@@ -444,13 +458,13 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
           .play()
           .catch((err) => {
             console.error("[Camera] Error playing video in useEffect:", err);
-            setCameraError("Σφάλμα κατά την αναπαραγωγή του video.");
+            setCameraError("Σφαλμα κατα την αναπαραγωγη του video.");
           });
       };
 
       video.onerror = (e) => {
         console.error("[Camera] Video error in useEffect:", e);
-        setCameraError("Σφάλμα κατά την προβολή της κάμερας.");
+        setCameraError("Σφαλμα κατα την προβολη της καμερας.");
       };
 
       // Try to play immediately
@@ -475,16 +489,16 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
   return (
     <div>
       {/* Header */}
-      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
-        <h2 className="h4 mb-3 mb-md-0">Μέλη Γυμναστηρίου</h2>
+      <div className="km-page-header">
+        <h2 className="km-page-title">Μελη Γυμναστηριου</h2>
         <button className="btn btn-primary" onClick={handleAdd}>
           <Plus size={16} className="me-2" />
-          Νέο Μέλος
+          Νεο Μελος
         </button>
       </div>
 
       {/* Filters */}
-      <div className="card border-0 shadow-sm mb-4">
+      <div className="card border-0 shadow-sm mb-4 km-toolbar-card">
         <div className="card-body">
           <div className="row g-3">
             <div className="col-12 col-md-6 col-lg-8">
@@ -496,7 +510,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                 <input
                   type="text"
                   className="form-control ps-5"
-                  placeholder="Αναζήτηση μέλους (όνομα, τηλέφωνο)..."
+                  placeholder="Αναζητηση μελους (ονομα, τηλεφωνο)..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -505,7 +519,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
             <div className="col-6 col-md-3 col-lg-2">
               <button className="btn btn-outline-secondary w-100">
                 <Filter size={16} className="me-2" />
-                Φίλτρα
+                Φιλτρα
               </button>
             </div>
             <div className="col-6 col-md-3 col-lg-2">
@@ -519,18 +533,18 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
       </div>
 
       {/* Members Table */}
-      <div className="card border-0 shadow-sm">
+      <div className="card border-0 shadow-sm km-table-card">
         <div className="card-body p-0">
           <div className="table-responsive">
-            <table className="table table-hover mb-0">
+            <table className="table table-hover mb-0 km-table">
               <thead className="table-light">
                 <tr>
-                  <th className="border-0 ps-4">Ονοματεπώνυμο</th>
-                  <th className="border-0">Τηλέφωνο</th>
-                  <th className="border-0 d-none d-md-table-cell">Πακέτο</th>
-                  <th className="border-0 d-none d-lg-table-cell">Λήξη</th>
-                  <th className="border-0">Κατάσταση</th>
-                  <th className="border-0 pe-4">Ενέργειες</th>
+                  <th className="border-0 ps-4">Ονοματεπωνυμο</th>
+                  <th className="border-0">Τηλεφωνο</th>
+                  <th className="border-0 d-none d-md-table-cell">Πακετο</th>
+                  <th className="border-0 d-none d-lg-table-cell">Ληξη</th>
+                  <th className="border-0">Κατασταση</th>
+                  <th className="border-0 pe-4">Ενεργειες</th>
                 </tr>
               </thead>
               <tbody>
@@ -553,7 +567,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                           />
                         ) : (
                           <div
-                            className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
+                            className="km-avatar-soft rounded-circle d-flex align-items-center justify-content-center me-3"
                             style={{ width: "40px", height: "40px" }}
                           >
                             <User size={20} className="text-primary" />
@@ -582,27 +596,64 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                     <td className="d-none d-lg-table-cell">
                       <span className="text-muted">{member.expiry}</span>
                     </td>
-                    <td>{getStatusBadge(member.status)}</td>
+                    <td>
+                      <div className="d-flex flex-column align-items-start gap-1">
+                        <StatusBadge status={member.status} />
+                        {member.card_lost === true && (
+                          <StatusBadge
+                            status="card_lost"
+                            icon={<AlertTriangle size={11} />}
+                            showDot={false}
+                          />
+                        )}
+                      </div>
+                    </td>
                     <td className="pe-4">
                       <div className="btn-group" role="group">
                         <button
-                          className="btn btn-link btn-sm text-info p-0 me-2"
+                          className="btn btn-link btn-sm km-action-link p-0 me-2"
                           onClick={() => navigate(`/members/${member.id}`)}
-                          title="Προβολή"
+                          title="Προβολη"
                         >
                           <Eye size={16} />
                         </button>
                         <button
-                          className="btn btn-link btn-sm text-primary p-0 me-2"
+                          className="btn btn-link btn-sm km-action-link p-0 me-2"
                           onClick={() => handleEdit(member)}
-                          title="Επεξεργασία"
+                          title="Επεξεργασια"
                         >
                           <Edit size={16} />
                         </button>
+                        {member.card_lost === true ? (
+                          <>
+                            <button
+                              className="btn btn-link btn-sm km-action-link p-0 me-2"
+                              onClick={() => handleToggleCardLost(member)}
+                              title="Ενεργοποιηση Καρτας"
+                            >
+                              <CreditCard size={16} />
+                            </button>
+                            <button
+                              className="btn btn-link btn-sm km-action-link p-0 me-2"
+                              onClick={() => handlePrintNewCard(member)}
+                              title="Εκτυπωση Νεας Καρτας"
+                            >
+                              <Printer size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="btn btn-link btn-sm km-action-link km-action-danger p-0 me-2"
+                            onClick={() => handleToggleCardLost(member)}
+                            title="Ακυρωση Καρτας (Χαμενη)"
+                          >
+                            <CreditCard size={16} />
+                          </button>
+                        )}
                         <button
-                          className="btn btn-link btn-sm text-danger p-0"
+                          className="btn btn-link btn-sm km-action-link km-action-danger p-0"
                           onClick={() => handleDelete(member.id)}
-                          title="Διαγραφή"
+                          title="Διαγραφη"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -638,7 +689,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                     />
                   ) : (
                     <div
-                      className="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
+                      className="km-avatar-soft rounded-circle d-flex align-items-center justify-content-center me-3"
                       style={{ width: "40px", height: "40px" }}
                     >
                       <User size={20} className="text-primary" />
@@ -655,15 +706,24 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                     <small className="text-muted">{member.phone}</small>
                   </div>
                 </div>
-                {getStatusBadge(member.status)}
+                <div className="d-flex flex-column align-items-end gap-1">
+                  <StatusBadge status={member.status} />
+                  {member.card_lost === true && (
+                    <StatusBadge
+                      status="card_lost"
+                      icon={<AlertTriangle size={11} />}
+                      showDot={false}
+                    />
+                  )}
+                </div>
               </div>
               <div className="row g-2 mb-3">
                 <div className="col-6">
-                  <small className="text-muted d-block">Πακέτο</small>
+                  <small className="text-muted d-block">Πακετο</small>
                   <span className="text-dark">{member.package}</span>
                 </div>
                 <div className="col-6">
-                  <small className="text-muted d-block">Λήξη</small>
+                  <small className="text-muted d-block">Ληξη</small>
                   <span className="text-dark">{member.expiry}</span>
                 </div>
               </div>
@@ -673,21 +733,47 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                   onClick={() => navigate(`/members/${member.id}`)}
                 >
                   <Eye size={14} className="me-1" />
-                  Προβολή
+                  Προβολη
                 </button>
                 <button
-                  className="btn btn-outline-primary btn-sm"
+                  className="btn btn-outline-secondary btn-sm"
                   onClick={() => handleEdit(member)}
                 >
                   <Edit size={14} className="me-1" />
-                  Επεξεργασία
+                  Επεξεργασια
                 </button>
+                {member.card_lost === true ? (
+                  <>
+                    <button
+                      className="btn btn-outline-secondary btn-sm"
+                      onClick={() => handleToggleCardLost(member)}
+                    >
+                      <CreditCard size={14} className="me-1" />
+                      Ενεργοποιηση Καρτας
+                    </button>
+                    <button
+                      className="btn btn-outline-secondary btn-sm"
+                      onClick={() => handlePrintNewCard(member)}
+                    >
+                      <Printer size={14} className="me-1" />
+                      Εκτυπωση Νεας Καρτας
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() => handleToggleCardLost(member)}
+                  >
+                    <CreditCard size={14} className="me-1" />
+                    Ακυρωση Καρτας
+                  </button>
+                )}
                 <button
                   className="btn btn-outline-danger btn-sm"
                   onClick={() => handleDelete(member.id)}
                 >
                   <Trash2 size={14} className="me-1" />
-                  Διαγραφή
+                  Διαγραφη
                 </button>
               </div>
             </div>
@@ -705,7 +791,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Προσθήκη Νέου Μέλους</h5>
+                <h5 className="modal-title">Προσθηκη Νεου Μελους</h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -716,7 +802,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                 <div className="modal-body">
                   {/* Photo Section */}
                   <div className="mb-4">
-                    <label className="form-label">Φωτογραφία Προφίλ</label>
+                    <label className="form-label">Φωτογραφια Προφιλ</label>
                     <div className="d-flex flex-column gap-3">
                       <div className="d-flex align-items-center gap-3">
                         {capturedPhoto ? (
@@ -755,15 +841,15 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                         <div className="d-flex flex-column gap-2">
                           <button
                             type="button"
-                            className="btn btn-outline-primary"
+                            className="btn btn-outline-secondary"
                             onClick={useFileInput ? openFileInput : startCamera}
                           >
                             <Camera size={16} className="me-2" />
                             {capturedPhoto
-                              ? "Αλλαγή Φωτογραφίας"
+                              ? "Αλλαγη Φωτογραφιας"
                               : useFileInput
-                              ? "Επιλογή Αρχείου"
-                              : "Λήψη Φωτογραφίας"}
+                              ? "Επιλογη Αρχειου"
+                              : "Ληψη Φωτογραφιας"}
                           </button>
                           {!useFileInput && (
                             <button
@@ -771,7 +857,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                               className="btn btn-outline-secondary btn-sm"
                               onClick={openFileInput}
                             >
-                              Επιλογή από Αρχείο
+                              Επιλογη απο Αρχειο
                             </button>
                           )}
                         </div>
@@ -794,68 +880,68 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Ονοματεπώνυμο</label>
+                    <label className="form-label">Ονοματεπωνυμο</label>
                     <input
                       type="text"
                       className="form-control"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
+                        setFormData((prev) => ({ ...prev, name: e.target.value }))
                       }
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Τηλέφωνο</label>
+                    <label className="form-label">Τηλεφωνο</label>
                     <input
                       type="text"
                       className="form-control"
                       value={formData.phone}
                       onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
+                        setFormData((prev) => ({ ...prev, phone: e.target.value }))
                       }
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Κατάσταση</label>
+                    <label className="form-label">Κατασταση</label>
                     <select
                       className="form-select"
                       value={formData.status}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
+                        setFormData((prev) => ({
+                          ...prev,
                           status: e.target.value as Member["status"],
-                        })
+                        }))
                       }
                       required
                     >
-                      <option value="active">Ενεργή</option>
-                      <option value="expiring_soon">Λήγει Σύντομα</option>
-                      <option value="expired">Ληγμένη</option>
+                      <option value="active">Ενεργη</option>
+                      <option value="expiring_soon">Ληγει Συντομα</option>
+                      <option value="expired">Ληγμενη</option>
                     </select>
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Ημερομηνία Λήξης</label>
+                    <label className="form-label">Ημερομηνια Ληξης</label>
                     <input
                       type="text"
                       className="form-control"
                       placeholder="DD/MM/YYYY"
                       value={formData.expiry}
                       onChange={(e) =>
-                        setFormData({ ...formData, expiry: e.target.value })
+                        setFormData((prev) => ({ ...prev, expiry: e.target.value }))
                       }
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Πακέτο</label>
+                    <label className="form-label">Πακετο</label>
                     <input
                       type="text"
                       className="form-control"
                       value={formData.package}
                       onChange={(e) =>
-                        setFormData({ ...formData, package: e.target.value })
+                        setFormData((prev) => ({ ...prev, package: e.target.value }))
                       }
                       required
                     />
@@ -867,10 +953,10 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                     className="btn btn-secondary"
                     onClick={() => setShowAddModal(false)}
                   >
-                    Ακύρωση
+                    Ακυρωση
                   </button>
                   <button type="submit" className="btn btn-primary">
-                    Αποθήκευση
+                    Αποθηκευση
                   </button>
                 </div>
               </form>
@@ -889,7 +975,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Επεξεργασία Μέλους</h5>
+                <h5 className="modal-title">Επεξεργασια Μελους</h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -900,7 +986,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                 <div className="modal-body">
                   {/* Photo Section */}
                   <div className="mb-4">
-                    <label className="form-label">Φωτογραφία Προφίλ</label>
+                    <label className="form-label">Φωτογραφια Προφιλ</label>
                     <div className="d-flex flex-column gap-3">
                       <div className="d-flex align-items-center gap-3">
                         {capturedPhoto ? (
@@ -939,15 +1025,15 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                         <div className="d-flex flex-column gap-2">
                           <button
                             type="button"
-                            className="btn btn-outline-primary"
+                            className="btn btn-outline-secondary"
                             onClick={useFileInput ? openFileInput : startCamera}
                           >
                             <Camera size={16} className="me-2" />
                             {capturedPhoto
-                              ? "Αλλαγή Φωτογραφίας"
+                              ? "Αλλαγη Φωτογραφιας"
                               : useFileInput
-                              ? "Επιλογή Αρχείου"
-                              : "Λήψη Φωτογραφίας"}
+                              ? "Επιλογη Αρχειου"
+                              : "Ληψη Φωτογραφιας"}
                           </button>
                           {!useFileInput && (
                             <button
@@ -955,7 +1041,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                               className="btn btn-outline-secondary btn-sm"
                               onClick={openFileInput}
                             >
-                              Επιλογή από Αρχείο
+                              Επιλογη απο Αρχειο
                             </button>
                           )}
                         </div>
@@ -978,68 +1064,68 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Ονοματεπώνυμο</label>
+                    <label className="form-label">Ονοματεπωνυμο</label>
                     <input
                       type="text"
                       className="form-control"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
+                        setFormData((prev) => ({ ...prev, name: e.target.value }))
                       }
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Τηλέφωνο</label>
+                    <label className="form-label">Τηλεφωνο</label>
                     <input
                       type="text"
                       className="form-control"
                       value={formData.phone}
                       onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
+                        setFormData((prev) => ({ ...prev, phone: e.target.value }))
                       }
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Κατάσταση</label>
+                    <label className="form-label">Κατασταση</label>
                     <select
                       className="form-select"
                       value={formData.status}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
+                        setFormData((prev) => ({
+                          ...prev,
                           status: e.target.value as Member["status"],
-                        })
+                        }))
                       }
                       required
                     >
-                      <option value="active">Ενεργή</option>
-                      <option value="expiring_soon">Λήγει Σύντομα</option>
-                      <option value="expired">Ληγμένη</option>
+                      <option value="active">Ενεργη</option>
+                      <option value="expiring_soon">Ληγει Συντομα</option>
+                      <option value="expired">Ληγμενη</option>
                     </select>
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Ημερομηνία Λήξης</label>
+                    <label className="form-label">Ημερομηνια Ληξης</label>
                     <input
                       type="text"
                       className="form-control"
                       placeholder="DD/MM/YYYY"
                       value={formData.expiry}
                       onChange={(e) =>
-                        setFormData({ ...formData, expiry: e.target.value })
+                        setFormData((prev) => ({ ...prev, expiry: e.target.value }))
                       }
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Πακέτο</label>
+                    <label className="form-label">Πακετο</label>
                     <input
                       type="text"
                       className="form-control"
                       value={formData.package}
                       onChange={(e) =>
-                        setFormData({ ...formData, package: e.target.value })
+                        setFormData((prev) => ({ ...prev, package: e.target.value }))
                       }
                       required
                     />
@@ -1051,10 +1137,10 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                     className="btn btn-secondary"
                     onClick={() => setShowEditModal(false)}
                   >
-                    Ακύρωση
+                    Ακυρωση
                   </button>
                   <button type="submit" className="btn btn-primary">
-                    Αποθήκευση
+                    Αποθηκευση
                   </button>
                 </div>
               </form>
@@ -1072,7 +1158,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content bg-dark border-0">
               <div className="modal-header border-secondary">
-                <h5 className="modal-title text-white">Λήψη Φωτογραφίας</h5>
+                <h5 className="modal-title text-white">Ληψη Φωτογραφιας</h5>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
@@ -1124,7 +1210,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                     videoRef.current &&
                     videoRef.current.readyState >= 2 && (
                       <div className="position-absolute bottom-0 start-50 translate-middle-x mb-3">
-                        <div className="badge bg-success">Κάμερα ενεργή ✓</div>
+                        <StatusBadge tone="success" label="Καμερα ενεργη ✓" />
                       </div>
                     )}
                 </div>
@@ -1135,7 +1221,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                   className="btn btn-secondary"
                   onClick={stopCamera}
                 >
-                  Ακύρωση
+                  Ακυρωση
                 </button>
                 <button
                   type="button"
@@ -1143,7 +1229,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
                   onClick={capturePhoto}
                 >
                   <Camera size={16} className="me-2" />
-                  Λήψη Φωτογραφίας
+                  Ληψη Φωτογραφιας
                 </button>
               </div>
             </div>
@@ -1161,7 +1247,7 @@ const Members: React.FC<MembersProps> = ({ members: membersProp }) => {
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content bg-dark border-0">
               <div className="modal-header border-secondary">
-                <h5 className="modal-title text-white">Φωτογραφία Προφίλ</h5>
+                <h5 className="modal-title text-white">Φωτογραφια Προφιλ</h5>
                 <button
                   type="button"
                   className="btn-close btn-close-white"

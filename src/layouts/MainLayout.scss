@@ -1,50 +1,166 @@
 .app-title {
-  color: rgb(100, 255, 255);
-  font-weight: 700;
-  line-height: 32px;
-  text-shadow: 0 0 10px rgba(100, 255, 255, 0.5);
+  color: var(--km-brand);
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 1.35rem;
+  text-shadow: none;
+}
+
+.km-brand-pipe {
+  display: inline-block;
+  background: var(--km-brand);
+  color: var(--km-on-brand);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.45rem;
+  line-height: 1;
+  border-radius: 2px;
 }
 
 .nav-buttons {
-  background-color: rgb(88, 255, 255);
-  color: rgb(75, 75, 75) !important;
+  background-color: var(--km-brand) !important;
+  color: var(--km-on-brand) !important;
   border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 16px;
+  border-radius: 4px !important;
+  padding: 11px 16px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nav-buttons:hover,
+.nav-buttons:focus,
+.nav-buttons:active {
+  color: var(--km-on-brand) !important;
+  background-color: #ffd633 !important;
+}
+
+.km-sidebar .nav-link:not(.nav-buttons) {
+  border-radius: 4px;
+  padding: 11px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(245, 245, 245, 0.72) !important;
+  border-left: 3px solid transparent;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.km-sidebar .nav-link:not(.nav-buttons):hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--km-brand) !important;
+  border-left-color: var(--km-brand);
+}
+
+.km-sidebar-brand {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.km-topbar .welcome-label {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--km-text-faint) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.km-topbar .admin-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  color: var(--km-text) !important;
+}
+
+.km-topbar .btn-outline-secondary {
+  color: var(--km-text) !important;
+  border-color: var(--km-border) !important;
+}
+
+.km-avatar {
+  background-color: var(--km-brand) !important;
+  color: var(--km-on-brand) !important;
+  border-radius: 4px !important;
+}
+
+.km-stat-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.75rem;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  color: var(--km-text);
+}
+
+.km-stat-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--km-text-muted);
+}
+
+.km-dash-kpi {
+  cursor: pointer;
+  appearance: none;
+  background: var(--km-surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.km-dash-kpi:hover {
+  border-color: #d6d2cb !important;
+  box-shadow: 0 4px 14px rgba(20, 20, 20, 0.08) !important;
+  transform: translateY(-1px);
+}
+
+.km-dash-kpi:focus-visible {
+  outline: 2px solid var(--km-brand);
+  outline-offset: 2px;
+}
+
+.logo {
+  background-color: var(--km-brand);
+  color: var(--km-on-brand);
+  border-radius: 10%;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  border: 4px double #111;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.logo-name {
+  font-size: 0.55rem;
   font-weight: 700;
 }
-
-.nav-buttons:hover {
-  color: rgb(75, 75, 75) !important;
-}
-
-.nav-buttons:focus {
-  color: rgb(75, 75, 75) !important;
-}
-
-.nav-buttons:active {
-  color: rgb(75, 75, 75) !important;
-}
-
-// .btn-primary {
-//   background-color: rgb(100, 255, 255);
-//   color: rgb(75, 75, 75) !important;
-//   border: none;
-//   border-radius: 5px;
-//   padding: 10px 20px;
-//   font-size: 16px;
-//   font-weight: 700;
-//   &:hover {
-//     background-color: rgb(16, 223, 223);
-//     color: rgb(75, 75, 75) !important;
-//   }
-//   &:focus {
-//     background-color: rgb(16, 223, 223);
-//     color: rgb(75, 75, 75) !important;
-//   }
-//   &:active {
-//     background-color: rgb(16, 223, 223);
-//     color: rgb(75, 75, 75) !important;
-//   }
-// }

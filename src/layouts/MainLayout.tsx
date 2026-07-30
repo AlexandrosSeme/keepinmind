@@ -17,8 +17,8 @@ import {
   ClipboardCheck,
   QrCode,
   Smartphone,
-  Home,
 } from "lucide-react";
+import GlobalQRScanner from "../components/GlobalQRScanner";
 import "./MainLayout.scss";
 
 const MainLayout: React.FC = () => {
@@ -34,80 +34,80 @@ const MainLayout: React.FC = () => {
     },
     {
       id: "members",
-      name: "Μέλη",
+      name: "Μελη",
       icon: <Users size={20} />,
       path: "/members",
     },
     {
       id: "subscriptions",
-      name: "Συνδρομές",
+      name: "Συνδρομες",
       icon: <FileText size={20} />,
       path: "/subscriptions",
     },
     {
       id: "payments",
-      name: "Πληρωμές",
+      name: "Πληρωμες",
       icon: <CreditCard size={20} />,
       path: "/payments",
     },
     {
       id: "debts",
-      name: "Οφειλές",
+      name: "Οφειλες",
       icon: <AlertTriangle size={20} />,
       path: "/debts",
     },
     {
       id: "calendar",
-      name: "Ημερολόγιο",
+      name: "Ημερολογιο",
       icon: <Calendar size={20} />,
       path: "/calendar",
     },
     {
       id: "attendance",
-      name: "Προσέλευση",
+      name: "Προσελευση",
       icon: <ClipboardCheck size={20} />,
       path: "/attendance",
     },
     {
       id: "qr-scanner",
-      name: "Σάρωση QR Code",
+      name: "Σαρωση QR Code",
       icon: <QrCode size={20} />,
       path: "/qr-scanner",
     },
     {
       id: "view-qr",
-      name: "Προβολή QR Code",
+      name: "Προβολη QR Code",
       icon: <Smartphone size={20} />,
       path: "/view-qr",
     },
     {
+      id: "print-qr-codes",
+      name: "Καρτες",
+      icon: <QrCode size={20} />,
+      path: "/print-qr-codes",
+    },
+    {
       id: "notifications",
-      name: "Ειδοποιήσεις",
+      name: "Ειδοποιησεις",
       icon: <BellIcon size={20} />,
       path: "/notifications",
     },
     {
       id: "announcements",
-      name: "Ανακοινώσεις",
+      name: "Ανακοινωσεις",
       icon: <Megaphone size={20} />,
       path: "/announcements",
     },
     {
       id: "settings",
-      name: "Ρυθμίσεις",
+      name: "Ρυθμισεις",
       icon: <Settings size={20} />,
       path: "/settings",
-    },
-    {
-      id: "home-assistant",
-      name: "Home Assistant",
-      icon: <Home size={20} />,
-      path: "/home-assistant",
     },
   ];
 
   return (
-    <div className="d-flex vh-100 bg-light">
+    <div className="d-flex vh-100 km-shell">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -120,23 +120,28 @@ const MainLayout: React.FC = () => {
       {/* Sidebar */}
       <div
         className={`
-        bg-dark text-white d-flex flex-column
+        km-sidebar text-white d-flex flex-column
         ${sidebarOpen ? "position-fixed start-0 top-0" : "d-none"}
         d-lg-flex
-        ${sidebarOpen ? "w-100" : ""}
         d-lg-block
       `}
         style={{
-          width: sidebarOpen ? "280px" : "280px",
+          width: "280px",
+          minWidth: "280px",
+          maxWidth: "280px",
           zIndex: 1050,
           height: "100vh",
+          flexShrink: 0,
         }}
       >
         {/* Header */}
-        <div className="p-3 py-4 d-flex align-items-center justify-content-between border-bottom">
-          <h4 className="app-title mb-0 text-primary-300">KM Management</h4>
-          <div className="text-white pt-1">
-            <span className="mx-1 fw-bold">| CRM</span>{" "}
+        <div className="p-3 py-4 d-flex align-items-center justify-content-between km-sidebar-brand">
+          <div className="logo" aria-label="Melos">
+            <span className="logo-mark">M</span>
+            <span className="logo-name">Melos</span>
+          </div>
+          <div className="pt-1">
+            <span className="km-brand-pipe mx-1">Gym Manager</span>
           </div>
           <button
             className="btn btn-link text-white p-0 d-lg-none"
@@ -153,11 +158,10 @@ const MainLayout: React.FC = () => {
               <li key={item.id} className="nav-item">
                 <Link
                   to={item.path}
-                  className={`nav-link w-100 text-start d-flex align-items-center gap-3 ${
-                    location.pathname === item.path
-                      ? "nav-buttons"
-                      : "text-white"
-                  }`}
+                  className={`nav-link w-100 text-start d-flex align-items-center gap-3 ${location.pathname === item.path
+                    ? "nav-buttons"
+                    : "text-white"
+                    }`}
                   onClick={() => setSidebarOpen(false)}
                 >
                   <span className="fs-5">{item.icon}</span>
@@ -171,11 +175,11 @@ const MainLayout: React.FC = () => {
 
       {/* Main Content */}
       <div
-        className="flex-grow-1 d-flex flex-column"
-        style={{ overflow: "auto", backgroundColor: "rgb(240, 240, 240)" }}
+        className="flex-grow-1 d-flex flex-column km-main"
+        style={{ overflow: "auto" }}
       >
         {/* Top Header */}
-        <header className="bg-dark shadow-sm border-bottom">
+        <header className="km-topbar shadow-sm">
           <div className="container-fluid">
             <div className="row align-items-center py-3">
               <div className="col">
@@ -187,16 +191,15 @@ const MainLayout: React.FC = () => {
                     <Menu size={20} />
                   </button>
                   <div>
-                    {/* <h1 className="h5 mb-0 text-white">Colosseum Gym Management</h1> */}
-                    <small className="text-secondary">
-                      Καλώς ήρθατε στο σύστημα διαχείρισης
+                    <small className="welcome-label">
+                      Καλως ηρθατε στο συστημα διαχειρισης
                     </small>
                   </div>
                 </div>
               </div>
               <div className="col-auto">
                 <div className="d-flex align-items-center gap-4">
-                  <button className="btn btn-outline-secondary position-relative text-white">
+                  <button className="btn btn-outline-secondary position-relative">
                     <Bell size={20} />
                     <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                       3
@@ -204,14 +207,14 @@ const MainLayout: React.FC = () => {
                   </button>
                   <div className="d-flex align-items-center gap-2">
                     <div
-                      className="bg-primary rounded-circle d-flex align-items-center justify-content-center"
+                      className="km-avatar d-flex align-items-center justify-content-center"
                       style={{ width: "40px", height: "40px" }}
                     >
-                      <User size={20} className="text-white" />
+                      <User size={20} />
                     </div>
                     <div className="d-none d-md-block">
-                      <div className="fw-semibold text-white">Admin</div>
-                      <small className="text-secondary">Διαχειριστής</small>
+                      <div className="admin-name">Admin</div>
+                      <small className="welcome-label">Διαχειριστης</small>
                     </div>
                   </div>
                 </div>
@@ -225,6 +228,9 @@ const MainLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Global QR Scanner - Works on ALL pages */}
+      <GlobalQRScanner />
     </div>
   );
 };

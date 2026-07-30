@@ -4,6 +4,7 @@ import { useAppData } from '../contexts/AppDataContext';
 import { emailService } from '../services/emailService';
 import { smsService } from '../services/smsService';
 import type { Member } from '../types';
+import StatusBadge from './ui/StatusBadge';
 
 interface Announcement {
   id: number;
@@ -40,7 +41,7 @@ const createEmailHTML = (text: string): string => {
       background-color: #f5f5f5;
     }
     .email-container {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #141414;
       border-radius: 10px;
       padding: 30px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -69,7 +70,7 @@ const createEmailHTML = (text: string): string => {
       margin: 15px 0;
     }
     .offer-box {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      background: #f5c400;
       color: white;
       padding: 20px;
       border-radius: 8px;
@@ -97,7 +98,7 @@ const createEmailHTML = (text: string): string => {
 <body>
   <div class="email-container">
     <div class="header">
-      <h1>🎄 Καλά Χριστούγεννα! 🎁</h1>
+      <h1>🎄 Καλα Χριστουγεννα! 🎁</h1>
     </div>
     <div class="email-content">
       <div class="content">
@@ -107,7 +108,7 @@ const createEmailHTML = (text: string): string => {
         <p><strong>"Keep in Mind"</strong></p>
         <p>📧 info@keepinmind.gr | 📱 210 1234567</p>
         <p style="font-size: 12px; color: #999; margin-top: 20px;">
-          Αυτό το email στάλθηκε από το "Keep in Mind" Gym Management System
+          Αυτο το email σταλθηκε απο το "Keep in Mind" Gym Management System
         </p>
       </div>
     </div>
@@ -131,8 +132,8 @@ const Announcements: React.FC = () => {
   const [recentAnnouncements, setRecentAnnouncements] = useState<Announcement[]>([
     {
       id: 1,
-      title: 'Χριστουγεννιάτικες Προσφορές',
-      sentTo: '142 μέλη',
+      title: 'Χριστουγεννιατικες Προσφορες',
+      sentTo: '142 μελη',
       channel: 'SMS',
       date: '10/12/2024 10:00',
       status: 'sent',
@@ -163,9 +164,9 @@ const Announcements: React.FC = () => {
           return expiryDate < new Date() && m.status === 'expired';
         });
       case 'monthly':
-        return members.filter(m => m.package.toLowerCase().includes('μηνιαί'));
+        return members.filter(m => m.package.toLowerCase().includes('μηνιαι'));
       case 'yearly':
-        return members.filter(m => m.package.toLowerCase().includes('ετήσι'));
+        return members.filter(m => m.package.toLowerCase().includes('ετησι'));
       default:
         return members;
     }
@@ -174,37 +175,21 @@ const Announcements: React.FC = () => {
   const filteredMembers = getFilteredMembers();
   
   const recipientOptions = [
-    { value: 'all', label: `Όλα τα μέλη (${members.length})` },
-    { value: 'active', label: `Ενεργά μέλη (${members.filter(m => m.status === 'active').length})` },
-    { value: 'expiring', label: `Λήξη εντός 7 ημερών (${members.filter(m => {
+    { value: 'all', label: `Ολα τα μελη (${members.length})` },
+    { value: 'active', label: `Ενεργα μελη (${members.filter(m => m.status === 'active').length})` },
+    { value: 'expiring', label: `Ληξη εντος 7 ημερων (${members.filter(m => {
       const expiryDate = new Date(m.expiry);
       const today = new Date();
       const weekLater = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
       return expiryDate >= today && expiryDate <= weekLater;
     }).length})` },
-    { value: 'overdue', label: `Ληξιπρόθεσμα (${members.filter(m => {
+    { value: 'overdue', label: `Ληξιπροθεσμα (${members.filter(m => {
       const expiryDate = new Date(m.expiry);
       return expiryDate < new Date() && m.status === 'expired';
     }).length})` },
-    { value: 'monthly', label: `Μηνιαία συνδρομή (${members.filter(m => m.package.toLowerCase().includes('μηνιαί')).length})` },
-    { value: 'yearly', label: `Ετήσια συνδρομή (${members.filter(m => m.package.toLowerCase().includes('ετήσι')).length})` }
+    { value: 'monthly', label: `Μηνιαια συνδρομη (${members.filter(m => m.package.toLowerCase().includes('μηνιαι')).length})` },
+    { value: 'yearly', label: `Ετησια συνδρομη (${members.filter(m => m.package.toLowerCase().includes('ετησι')).length})` }
   ];
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      sent: { class: 'bg-success text-white', text: 'Στάλθηκε' },
-      scheduled: { class: 'bg-warning text-dark', text: 'Προγραμματισμένο' },
-      draft: { class: 'bg-secondary text-white', text: 'Πρόχειρο' }
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || { class: 'bg-secondary text-white', text: status };
-    
-    return (
-      <span className={`badge ${config.class}`}>
-        {config.text}
-      </span>
-    );
-  };
 
   // Calculate estimated cost based on channel
   const calculateEstimatedCost = (): number => {
@@ -275,7 +260,7 @@ const Announcements: React.FC = () => {
     
     if (!message.trim()) {
       console.log('No message, returning');
-      setSendResult({ success: false, message: 'Παρακαλώ εισάγετε μήνυμα' });
+      setSendResult({ success: false, message: 'Παρακαλω εισαγετε μηνυμα' });
       return;
     }
 
@@ -286,18 +271,18 @@ const Announcements: React.FC = () => {
       if (!hasMemberEmails && manualEmails.length === 0) {
         setSendResult({ 
           success: false, 
-          message: 'Δεν υπάρχουν email addresses. Προσθέστε manual emails (πατήστε "Προσθήκη" μετά το email) ή επιλέξτε μέλη με email.' 
+          message: 'Δεν υπαρχουν email addresses. Προσθεστε manual emails (πατηστε "Προσθηκη" μετα το email) η επιλεξτε μελη με email.' 
         });
         return;
       }
     } else if (channel === 'sms' || channel === 'viber') {
-      // For SMS/Viber, χρειαζόμαστε μέλη με τηλέφωνο ή manual τηλέφωνα
+      // For SMS/Viber, χρειαζομαστε μελη με τηλεφωνο η manual τηλεφωνα
       const hasMemberPhones = filteredMembers.some(m => m.phone);
       const hasManualPhones = manualPhones.length > 0;
       if (!hasMemberPhones && !hasManualPhones) {
         setSendResult({
           success: false,
-          message: 'Δεν υπάρχουν αριθμοί κινητού. Επιλέξτε μέλη με τηλέφωνο ή προσθέστε manual αριθμούς (πατήστε "Προσθήκη" μετά τον αριθμό).'
+          message: 'Δεν υπαρχουν αριθμοι κινητου. Επιλεξτε μελη με τηλεφωνο η προσθεστε manual αριθμους (πατηστε "Προσθηκη" μετα τον αριθμο).'
         });
         return;
       }
@@ -309,7 +294,7 @@ const Announcements: React.FC = () => {
       if (!hasMemberEmails && manualEmails.length === 0 && !hasMemberPhones) {
         setSendResult({ 
           success: false, 
-          message: 'Δεν υπάρχουν αποδέκτες. Προσθέστε manual emails ή επιλέξτε μέλη με email/phone.' 
+          message: 'Δεν υπαρχουν αποδεκτες. Προσθεστε manual emails η επιλεξτε μελη με email/phone.' 
         });
         return;
       }
@@ -342,11 +327,11 @@ const Announcements: React.FC = () => {
         
         if (!emailFrom || emailFrom.trim() === '') {
           throw new Error(
-            'Το email address δεν είναι set. Παρακαλώ:\n' +
-            '1. Πηγαίνετε στο Settings (Ρυθμίσεις)\n' +
-            '2. Βάλτε ένα email address στο πεδίο "Αποστολέας Email" (π.χ. alexandros.seme@gmail.com)\n' +
-            '3. Κάντε κλικ στο "Αποθήκευση" (Save)\n' +
-            '4. Δοκιμάστε ξανά'
+            'Το email address δεν ειναι set. Παρακαλω:\n' +
+            '1. Πηγαινετε στο Settings (Ρυθμισεις)\n' +
+            '2. Βαλτε ενα email address στο πεδιο "Αποστολεας Email" (π.χ. alexandros.seme@gmail.com)\n' +
+            '3. Καντε κλικ στο "Αποθηκευση" (Save)\n' +
+            '4. Δοκιμαστε ξανα'
           );
         }
         
@@ -378,14 +363,14 @@ const Announcements: React.FC = () => {
 
         if (allEmailRecipients.length === 0 && (channel === 'email' || channel === 'both')) {
           console.error('❌ No email recipients found!');
-          throw new Error('Δεν υπάρχουν email addresses για αποστολή. Προσθέστε μέλη με email ή manual emails.');
+          throw new Error('Δεν υπαρχουν email addresses για αποστολη. Προσθεστε μελη με email η manual emails.');
         }
 
         if (allEmailRecipients.length > 0) {
           console.log('📤 === STARTING EMAIL SEND ===');
           console.log('Recipients:', allEmailRecipients.map(r => r.email));
           console.log('Message length:', message.length);
-          console.log('Subject: Ανακοίνωση - Colosseum Gym');
+          console.log('Subject: Ανακοινωση - Colosseum Gym');
           
           const sendRate = parseInt(localStorage.getItem('sendRate') || '3', 10);
           console.log('Send rate:', sendRate);
@@ -398,7 +383,7 @@ const Announcements: React.FC = () => {
             
             result = await emailService.sendBulkEmails(
               allEmailRecipients,
-              '🎄 Χριστουγεννιάτικες Προσφορές - Colosseum Gym',
+              '🎄 Χριστουγεννιατικες Προσφορες - Colosseum Gym',
               message,
               htmlMessage,
               sendRate
@@ -458,14 +443,14 @@ const Announcements: React.FC = () => {
           // Show error message to user
           setSendResult({
             success: false,
-            message: `Αποστολή απέτυχε: ${result.errors.join('; ')}`,
+            message: `Αποστολη απετυχε: ${result.errors.join('; ')}`,
           });
         } else if (result.success > 0) {
           // Success - create announcement
         const newAnnouncement: Announcement = {
           id: Date.now(),
           title: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
-            sentTo: `${result.success} παραλήπτες`,
+            sentTo: `${result.success} παραληπτες`,
           channel: channels.join(' + '),
           date: new Date().toLocaleString('el-GR'),
           status: 'sent',
@@ -478,20 +463,20 @@ const Announcements: React.FC = () => {
           setManualPhones([]); // Clear manual phones after successful send
         setSendResult({
           success: true,
-          message: `Αποστολή ολοκληρώθηκε! Επιτυχημένα: ${result.success}, Αποτυχημένα: ${result.failed}`,
+          message: `Αποστολη ολοκληρωθηκε! Επιτυχημενα: ${result.success}, Αποτυχημενα: ${result.failed}`,
         });
         } else {
           // All failed
           setSendResult({
             success: false,
-            message: `Αποστολή απέτυχε: ${result.errors.join('; ') || 'Άγνωστο σφάλμα'}`,
+            message: `Αποστολη απετυχε: ${result.errors.join('; ') || 'Αγνωστο σφαλμα'}`,
           });
         }
       }
     } catch (error) {
       console.error('Error sending announcement:', error);
       
-      let errorMessage = 'Σφάλμα κατά την αποστολή';
+      let errorMessage = 'Σφαλμα κατα την αποστολη';
       if (error instanceof Error) {
         errorMessage = error.message;
         
@@ -499,9 +484,9 @@ const Announcements: React.FC = () => {
         if (error.message.includes('not associated') || 
             error.message.includes('domain') || 
             error.message.includes('Domain verification')) {
-          errorMessage = 'Το email domain δεν είναι verified στο Maileroo. ' +
-            'Πηγαίνετε στο Settings και χρησιμοποιήστε ένα verified email address ' +
-            '(π.χ. Gmail) ή verify το domain σας στο Maileroo Dashboard.';
+          errorMessage = 'Το email domain δεν ειναι verified στο Maileroo. ' +
+            'Πηγαινετε στο Settings και χρησιμοποιηστε ενα verified email address ' +
+            '(π.χ. Gmail) η verify το domain σας στο Maileroo Dashboard.';
         }
       }
       
@@ -527,17 +512,17 @@ const Announcements: React.FC = () => {
   const handleAddEmail = () => {
     const email = newEmailInput.trim();
     if (!email) {
-      setSendResult({ success: false, message: 'Παρακαλώ εισάγετε email' });
+      setSendResult({ success: false, message: 'Παρακαλω εισαγετε email' });
       return;
     }
 
     if (!validateEmail(email)) {
-      setSendResult({ success: false, message: 'Μη έγκυρο email address' });
+      setSendResult({ success: false, message: 'Μη εγκυρο email address' });
       return;
     }
 
     if (manualEmails.includes(email)) {
-      setSendResult({ success: false, message: 'Το email υπάρχει ήδη στη λίστα' });
+      setSendResult({ success: false, message: 'Το email υπαρχει ηδη στη λιστα' });
       return;
     }
 
@@ -566,17 +551,17 @@ const Announcements: React.FC = () => {
   const handleAddPhone = () => {
     const phone = newPhoneInput.trim();
     if (!phone) {
-      setSendResult({ success: false, message: 'Παρακαλώ εισάγετε αριθμό κινητού' });
+      setSendResult({ success: false, message: 'Παρακαλω εισαγετε αριθμο κινητου' });
       return;
     }
 
     if (!validatePhone(phone)) {
-      setSendResult({ success: false, message: 'Μη έγκυρος αριθμός κινητού. Χρησιμοποιήστε μορφή 69..., 3069... ή +3069...' });
+      setSendResult({ success: false, message: 'Μη εγκυρος αριθμος κινητου. Χρησιμοποιηστε μορφη 69..., 3069... η +3069...' });
       return;
     }
 
     if (manualPhones.includes(phone)) {
-      setSendResult({ success: false, message: 'Ο αριθμός υπάρχει ήδη στη λίστα' });
+      setSendResult({ success: false, message: 'Ο αριθμος υπαρχει ηδη στη λιστα' });
       return;
     }
 
@@ -598,24 +583,24 @@ const Announcements: React.FC = () => {
   return (
     <div>
       {/* Header */}
-      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
-        <h2 className="h4 mb-3 mb-md-0">Ανακοινώσεις</h2>
+      <div className="km-page-header">
+        <h2 className="km-page-title">Ανακοινωσεις</h2>
         <button className="btn btn-primary">
           <Send size={16} className="me-2" />
-          Νέα Ανακοίνωση
+          Νεα Ανακοινωση
         </button>
       </div>
 
       {/* Create Announcement Form */}
-      <div className="card border-0 shadow-sm mb-4">
-        <div className="card-header bg-white border-bottom">
-          <h5 className="card-title mb-0">Δημιουργία Ανακοίνωσης</h5>
+      <div className="card border-0 shadow-sm mb-4 km-toolbar-card">
+        <div className="card-header border-0 py-3">
+          <h5 className="card-title mb-0">Δημιουργια Ανακοινωσης</h5>
         </div>
         <div className="card-body">
           <div className="row g-4">
             {/* Recipients */}
             <div className="col-12 col-md-6">
-              <label className="form-label fw-semibold">Αποδέκτες</label>
+              <label className="form-label fw-semibold">Αποδεκτες</label>
               <select 
                 className="form-select"
                 value={recipients}
@@ -631,7 +616,7 @@ const Announcements: React.FC = () => {
 
             {/* Channel */}
             <div className="col-12 col-md-6">
-              <label className="form-label fw-semibold">Κανάλι</label>
+              <label className="form-label fw-semibold">Καναλι</label>
               <div className="d-flex gap-3 flex-wrap">
                 <div className="form-check">
                   <input 
@@ -695,63 +680,63 @@ const Announcements: React.FC = () => {
             {/* Message */}
             <div className="col-12">
               <div className="d-flex justify-content-between align-items-center mb-2">
-                <label className="form-label fw-semibold mb-0">Μήνυμα</label>
+                <label className="form-label fw-semibold mb-0">Μηνυμα</label>
                 {channel === 'email' && (
                   <button
                     type="button"
-                    className="btn btn-sm btn-outline-primary"
+                    className="btn btn-sm btn-outline-secondary"
                     onClick={() => {
-                      const christmasTemplate = `🎄🎅 Χριστουγεννιάτικες Προσφορές! 🎁❄️
+                      const christmasTemplate = `🎄🎅 Χριστουγεννιατικες Προσφορες! 🎁❄️
 
-Καλησπέρα!
+Καλησπερα!
 
-Αυτές τις γιορτές, το Colosseum Gym σας προσφέρει ειδικές προσφορές! 🎉
+Αυτες τις γιορτες, το Colosseum Gym σας προσφερει ειδικες προσφορες! 🎉
 
-🔥 Προσφορές:
-✨ 20% έκπτωση σε όλες τις συνδρομές
-✨ Δωρεάν Personal Training session
-✨ Special gift για νέους πελάτες
+🔥 Προσφορες:
+✨ 20% εκπτωση σε ολες τις συνδρομες
+✨ Δωρεαν Personal Training session
+✨ Special gift για νεους πελατες
 
-⏰ Η προσφορά ισχύει έως 31 Δεκεμβρίου!
+⏰ Η προσφορα ισχυει εως 31 Δεκεμβριου!
 
-📞 Επικοινωνήστε μαζί μας:
+📞 Επικοινωνηστε μαζι μας:
 📧 info@fightingrooster.gr
 📱 210 1234567
 
-Καλά Χριστούγεννα! 🎄🎁
+Καλα Χριστουγεννα! 🎄🎁
 
-Η ομάδα του Colosseum Gym`;
+Η ομαδα του Colosseum Gym`;
 
                       setMessage(christmasTemplate);
                     }}
                   >
-                    🎄 Load Χριστουγεννιάτικο Template
+                    🎄 Load Χριστουγεννιατικο Template
                   </button>
                 )}
               </div>
               <textarea
                 className="form-control"
                 rows={8}
-                placeholder="Γράψτε το μήνυμά σας εδώ..."
+                placeholder="Γραψτε το μηνυμα σας εδω..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
               <div className="d-flex justify-content-between mt-2 flex-wrap gap-2">
                 <small className="text-muted">
-                  Χαρακτήρες: {message.length}{channel !== 'email' && '/160'}
+                  Χαρακτηρες: {message.length}{channel !== 'email' && '/160'}
                 </small>
                 <small className="text-muted">
                   {channel === 'email' ? (
-                    <span className="text-success">Δωρεάν (Maileroo)</span>
+                    <span className="text-success">Δωρεαν (Maileroo)</span>
                   ) : (
-                    <>Εκτιμώμενο κόστος: €{estimatedCost.toFixed(2)}</>
+                    <>Εκτιμωμενο κοστος: €{estimatedCost.toFixed(2)}</>
                   )}
                 </small>
               </div>
               <div className="d-flex flex-column gap-1 mt-1">
                 {filteredMembers.length > 0 && (
                   <small className="text-muted">
-                    Αποδέκτες: {filteredMembers.length} {channel === 'email' && `(${filteredMembers.filter(m => m.email).length} με email)`}
+                    Αποδεκτες: {filteredMembers.length} {channel === 'email' && `(${filteredMembers.filter(m => m.email).length} με email)`}
                   </small>
                 )}
                 {manualEmails.length > 0 && (channel === 'email' || channel === 'both') && (
@@ -761,17 +746,17 @@ const Announcements: React.FC = () => {
                 )}
                 {manualPhones.length > 0 && (channel === 'sms' || channel === 'both') && (
                   <small className="text-info">
-                    Manual Τηλέφωνα (SMS): {manualPhones.length}
+                    Manual Τηλεφωνα (SMS): {manualPhones.length}
                   </small>
                 )}
                 {(channel === 'email' || channel === 'both') && (
                   <small className="text-muted fw-semibold">
-                    Σύνολο Email Recipients: {filteredMembers.filter(m => m.email).length + manualEmails.length}
+                    Συνολο Email Recipients: {filteredMembers.filter(m => m.email).length + manualEmails.length}
                   </small>
                 )}
                 {(channel === 'sms' || channel === 'both') && (
                   <small className="text-muted fw-semibold">
-                    Σύνολο SMS Recipients: {filteredMembers.filter(m => m.phone).length + manualPhones.length}
+                    Συνολο SMS Recipients: {filteredMembers.filter(m => m.phone).length + manualPhones.length}
                   </small>
                 )}
               </div>
@@ -780,7 +765,7 @@ const Announcements: React.FC = () => {
             {/* Manual Email Addresses */}
             {(channel === 'email' || channel === 'both') && (
               <div className="col-12">
-                <label className="form-label fw-semibold">Προσθήκη Email Addresses (Manual)</label>
+                <label className="form-label fw-semibold">Προσθηκη Email Addresses (Manual)</label>
                 <div className="d-flex gap-2 mb-2">
                   <input
                     type="email"
@@ -792,17 +777,17 @@ const Announcements: React.FC = () => {
                   />
                   <button
                     type="button"
-                    className="btn btn-outline-primary d-flex align-items-center gap-2"
+                    className="btn btn-outline-secondary d-flex align-items-center gap-2"
                     onClick={handleAddEmail}
                   >
                     <Plus size={16} />
-                    Προσθήκη
+                    Προσθηκη
                   </button>
                 </div>
                 {manualEmails.length > 0 && (
                   <div className="mt-2">
                     <small className="text-muted d-block mb-2">
-                      Προστέθηκαν {manualEmails.length} email{manualEmails.length > 1 ? 's' : ''}:
+                      Προστεθηκαν {manualEmails.length} email{manualEmails.length > 1 ? 's' : ''}:
                     </small>
                     <div className="d-flex flex-wrap gap-2">
                       {manualEmails.map((email, index) => (
@@ -825,7 +810,7 @@ const Announcements: React.FC = () => {
                   </div>
                 )}
                 <small className="text-muted d-block mt-2">
-                  Προσθέστε email addresses για αποστολή εκτός από τα μέλη
+                  Προσθεστε email addresses για αποστολη εκτος απο τα μελη
                 </small>
               </div>
             )}
@@ -833,29 +818,29 @@ const Announcements: React.FC = () => {
             {/* Manual Phone Numbers for SMS */}
             {(channel === 'sms' || channel === 'both') && (
               <div className="col-12">
-                <label className="form-label fw-semibold">Προσθήκη Αριθμών Κινητού (SMS Manual)</label>
+                <label className="form-label fw-semibold">Προσθηκη Αριθμων Κινητου (SMS Manual)</label>
                 <div className="d-flex gap-2 mb-2">
                   <input
                     type="tel"
                     className="form-control"
-                    placeholder="69..., 3069..., ή +3069..."
+                    placeholder="69..., 3069..., η +3069..."
                     value={newPhoneInput}
                     onChange={(e) => setNewPhoneInput(e.target.value)}
                     onKeyPress={handlePhoneKeyPress}
                   />
                   <button
                     type="button"
-                    className="btn btn-outline-primary d-flex align-items-center gap-2"
+                    className="btn btn-outline-secondary d-flex align-items-center gap-2"
                     onClick={handleAddPhone}
                   >
                     <Plus size={16} />
-                    Προσθήκη
+                    Προσθηκη
                   </button>
                 </div>
                 {manualPhones.length > 0 && (
                   <div className="mt-2">
                     <small className="text-muted d-block mb-2">
-                      Προστέθηκαν {manualPhones.length} αριθμοί:
+                      Προστεθηκαν {manualPhones.length} αριθμοι:
                     </small>
                     <div className="d-flex flex-wrap gap-2">
                       {manualPhones.map((phone, index) => (
@@ -878,7 +863,7 @@ const Announcements: React.FC = () => {
                   </div>
                 )}
                 <small className="text-muted d-block mt-2">
-                  Προσθέστε αριθμούς κινητού που δεν ανήκουν στα μέλη (μπορείτε να γράψετε 69..., 3069..., ή +3069..., θα γίνουν αυτόματα κανονικοποίηση).
+                  Προσθεστε αριθμους κινητου που δεν ανηκουν στα μελη (μπορειτε να γραψετε 69..., 3069..., η +3069..., θα γινουν αυτοματα κανονικοποιηση).
                 </small>
               </div>
             )}
@@ -925,7 +910,7 @@ const Announcements: React.FC = () => {
                   onClick={handleSaveDraft}
                   disabled={sending || !message.trim()}
                 >
-                  Αποθήκευση Πρόχειρου
+                  Αποθηκευση Προχειρου
                 </button>
                 <button 
                   type="button"
@@ -953,17 +938,17 @@ const Announcements: React.FC = () => {
                     console.log('handleSend function called');
                   }}
                   disabled={false}
-                  title="Κάντε κλικ για αποστολή"
+                  title="Καντε κλικ για αποστολη"
                 >
                   {sending ? (
                     <>
                       <Loader2 size={16} className="spinner-border spinner-border-sm" />
-                      Αποστολή...
+                      Αποστολη...
                     </>
                   ) : (
                     <>
                       <Send size={16} />
-                      Αποστολή Τώρα
+                      Αποστολη Τωρα
                     </>
                   )}
                 </button>
@@ -975,8 +960,8 @@ const Announcements: React.FC = () => {
 
       {/* Recent Announcements */}
       <div className="card border-0 shadow-sm">
-        <div className="card-header bg-white border-bottom">
-          <h5 className="card-title mb-0">Πρόσφατες Ανακοινώσεις</h5>
+        <div className="card-header border-0 py-3">
+          <h5 className="card-title mb-0">Προσφατες Ανακοινωσεις</h5>
         </div>
         <div className="card-body p-0">
           {recentAnnouncements.map(announcement => (
@@ -985,15 +970,15 @@ const Announcements: React.FC = () => {
                 <div className="flex-grow-1">
                   <h6 className="mb-1 text-dark">{announcement.title}</h6>
                   <p className="text-muted mb-2 small">
-                    Στάλθηκε σε {announcement.sentTo} | {announcement.channel}
+                    Σταλθηκε σε {announcement.sentTo} | {announcement.channel}
                   </p>
                   <small className="text-muted">{announcement.date}</small>
                 </div>
                 <div className="text-end">
-                  {getStatusBadge(announcement.status)}
+                  <StatusBadge status={announcement.status} />
                   <div className="mt-1">
                     <small className="text-muted">
-                      {announcement.successful} επιτυχημένα
+                      {announcement.successful} επιτυχημενα
                     </small>
                   </div>
                 </div>
@@ -1011,11 +996,11 @@ const Announcements: React.FC = () => {
               <Send size={32} className="text-muted" />
             </div>
           </div>
-          <h5 className="text-muted">Δεν υπάρχουν ανακοινώσεις</h5>
-          <p className="text-muted mb-4">Δημιουργήστε την πρώτη ανακοίνωση για να ξεκινήσετε</p>
+          <h5 className="text-muted">Δεν υπαρχουν ανακοινωσεις</h5>
+          <p className="text-muted mb-4">Δημιουργηστε την πρωτη ανακοινωση για να ξεκινησετε</p>
           <button className="btn btn-primary">
             <Send size={16} className="me-2" />
-            Δημιουργία Ανακοίνωσης
+            Δημιουργια Ανακοινωσης
           </button>
         </div>
       )}

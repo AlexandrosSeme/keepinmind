@@ -17,48 +17,48 @@ const GymMockups = () => {
   };
 
   const recentMembers = [
-    { id: 1, name: 'Νίκος Παπαδόπουλος', phone: '6912345678', status: 'active', expiry: '15/11/2025', package: 'Μηνιαία Απεριόριστη' },
-    { id: 2, name: 'Μαρία Γεωργίου', phone: '6923456789', status: 'expiring_soon', expiry: '20/10/2025', package: 'Ετήσια' },
-    { id: 3, name: 'Γιώργος Κωνσταντίνου', phone: '6934567890', status: 'expired', expiry: '05/10/2025', package: 'Ωριαία (10 ώρες)' },
-    { id: 4, name: 'Ελένη Δημητρίου', phone: '6945678901', status: 'active', expiry: '30/12/2025', package: 'Μηνιαία Απεριόριστη' },
+    { id: 1, name: 'Νικος Παπαδοπουλος', phone: '6912345678', status: 'active', expiry: '15/11/2025', package: 'Μηνιαια Απεριοριστη' },
+    { id: 2, name: 'Μαρια Γεωργιου', phone: '6923456789', status: 'expiring_soon', expiry: '20/10/2025', package: 'Ετησια' },
+    { id: 3, name: 'Γιωργος Κωνσταντινου', phone: '6934567890', status: 'expired', expiry: '05/10/2025', package: 'Ωριαια (10 ωρες)' },
+    { id: 4, name: 'Ελενη Δημητριου', phone: '6945678901', status: 'active', expiry: '30/12/2025', package: 'Μηνιαια Απεριοριστη' },
   ];
 
   const upcomingExpiries = [
-    { id: 1, name: 'Μαρία Γεωργίου', phone: '6923456789', expiry: '20/10/2025', days: 7, package: 'Ετήσια' },
-    { id: 2, name: 'Κώστας Αθανασίου', phone: '6956789012', expiry: '22/10/2025', days: 9, package: 'Μηνιαία' },
-    { id: 3, name: 'Σοφία Νικολάου', phone: '6967890123', expiry: '25/10/2025', days: 12, package: 'Ωριαία' },
+    { id: 1, name: 'Μαρια Γεωργιου', phone: '6923456789', expiry: '20/10/2025', days: 7, package: 'Ετησια' },
+    { id: 2, name: 'Κωστας Αθανασιου', phone: '6956789012', expiry: '22/10/2025', days: 9, package: 'Μηνιαια' },
+    { id: 3, name: 'Σοφια Νικολαου', phone: '6967890123', expiry: '25/10/2025', days: 12, package: 'Ωριαια' },
   ];
 
   const debts = [
-    { id: 1, name: 'Γιώργος Κωνσταντίνου', amount: 50, daysOverdue: 8, status: 'overdue' },
-    { id: 2, name: 'Αντώνης Μιχαηλίδης', amount: 120, daysOverdue: 3, status: 'overdue' },
-    { id: 3, name: 'Κατερίνα Παυλίδου', amount: 45, daysOverdue: 15, status: 'overdue' },
+    { id: 1, name: 'Γιωργος Κωνσταντινου', amount: 50, daysOverdue: 8, status: 'overdue' },
+    { id: 2, name: 'Αντωνης Μιχαηλιδης', amount: 120, daysOverdue: 3, status: 'overdue' },
+    { id: 3, name: 'Κατερινα Παυλιδου', amount: 45, daysOverdue: 15, status: 'overdue' },
   ];
 
   const packages = [
-    { id: 1, name: 'Μηνιαία Απεριόριστη', category: 'subscription', duration: '30 ημέρες', price: 45, active: 78 },
-    { id: 2, name: 'Ετήσια Απεριόριστη', category: 'subscription', duration: '365 ημέρες', price: 450, active: 42 },
-    { id: 3, name: 'Ωριαία 10 Sessions', category: 'hourly', duration: '10 sessions', price: 80, active: 18 },
-    { id: 4, name: 'Παιδικό Μηνιαίο', category: 'kids', duration: '30 ημέρες', price: 35, active: 12 },
+    { id: 1, name: 'Μηνιαια Απεριοριστη', category: 'subscription', duration: '30 ημερες', price: 45, active: 78 },
+    { id: 2, name: 'Ετησια Απεριοριστη', category: 'subscription', duration: '365 ημερες', price: 450, active: 42 },
+    { id: 3, name: 'Ωριαια 10 Sessions', category: 'hourly', duration: '10 sessions', price: 80, active: 18 },
+    { id: 4, name: 'Παιδικο Μηνιαιο', category: 'kids', duration: '30 ημερες', price: 35, active: 12 },
   ];
 
   const calendarEvents = [
-    { date: '15/10/2025', events: [{ type: 'expiry', title: 'Νίκος Π. - Λήξη', color: 'red' }] },
-    { date: '20/10/2025', events: [{ type: 'expiry', title: 'Μαρία Γ. - Λήξη', color: 'orange' }] },
-    { date: '25/10/2025', events: [{ type: 'debt', title: '3 Οφειλές λήγουν', color: 'red' }] },
+    { date: '15/10/2025', events: [{ type: 'expiry', title: 'Νικος Π. - Ληξη', color: 'red' }] },
+    { date: '20/10/2025', events: [{ type: 'expiry', title: 'Μαρια Γ. - Ληξη', color: 'orange' }] },
+    { date: '25/10/2025', events: [{ type: 'debt', title: '3 Οφειλες ληγουν', color: 'red' }] },
   ];
 
   // Navigation
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: BarChart3 },
-    { id: 'members', name: 'Μέλη', icon: Users },
-    { id: 'subscriptions', name: 'Συνδρομές', icon: FileText },
-    { id: 'payments', name: 'Πληρωμές', icon: CreditCard },
-    { id: 'debts', name: 'Οφειλές', icon: AlertCircle },
-    { id: 'calendar', name: 'Ημερολόγιο', icon: Calendar },
-    { id: 'notifications', name: 'Ειδοποιήσεις', icon: Bell },
-    { id: 'announcements', name: 'Ανακοινώσεις', icon: Send },
-    { id: 'settings', name: 'Ρυθμίσεις', icon: Settings },
+    { id: 'members', name: 'Μελη', icon: Users },
+    { id: 'subscriptions', name: 'Συνδρομες', icon: FileText },
+    { id: 'payments', name: 'Πληρωμες', icon: CreditCard },
+    { id: 'debts', name: 'Οφειλες', icon: AlertCircle },
+    { id: 'calendar', name: 'Ημερολογιο', icon: Calendar },
+    { id: 'notifications', name: 'Ειδοποιησεις', icon: Bell },
+    { id: 'announcements', name: 'Ανακοινωσεις', icon: Send },
+    { id: 'settings', name: 'Ρυθμισεις', icon: Settings },
   ];
 
   const getStatusColor = (status: string) => {
@@ -73,10 +73,10 @@ const GymMockups = () => {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'active': return 'Ενεργή';
-      case 'expiring_soon': return 'Λήγει Σύντομα';
-      case 'expired': return 'Ληγμένη';
-      case 'overdue': return 'Ληξιπρόθεσμο';
+      case 'active': return 'Ενεργη';
+      case 'expiring_soon': return 'Ληγει Συντομα';
+      case 'expired': return 'Ληγμενη';
+      case 'overdue': return 'Ληξιπροθεσμο';
       default: return status;
     }
   };
@@ -88,14 +88,14 @@ const GymMockups = () => {
       <div className="bg-white p-6 rounded-lg shadow">
         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
           <Plus className="w-4 h-4" />
-          Νέο Μέλος
+          Νεο Μελος
         </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Σύνολο Μελών</p>
+              <p className="text-sm text-gray-600">Συνολο Μελων</p>
               <p className="text-3xl font-bold text-gray-900">{stats.totalMembers}</p>
             </div>
             <Users className="w-12 h-12 text-blue-500" />
@@ -105,7 +105,7 @@ const GymMockups = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Ενεργές Συνδρομές</p>
+              <p className="text-sm text-gray-600">Ενεργες Συνδρομες</p>
               <p className="text-3xl font-bold text-green-600">{stats.activeSubscriptions}</p>
             </div>
             <CheckCircle className="w-12 h-12 text-green-500" />
@@ -115,7 +115,7 @@ const GymMockups = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Λήγουν Αυτή την Εβδομάδα</p>
+              <p className="text-sm text-gray-600">Ληγουν Αυτη την Εβδομαδα</p>
               <p className="text-3xl font-bold text-orange-600">{stats.expiringThisWeek}</p>
             </div>
             <Clock className="w-12 h-12 text-orange-500" />
@@ -125,7 +125,7 @@ const GymMockups = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Μηνιαία Έσοδα</p>
+              <p className="text-sm text-gray-600">Μηνιαια Εσοδα</p>
               <p className="text-3xl font-bold text-blue-600">€{stats.monthlyRevenue}</p>
             </div>
             <TrendingUp className="w-12 h-12 text-blue-500" />
@@ -135,7 +135,7 @@ const GymMockups = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Εκκρεμείς Πληρωμές</p>
+              <p className="text-sm text-gray-600">Εκκρεμεις Πληρωμες</p>
               <p className="text-3xl font-bold text-yellow-600">€{stats.pendingPayments}</p>
             </div>
             <Euro className="w-12 h-12 text-yellow-500" />
@@ -145,7 +145,7 @@ const GymMockups = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Ληξιπρόθεσμες Οφειλές</p>
+              <p className="text-sm text-gray-600">Ληξιπροθεσμες Οφειλες</p>
               <p className="text-3xl font-bold text-red-600">{stats.overdueDebts}</p>
             </div>
             <AlertCircle className="w-12 h-12 text-red-500" />
@@ -158,8 +158,8 @@ const GymMockups = () => {
         {/* Upcoming Expiries */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Επερχόμενες Λήξεις</h3>
-            <button className="text-blue-600 text-sm hover:underline">Προβολή Όλων</button>
+            <h3 className="font-semibold text-gray-900">Επερχομενες Ληξεις</h3>
+            <button className="text-blue-600 text-sm hover:underline">Προβολη Ολων</button>
           </div>
           <div className="p-4 space-y-3">
             {upcomingExpiries.map(exp => (
@@ -169,7 +169,7 @@ const GymMockups = () => {
                   <p className="text-sm text-gray-600">{exp.package}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-orange-700">Σε {exp.days} ημέρες</p>
+                  <p className="text-sm font-medium text-orange-700">Σε {exp.days} ημερες</p>
                   <p className="text-xs text-gray-600">{exp.expiry}</p>
                 </div>
               </div>
@@ -180,19 +180,19 @@ const GymMockups = () => {
         {/* Overdue Debts */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Ληξιπρόθεσμες Οφειλές</h3>
-            <button className="text-blue-600 text-sm hover:underline">Προβολή Όλων</button>
+            <h3 className="font-semibold text-gray-900">Ληξιπροθεσμες Οφειλες</h3>
+            <button className="text-blue-600 text-sm hover:underline">Προβολη Ολων</button>
           </div>
           <div className="p-4 space-y-3">
             {debts.map(debt => (
               <div key={debt.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">{debt.name}</p>
-                  <p className="text-sm text-gray-600">{debt.daysOverdue} ημέρες καθυστέρηση</p>
+                  <p className="text-sm text-gray-600">{debt.daysOverdue} ημερες καθυστερηση</p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-red-700">€{debt.amount}</p>
-                  <button className="text-xs text-blue-600 hover:underline">Καταγραφή Πληρωμής</button>
+                  <button className="text-xs text-blue-600 hover:underline">Καταγραφη Πληρωμης</button>
                 </div>
               </div>
             ))}
@@ -206,10 +206,10 @@ const GymMockups = () => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Μέλη Γυμναστηρίου</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Μελη Γυμναστηριου</h2>
         <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
           <Plus className="w-4 h-4" />
-          Νέο Μέλος
+          Νεο Μελος
         </button>
       </div>
 
@@ -219,13 +219,13 @@ const GymMockups = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Αναζήτηση μέλους (όνομα, τηλέφωνο)..."
+            placeholder="Αναζητηση μελους (ονομα, τηλεφωνο)..."
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
         <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50">
           <Filter className="w-4 h-4" />
-          Φίλτρα
+          Φιλτρα
         </button>
         <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50">
           <Download className="w-4 h-4" />
@@ -238,12 +238,12 @@ const GymMockups = () => {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ονοματεπώνυμο</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Τηλέφωνο</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Πακέτο</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Λήξη</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Κατάσταση</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ενέργειες</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ονοματεπωνυμο</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Τηλεφωνο</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Πακετο</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ληξη</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Κατασταση</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ενεργειες</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -266,7 +266,7 @@ const GymMockups = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <button className="text-blue-600 hover:underline text-sm">Προβολή</button>
+                  <button className="text-blue-600 hover:underline text-sm">Προβολη</button>
                 </td>
               </tr>
             ))}
@@ -279,10 +279,10 @@ const GymMockups = () => {
   const SubscriptionsScreen = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Πακέτα Συνδρομών</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Πακετα Συνδρομων</h2>
         <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
           <Plus className="w-4 h-4" />
-          Νέο Πακέτο
+          Νεο Πακετο
         </button>
       </div>
 
@@ -294,13 +294,13 @@ const GymMockups = () => {
               <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">{pkg.category}</span>
             </div>
             <div className="space-y-2 mb-4">
-              <p className="text-sm text-gray-600">Διάρκεια: {pkg.duration}</p>
+              <p className="text-sm text-gray-600">Διαρκεια: {pkg.duration}</p>
               <p className="text-3xl font-bold text-blue-600">€{pkg.price}</p>
-              <p className="text-sm text-gray-600">{pkg.active} ενεργά μέλη</p>
+              <p className="text-sm text-gray-600">{pkg.active} ενεργα μελη</p>
             </div>
             <div className="flex gap-2">
-              <button className="flex-1 text-sm px-3 py-2 border rounded hover:bg-gray-50">Επεξεργασία</button>
-              <button className="flex-1 text-sm px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Ανανέωση</button>
+              <button className="flex-1 text-sm px-3 py-2 border rounded hover:bg-gray-50">Επεξεργασια</button>
+              <button className="flex-1 text-sm px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Ανανεωση</button>
             </div>
           </div>
         ))}
@@ -311,21 +311,21 @@ const GymMockups = () => {
   const CalendarScreen = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Ημερολόγιο</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Ημερολογιο</h2>
         <div className="flex gap-2">
-          <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Σήμερα</button>
-          <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Εβδομάδα</button>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">Μήνας</button>
+          <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Σημερα</button>
+          <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Εβδομαδα</button>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">Μηνας</button>
         </div>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
         <div className="mb-4">
-          <h3 className="text-xl font-semibold text-gray-900">Οκτώβριος 2025</h3>
+          <h3 className="text-xl font-semibold text-gray-900">Οκτωβριος 2025</h3>
         </div>
         
         <div className="grid grid-cols-7 gap-2 mb-2">
-          {['Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ'].map(day => (
+          {['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'].map(day => (
             <div key={day} className="text-center text-sm font-medium text-gray-600 py-2">{day}</div>
           ))}
         </div>
@@ -365,19 +365,19 @@ const GymMockups = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="font-semibold text-gray-900 mb-3">Επερχόμενα Events</h3>
+        <h3 className="font-semibold text-gray-900 mb-3">Επερχομενα Events</h3>
         <div className="space-y-2">
           <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
             <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
             <div className="flex-1">
-              <p className="font-medium text-gray-900">7 Συνδρομές λήγουν σε 7 ημέρες</p>
+              <p className="font-medium text-gray-900">7 Συνδρομες ληγουν σε 7 ημερες</p>
               <p className="text-sm text-gray-600">20/10/2025</p>
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
             <div className="w-3 h-3 bg-red-500 rounded-full"></div>
             <div className="flex-1">
-              <p className="font-medium text-gray-900">5 Συνδρομές λήγουν σήμερα</p>
+              <p className="font-medium text-gray-900">5 Συνδρομες ληγουν σημερα</p>
               <p className="text-sm text-gray-600">13/10/2025</p>
             </div>
           </div>
@@ -389,20 +389,20 @@ const GymMockups = () => {
   const NotificationsScreen = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Ειδοποιήσεις</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Ειδοποιησεις</h2>
         <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
           <Bell className="w-4 h-4" />
-          Νέα Ειδοποίηση
+          Νεα Ειδοποιηση
         </button>
       </div>
 
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
           <div className="flex gap-2">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">Όλες</button>
-            <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Προγραμματισμένες</button>
-            <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Σταλμένες</button>
-            <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Αποτυχημένες</button>
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">Ολες</button>
+            <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Προγραμματισμενες</button>
+            <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Σταλμενες</button>
+            <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">Αποτυχημενες</button>
           </div>
         </div>
 
@@ -414,15 +414,15 @@ const GymMockups = () => {
                   <Clock className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">7 ημέρες πριν λήξη</p>
-                  <p className="text-sm text-gray-600">Μαρία Γεωργίου - Η συνδρομή σας λήγει σε 7 ημέρες</p>
+                  <p className="font-medium text-gray-900">7 ημερες πριν ληξη</p>
+                  <p className="text-sm text-gray-600">Μαρια Γεωργιου - Η συνδρομη σας ληγει σε 7 ημερες</p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">SMS</span>
-                    <span className="text-xs text-gray-500">Προγραμματισμένο για 13/10/2025 10:00</span>
+                    <span className="text-xs text-gray-500">Προγραμματισμενο για 13/10/2025 10:00</span>
                   </div>
                 </div>
               </div>
-              <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded">Εκκρεμεί</span>
+              <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded">Εκκρεμει</span>
             </div>
           </div>
 
@@ -433,15 +433,15 @@ const GymMockups = () => {
                   <CheckCircle className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Ημέρα λήξης</p>
-                  <p className="text-sm text-gray-600">Νίκος Παπαδόπουλος - Η συνδρομή σας λήγει σήμερα</p>
+                  <p className="font-medium text-gray-900">Ημερα ληξης</p>
+                  <p className="text-sm text-gray-600">Νικος Παπαδοπουλος - Η συνδρομη σας ληγει σημερα</p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">SMS</span>
-                    <span className="text-xs text-gray-500">Στάλθηκε 13/10/2025 10:05</span>
+                    <span className="text-xs text-gray-500">Σταλθηκε 13/10/2025 10:05</span>
                   </div>
                 </div>
               </div>
-              <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Σταλμένο</span>
+              <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Σταλμενο</span>
             </div>
           </div>
         </div>
@@ -452,31 +452,31 @@ const GymMockups = () => {
   const AnnouncementsScreen = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Ανακοινώσεις</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Ανακοινωσεις</h2>
         <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
           <Send className="w-4 h-4" />
-          Νέα Ανακοίνωση
+          Νεα Ανακοινωση
         </button>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Δημιουργία Ανακοίνωσης</h3>
+        <h3 className="font-semibold text-gray-900 mb-4">Δημιουργια Ανακοινωσης</h3>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Αποδέκτες</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Αποδεκτες</label>
             <select className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-              <option>Όλα τα μέλη (156)</option>
-              <option>Ενεργά μέλη (142)</option>
-              <option>Λήξη εντός 7 ημερών (12)</option>
-              <option>Ληξιπρόθεσμα (8)</option>
-              <option>Μηνιαία συνδρομή (78)</option>
-              <option>Ετήσια συνδρομή (42)</option>
+              <option>Ολα τα μελη (156)</option>
+              <option>Ενεργα μελη (142)</option>
+              <option>Ληξη εντος 7 ημερων (12)</option>
+              <option>Ληξιπροθεσμα (8)</option>
+              <option>Μηνιαια συνδρομη (78)</option>
+              <option>Ετησια συνδρομη (42)</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Κανάλι</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Καναλι</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2">
                 <input type="radio" name="channel" className="w-4 h-4" checked />
@@ -488,43 +488,43 @@ const GymMockups = () => {
               </label>
               <label className="flex items-center gap-2">
                 <input type="radio" name="channel" className="w-4 h-4" />
-                <span>Και τα δύο</span>
+                <span>Και τα δυο</span>
               </label>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Μήνυμα</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Μηνυμα</label>
             <textarea
               rows={4}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Γράψτε το μήνυμά σας εδώ..."
+              placeholder="Γραψτε το μηνυμα σας εδω..."
             ></textarea>
-            <p className="text-sm text-gray-500 mt-1">Χαρακτήρες: 0/160 | Εκτιμώμενο κόστος: €0.00</p>
+            <p className="text-sm text-gray-500 mt-1">Χαρακτηρες: 0/160 | Εκτιμωμενο κοστος: €0.00</p>
           </div>
 
           <div className="flex gap-2">
-            <button className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Αποθήκευση Πρόχειρου</button>
-            <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Αποστολή Τώρα</button>
+            <button className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Αποθηκευση Προχειρου</button>
+            <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Αποστολη Τωρα</button>
           </div>
         </div>
       </div>
 
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
-          <h3 className="font-semibold text-gray-900">Πρόσφατες Ανακοινώσεις</h3>
+          <h3 className="font-semibold text-gray-900">Προσφατες Ανακοινωσεις</h3>
         </div>
         <div className="divide-y">
           <div className="p-4 hover:bg-gray-50">
             <div className="flex items-start justify-between">
               <div>
-                <p className="font-medium text-gray-900">Χριστουγεννιάτικες Προσφορές</p>
-                <p className="text-sm text-gray-600 mt-1">Στάλθηκε σε 142 μέλη | SMS</p>
+                <p className="font-medium text-gray-900">Χριστουγεννιατικες Προσφορες</p>
+                <p className="text-sm text-gray-600 mt-1">Σταλθηκε σε 142 μελη | SMS</p>
                 <p className="text-xs text-gray-500 mt-1">10/12/2024 10:00</p>
               </div>
               <div className="text-right">
-                <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Στάλθηκε</span>
-                <p className="text-sm text-gray-600 mt-1">138 επιτυχημένα</p>
+                <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Σταλθηκε</span>
+                <p className="text-sm text-gray-600 mt-1">138 επιτυχημενα</p>
               </div>
             </div>
           </div>
@@ -535,18 +535,18 @@ const GymMockups = () => {
 
   const SettingsScreen = () => (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900">Ρυθμίσεις</h2>
+      <h2 className="text-2xl font-bold text-gray-900">Ρυθμισεις</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Στοιχεία Γυμναστηρίου</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Στοιχεια Γυμναστηριου</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Όνομα</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ονομα</label>
               <input type="text" defaultValue="Colosseum Gym" className="w-full px-4 py-2 border rounded-lg" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Τηλέφωνο</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Τηλεφωνο</label>
               <input type="text" defaultValue="210 1234567" className="w-full px-4 py-2 border rounded-lg" />
             </div>
             <div>
@@ -580,50 +580,50 @@ const GymMockups = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Αυτόματες Ειδοποιήσεις</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Αυτοματες Ειδοποιησεις</h3>
           <div className="space-y-3">
             <label className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">7 ημέρες πριν λήξη</span>
+              <span className="text-sm text-gray-700">7 ημερες πριν ληξη</span>
               <input type="checkbox" className="w-5 h-5" defaultChecked />
             </label>
             <label className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">3 ημέρες πριν λήξη</span>
+              <span className="text-sm text-gray-700">3 ημερες πριν ληξη</span>
               <input type="checkbox" className="w-5 h-5" defaultChecked />
             </label>
             <label className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">Ημέρα λήξης</span>
+              <span className="text-sm text-gray-700">Ημερα ληξης</span>
               <input type="checkbox" className="w-5 h-5" defaultChecked />
             </label>
             <label className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">3 ημέρες μετά λήξη</span>
+              <span className="text-sm text-gray-700">3 ημερες μετα ληξη</span>
               <input type="checkbox" className="w-5 h-5" />
             </label>
             <div className="pt-3 border-t">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ώρα Αποστολής</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ωρα Αποστολης</label>
               <input type="time" defaultValue="10:00" className="w-full px-4 py-2 border rounded-lg" />
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Εμφάνιση</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Εμφανιση</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Θέμα</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Θεμα</label>
               <select className="w-full px-4 py-2 border rounded-lg">
-                <option>Ανοιχτό</option>
-                <option>Σκούρο</option>
+                <option>Ανοιχτο</option>
+                <option>Σκουρο</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Γλώσσα</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Γλωσσα</label>
               <select className="w-full px-4 py-2 border rounded-lg">
-                <option>Ελληνικά</option>
+                <option>Ελληνικα</option>
                 <option>English</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Νόμισμα</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Νομισμα</label>
               <select className="w-full px-4 py-2 border rounded-lg">
                 <option>EUR (€)</option>
                 <option>USD ($)</option>
@@ -634,8 +634,8 @@ const GymMockups = () => {
       </div>
 
       <div className="flex justify-end gap-2">
-        <button className="px-6 py-2 border rounded-lg hover:bg-gray-50">Ακύρωση</button>
-        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Αποθήκευση</button>
+        <button className="px-6 py-2 border rounded-lg hover:bg-gray-50">Ακυρωση</button>
+        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Αποθηκευση</button>
       </div>
     </div>
   );
@@ -690,7 +690,7 @@ const GymMockups = () => {
           <div className="px-8 py-4 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Colosseum Gym Management</h1>
-              <p className="text-sm text-gray-600">Καλώς ήρθατε στο σύστημα διαχείρισης</p>
+              <p className="text-sm text-gray-600">Καλως ηρθατε στο συστημα διαχειρισης</p>
             </div>
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-lg relative">
@@ -703,7 +703,7 @@ const GymMockups = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">Admin</p>
-                  <p className="text-xs text-gray-600">Διαχειριστής</p>
+                  <p className="text-xs text-gray-600">Διαχειριστης</p>
                 </div>
               </div>
             </div>
