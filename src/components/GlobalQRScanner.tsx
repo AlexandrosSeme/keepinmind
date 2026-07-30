@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import type { Member } from "../types";
 import { logEntrance } from "../services/entranceLogService";
@@ -10,6 +10,13 @@ interface ValidationResult {
   reason?: string;
 }
 
+const isDesktopScannerHost = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const touch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  return !coarse && !touch;
+};
+
 const GlobalQRScanner: React.FC = () => {
   
   // For plug and play QR scanner (USB barcode scanner)
@@ -17,6 +24,15 @@ const GlobalQRScanner: React.FC = () => {
   const scannerBufferRef = useRef<string>("");
   const scannerTimeoutRef = useRef<number | null>(null);
   const lastKeyTimeRef = useRef<number>(0);
+  // USB wedge scanners need focus on desktop; on mobile autofocus opens the soft keyboard
+  const desktopScannerRef = useRef(false);
+  const [desktopScanner, setDesktopScanner] = useState(false);
+
+  useEffect(() => {
+    const enabled = isDesktopScannerHost();
+    desktopScannerRef.current = enabled;
+    setDesktopScanner(enabled);
+  }, []);
 
   const validateMember = async (memberId: number): Promise<ValidationResult> => {
     console.log('[GlobalQRScanner] 🔍 Validating member with ID:', memberId);
@@ -122,9 +138,10 @@ const GlobalQRScanner: React.FC = () => {
   const shouldLeaveFocusAlone = (): boolean => isUserTypingInForm();
 
   const focusScannerIfIdle = () => {
+    if (!desktopScannerRef.current) return;
     if (!scannerInputRef.current) return;
     if (shouldLeaveFocusAlone()) return;
-    scannerInputRef.current.focus();
+    scannerInputRef.current.focus({ preventScroll: true });
   };
 
   const processScannedData = async (scannedData: string) => {
@@ -392,8 +409,10 @@ const GlobalQRScanner: React.FC = () => {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep scanner focused only when user is NOT typing in another field
+  // Keep scanner focused only on desktop (USB scanners) when user is idle
   useEffect(() => {
+    if (!desktopScanner) return;
+
     const forceFocus = () => {
       focusScannerIfIdle();
     };
@@ -414,17 +433,24 @@ const GlobalQRScanner: React.FC = () => {
       clearInterval(focusInterval);
       observer.disconnect();
     };
-  }, []);
+  }, [desktopScanner]);
 
   return (
     <input
       id="global-scanner-input-hidden"
       ref={scannerInputRef}
       type="text"
-      autoFocus
+      inputMode="none"
+      autoComplete="off"
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck={false}
+      autoFocus={false}
+      readOnly={!desktopScanner}
       style={{
         position: "fixed",
         left: "-9999px",
+        top: 0,
         width: "1px",
         height: "1px",
         opacity: 0,
@@ -432,7 +458,10 @@ const GlobalQRScanner: React.FC = () => {
         zIndex: -1,
       }}
       tabIndex={-1}
+      aria-hidden="true"
       onBlur={(e) => {
+        if (!desktopScanner) return;
+
         const relatedTarget = e.relatedTarget as HTMLElement | null;
 
         const isOtherFormField =
