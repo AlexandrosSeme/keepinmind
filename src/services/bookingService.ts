@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
-import type { Booking } from "../types";
+import type { Booking, ClassSession } from "../types";
 
 // Database row format
 interface BookingRow {
@@ -283,5 +283,109 @@ export async function fetchMemberBookings(memberId: number): Promise<Booking[]> 
     console.error("[BookingService] Exception fetching member bookings:", err);
     return [];
   }
+}
+
+function sessionKey(b: Booking): string {
+  return `${b.title}|${b.startTime}|${b.endTime}|${b.instructor || ""}`;
+}
+
+/** Open / group sessions for the member schedule (next N days) */
+export async function fetchClassSessions(
+  from: Date,
+  to: Date
+): Promise<ClassSession[]> {
+  const bookings = await fetchBookings(from, to);
+  const openTypes = new Set(["class", "event", "personal_training"]);
+
+  const map = new Map<string, ClassSession>();
+
+  bookings
+    .filter((b) => openTypes.has(b.type) && b.status !== "cancelled")
+    .forEach((b) => {
+      const key = sessionKey(b);
+      const existing = map.get(key);
+      const isParticipant = b.memberId > 0;
+      if (existing) {
+        if (isParticipant) existing.bookedCount += 1;
+      } else {
+        map.set(key, {
+          key,
+          title: b.title,
+          description: b.description,
+          type: b.type,
+          startTime: b.startTime,
+          endTime: b.endTime,
+          instructor: b.instructor,
+          maxParticipants: b.maxParticipants,
+          bookedCount: isParticipant ? 1 : 0,
+          color: b.color,
+          templateId: b.id,
+        });
+      }
+    });
+
+  return Array.from(map.values()).sort(
+    (a, b) =>
+      new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+  );
+}
+
+export async function bookClassForMember(
+  session: ClassSession,
+  member: { id: number; name: string; phone: string }
+): Promise<{ booking: Booking | null; error: string | null }> {
+  if (
+    session.maxParticipants &&
+    session.bookedCount >= session.maxParticipants
+  ) {
+    return { booking: null, error: "Η ταξη ειναι γεματη" };
+  }
+
+  const mine = await fetchMemberBookings(member.id);
+  const already = mine.some(
+    (b) =>
+      b.status !== "cancelled" &&
+      b.title === session.title &&
+      b.startTime === session.startTime
+  );
+  if (already) {
+    return { booking: null, error: "Εχεις ηδη κλεισει αυτη τη θεση" };
+  }
+
+  const created = await createBooking({
+    memberId: member.id,
+    memberName: member.name,
+    memberPhone: member.phone,
+    title: session.title,
+    description: session.description,
+    type: session.type,
+    startTime: session.startTime,
+    endTime: session.endTime,
+    status: "confirmed",
+    instructor: session.instructor,
+    maxParticipants: session.maxParticipants,
+    currentParticipants: (session.bookedCount || 0) + 1,
+    color: session.color || "#f5c400",
+  });
+
+  if (!created) {
+    return {
+      booking: null,
+      error: "Αποτυχια κρατησης. Ελεγξε αν υπαρχει ο πινακας bookings.",
+    };
+  }
+
+  return { booking: created, error: null };
+}
+
+export async function cancelMemberBooking(
+  bookingId: number,
+  memberId: number
+): Promise<boolean> {
+  const mine = await fetchMemberBookings(memberId);
+  const booking = mine.find((b) => b.id === bookingId);
+  if (!booking) return false;
+  const updated = await updateBooking(bookingId, { status: "cancelled" });
+  return !!updated;
 }
 

@@ -1,7 +1,15 @@
 import { useEffect, useState, useCallback } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
+import MemberLayout from "./layouts/MemberLayout";
 import UserQRPage from "./components/UserQRPage";
+import MemberLogin from "./components/member/MemberLogin";
+import MemberHome from "./components/member/MemberHome";
+import MemberAnnouncements from "./components/member/MemberAnnouncements";
+import MemberSchedule from "./components/member/MemberSchedule";
+import MemberBookings from "./components/member/MemberBookings";
+import MemberQR from "./components/member/MemberQR";
+import MemberProfile from "./components/member/MemberProfile";
 import { createRoutes } from "./config/routes";
 import type {
   Stats,
@@ -16,6 +24,7 @@ import {
   AppDataProvider,
   createAppDataContextValue,
 } from "./contexts/AppDataContext";
+import { MemberSessionProvider } from "./contexts/MemberSessionContext";
 
 // Empty initial state - all data comes from Supabase
 const emptyStats: Stats = {
@@ -26,6 +35,14 @@ const emptyStats: Stats = {
   monthlyRevenue: "0",
   pendingPayments: "0",
 };
+
+function MemberPortalRoot() {
+  return (
+    <MemberSessionProvider>
+      <Outlet />
+    </MemberSessionProvider>
+  );
+}
 
 function App() {
   const [stats, setStats] = useState<Stats>(emptyStats);
@@ -94,8 +111,21 @@ function App() {
   return (
     <AppDataProvider value={contextValue}>
       <Routes>
-        {/* Standalone User QR Page - No Layout */}
+        {/* Public / legacy QR link */}
         <Route path="/my-qr" element={<UserQRPage />} />
+
+        {/* Member portal */}
+        <Route path="/member" element={<MemberPortalRoot />}>
+          <Route index element={<MemberLogin />} />
+          <Route path="app" element={<MemberLayout />}>
+            <Route index element={<MemberHome />} />
+            <Route path="announcements" element={<MemberAnnouncements />} />
+            <Route path="schedule" element={<MemberSchedule />} />
+            <Route path="bookings" element={<MemberBookings />} />
+            <Route path="qr" element={<MemberQR />} />
+            <Route path="profile" element={<MemberProfile />} />
+          </Route>
+        </Route>
 
         {/* Admin Routes with MainLayout */}
         <Route path="/" element={<MainLayout />}>

@@ -137,3 +137,27 @@ export interface BookingFormData {
   maxParticipants: number | null;
   notes: string;
 }
+
+export interface Announcement {
+  id: number;
+  title: string;
+  body: string;
+  audience: 'all' | 'active' | 'expiring' | 'members';
+  published: boolean;
+  created_at: string;
+}
+
+/** Group class / slot shown in member schedule */
+export interface ClassSession {
+  key: string;
+  title: string;
+  description?: string;
+  type: Booking['type'];
+  startTime: string;
+  endTime: string;
+  instructor?: string;
+  maxParticipants?: number;
+  bookedCount: number;
+  color?: string;
+  templateId?: number;
+}

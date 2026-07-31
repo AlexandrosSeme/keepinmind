@@ -36,10 +36,12 @@ export const STATUS_BADGE_MAP: Record<string, StatusMeta> = {
   draft: { tone: "neutral", label: "Προχειρο" },
   failed: { tone: "danger", label: "Αποτυχια" },
 
-  // Payments
+  // Payments / bookings
   completed: { tone: "success", label: "Ολοκληρωθηκε" },
   pending: { tone: "warning", label: "Εκκρεμει" },
   paid: { tone: "success", label: "Πληρωμενο" },
+  confirmed: { tone: "success", label: "Επιβεβαιωμενη" },
+  cancelled: { tone: "neutral", label: "Ακυρωθηκε" },
 
   // Categories / programs
   group: { tone: "brand", label: "Ομαδικο" },
@@ -54,7 +56,6 @@ export const STATUS_BADGE_MAP: Record<string, StatusMeta> = {
   // Attendance
   attended: { tone: "success", label: "Παρεστη" },
   absent: { tone: "danger", label: "Απουσια" },
-  cancelled: { tone: "neutral", label: "Ακυρωθηκε" },
 
   // Devices
   on: { tone: "success", label: "ON" },

@@ -81,8 +81,14 @@
   --bs-secondary-bg: #eeebe6;
 }
 
-body {
+html,
+body,
+#root {
+  height: 100%;
   margin: 0;
+}
+
+body {
   font-family: var(--font-body);
   font-size: var(--fs-base);
   font-weight: 400;
@@ -92,6 +98,11 @@ body {
   background-color: var(--km-canvas);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+#root {
+  overflow: hidden;
 }
 
 h1,
@@ -228,21 +239,61 @@ small,
   background-color: var(--km-info-soft) !important;
 }
 
-/* Shell — dark chrome, light workspace */
+/* Shell — dark chrome, light workspace; only main pane scrolls */
 .km-shell {
   background-color: var(--km-canvas);
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
 }
-.km-main {
-  background: var(--km-canvas);
-}
+
 .km-sidebar {
   background: var(--km-ink);
   border-right: 3px solid var(--km-brand);
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  height: 100%;
+  max-height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+.km-sidebar__nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.km-main {
+  background: var(--km-canvas);
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+}
+
+.km-main__content {
+  flex: 1 0 auto;
+}
+
 .km-topbar {
   background-color: #fff !important;
   border-bottom: 1px solid var(--km-border) !important;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 /* Cards */
