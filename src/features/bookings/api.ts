@@ -1,5 +1,5 @@
-import { supabase } from "../lib/supabaseClient";
-import type { Booking, ClassSession } from "../types";
+import { supabase } from "@/shared/api/supabaseClient";
+import type { Booking, ClassSession } from "./types";
 
 // Database row format
 interface BookingRow {
@@ -9,10 +9,10 @@ interface BookingRow {
   member_phone: string | null;
   title: string;
   description: string | null;
-  type: Booking['type'];
+  type: Booking["type"];
   start_time: string;
   end_time: string;
-  status: Booking['status'];
+  status: Booking["status"];
   instructor: string | null;
   max_participants: number | null;
   current_participants: number | null;
@@ -29,10 +29,10 @@ interface BookingUpdateData {
   member_phone?: string | null;
   title?: string;
   description?: string | null;
-  type?: Booking['type'];
+  type?: Booking["type"];
   start_time?: string;
   end_time?: string;
-  status?: Booking['status'];
+  status?: Booking["status"];
   instructor?: string | null;
   max_participants?: number | null;
   current_participants?: number | null;
@@ -42,9 +42,14 @@ interface BookingUpdateData {
 
 // ==================== BOOKING CRUD OPERATIONS ====================
 
-export async function fetchBookings(startDate?: Date, endDate?: Date): Promise<Booking[]> {
+export async function fetchBookings(
+  startDate?: Date,
+  endDate?: Date,
+): Promise<Booking[]> {
   if (!supabase) {
-    console.warn("[BookingService] Supabase not configured, returning empty array");
+    console.warn(
+      "[BookingService] Supabase not configured, returning empty array",
+    );
     return [];
   }
 
@@ -94,7 +99,9 @@ export async function fetchBookings(startDate?: Date, endDate?: Date): Promise<B
   }
 }
 
-export async function createBooking(booking: Omit<Booking, "id" | "created_at" | "updated_at">): Promise<Booking | null> {
+export async function createBooking(
+  booking: Omit<Booking, "id" | "created_at" | "updated_at">,
+): Promise<Booking | null> {
   if (!supabase) {
     console.warn("[BookingService] Supabase not configured");
     return null;
@@ -158,7 +165,7 @@ export async function createBooking(booking: Omit<Booking, "id" | "created_at" |
 
 export async function updateBooking(
   id: number,
-  updates: Partial<Omit<Booking, "id" | "created_at" | "updated_at">>
+  updates: Partial<Omit<Booking, "id" | "created_at" | "updated_at">>,
 ): Promise<Booking | null> {
   if (!supabase) {
     console.warn("[BookingService] Supabase not configured");
@@ -169,17 +176,24 @@ export async function updateBooking(
     // Transform to database format
     const updateData: BookingUpdateData = {};
     if (updates.memberId !== undefined) updateData.member_id = updates.memberId;
-    if (updates.memberName !== undefined) updateData.member_name = updates.memberName;
-    if (updates.memberPhone !== undefined) updateData.member_phone = updates.memberPhone;
+    if (updates.memberName !== undefined)
+      updateData.member_name = updates.memberName;
+    if (updates.memberPhone !== undefined)
+      updateData.member_phone = updates.memberPhone;
     if (updates.title !== undefined) updateData.title = updates.title;
-    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.description !== undefined)
+      updateData.description = updates.description;
     if (updates.type !== undefined) updateData.type = updates.type;
-    if (updates.startTime !== undefined) updateData.start_time = updates.startTime;
+    if (updates.startTime !== undefined)
+      updateData.start_time = updates.startTime;
     if (updates.endTime !== undefined) updateData.end_time = updates.endTime;
     if (updates.status !== undefined) updateData.status = updates.status;
-    if (updates.instructor !== undefined) updateData.instructor = updates.instructor;
-    if (updates.maxParticipants !== undefined) updateData.max_participants = updates.maxParticipants;
-    if (updates.currentParticipants !== undefined) updateData.current_participants = updates.currentParticipants;
+    if (updates.instructor !== undefined)
+      updateData.instructor = updates.instructor;
+    if (updates.maxParticipants !== undefined)
+      updateData.max_participants = updates.maxParticipants;
+    if (updates.currentParticipants !== undefined)
+      updateData.current_participants = updates.currentParticipants;
     if (updates.color !== undefined) updateData.color = updates.color;
     if (updates.notes !== undefined) updateData.notes = updates.notes;
 
@@ -243,7 +257,9 @@ export async function deleteBooking(id: number): Promise<boolean> {
 }
 
 // Get bookings for a specific member
-export async function fetchMemberBookings(memberId: number): Promise<Booking[]> {
+export async function fetchMemberBookings(
+  memberId: number,
+): Promise<Booking[]> {
   if (!supabase) {
     return [];
   }
@@ -292,7 +308,7 @@ function sessionKey(b: Booking): string {
 /** Open / group sessions for the member schedule (next N days) */
 export async function fetchClassSessions(
   from: Date,
-  to: Date
+  to: Date,
 ): Promise<ClassSession[]> {
   const bookings = await fetchBookings(from, to);
   const openTypes = new Set(["class", "event", "personal_training"]);
@@ -325,14 +341,13 @@ export async function fetchClassSessions(
     });
 
   return Array.from(map.values()).sort(
-    (a, b) =>
-      new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
   );
 }
 
 export async function bookClassForMember(
   session: ClassSession,
-  member: { id: number; name: string; phone: string }
+  member: { id: number; name: string; phone: string },
 ): Promise<{ booking: Booking | null; error: string | null }> {
   if (
     session.maxParticipants &&
@@ -346,7 +361,7 @@ export async function bookClassForMember(
     (b) =>
       b.status !== "cancelled" &&
       b.title === session.title &&
-      b.startTime === session.startTime
+      b.startTime === session.startTime,
   );
   if (already) {
     return { booking: null, error: "Εχεις ηδη κλεισει αυτη τη θεση" };
@@ -380,7 +395,7 @@ export async function bookClassForMember(
 
 export async function cancelMemberBooking(
   bookingId: number,
-  memberId: number
+  memberId: number,
 ): Promise<boolean> {
   const mine = await fetchMemberBookings(memberId);
   const booking = mine.find((b) => b.id === bookingId);
@@ -388,4 +403,3 @@ export async function cancelMemberBooking(
   const updated = await updateBooking(bookingId, { status: "cancelled" });
   return !!updated;
 }
-

@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, QrCode, ScanLine } from "lucide-react";
-import { useAppData } from "../contexts/AppDataContext";
-
-// Helper function to check if member uses barcode (IDs 1001-1005)
-const isBarcodeMember = (memberId: number): boolean => {
-  return memberId >= 1001 && memberId <= 1005;
-};
+import { useMembers } from "@/features/members";
+import { isBarcodeMember } from "../lib";
+import "./ViewQRCodePage.scss";
 
 const ViewQRCode: React.FC = () => {
-  const { members } = useAppData();
+  const { members } = useMembers();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMemberId, setSelectedMemberId] = useState<string>("");
@@ -19,7 +16,7 @@ const ViewQRCode: React.FC = () => {
     (member) =>
       member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.phone.includes(searchTerm) ||
-      member.id.toString().includes(searchTerm)
+      member.id.toString().includes(searchTerm),
   );
 
   const handleViewQR = (memberId: number) => {
@@ -71,10 +68,7 @@ const ViewQRCode: React.FC = () => {
               </div>
 
               {/* Members List */}
-              <div
-                className="border rounded"
-                style={{ maxHeight: "400px", overflowY: "auto" }}
-              >
+              <div className="border rounded km-view-qr__list">
                 {filteredMembers.length === 0 ? (
                   <div className="p-3 text-center text-muted">
                     <p className="mb-0">Δεν βρεθηκαν μελη</p>
@@ -199,4 +193,3 @@ const ViewQRCode: React.FC = () => {
 };
 
 export default ViewQRCode;
-

@@ -1,0 +1,15 @@
+.km-qr-reader {
+  width: 100%;
+  min-height: 300px;
+  // Mirror the camera preview so it behaves like a selfie view.
+  transform: scaleX(-1);
+}
+
+// Off-screen but focusable, so USB scanner keystrokes land here.
+.km-scanner-capture {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}

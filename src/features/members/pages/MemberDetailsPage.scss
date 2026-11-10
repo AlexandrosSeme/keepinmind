@@ -103,6 +103,10 @@
   overflow: auto;
 }
 
+.km-member__log-time {
+  font-size: 0.85rem;
+}
+
 .km-member__stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

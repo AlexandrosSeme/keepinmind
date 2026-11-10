@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { NavLink, Outlet, Navigate } from "react-router-dom";
 import {
   Home,
@@ -7,8 +8,9 @@ import {
   QrCode,
   User,
 } from "lucide-react";
-import { useMemberSession } from "../contexts/MemberSessionContext";
-import "./MemberLayout.scss";
+import { PageLoader } from "@/shared/ui";
+import { useMemberSession } from "../session/useMemberSession";
+import "../styles/memberPortal.scss";
 
 const MemberLayout: React.FC = () => {
   const { session, loading } = useMemberSession();
@@ -61,7 +63,9 @@ const MemberLayout: React.FC = () => {
       </header>
 
       <main className="mp-main">
-        <Outlet />
+        <Suspense fallback={<PageLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <nav className="mp-nav" aria-label="Member navigation">

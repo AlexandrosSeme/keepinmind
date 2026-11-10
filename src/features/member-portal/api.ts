@@ -1,5 +1,6 @@
-import { supabase } from "../lib/supabaseClient";
-import type { Member, Debt } from "../types";
+import { supabase } from "@/shared/api/supabaseClient";
+import { normalizePhone } from "@/shared/lib/phone";
+import type { Member } from "@/features/members";
 
 const SESSION_KEY = "melos_member_session";
 
@@ -8,10 +9,6 @@ export interface MemberSession {
   name: string;
   phone: string;
   loggedInAt: string;
-}
-
-function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, "");
 }
 
 export function loadMemberSession(): MemberSession | null {
@@ -34,7 +31,7 @@ export function clearMemberSession(): void {
 
 /** Login by phone — must match an existing member record */
 export async function loginMemberByPhone(
-  phoneInput: string
+  phoneInput: string,
 ): Promise<{ member: Member | null; error: string | null }> {
   const phone = normalizePhone(phoneInput);
   if (phone.length < 10) {
@@ -53,7 +50,7 @@ export async function loginMemberByPhone(
     }
 
     const member = (data as Member[]).find(
-      (m) => normalizePhone(m.phone) === phone
+      (m) => normalizePhone(m.phone) === phone,
     );
 
     if (!member) {
@@ -74,25 +71,4 @@ export async function loginMemberByPhone(
   } catch {
     return { member: null, error: "Σφαλμα κατα τη συνδεση" };
   }
-}
-
-export async function fetchMemberById(id: number): Promise<Member | null> {
-  if (!supabase) return null;
-  const { data, error } = await supabase
-    .from("members")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (error || !data) return null;
-  return data as Member;
-}
-
-export async function fetchMemberDebts(memberName: string): Promise<Debt[]> {
-  if (!supabase) return [];
-  const { data, error } = await supabase
-    .from("debts")
-    .select("*")
-    .ilike("name", memberName);
-  if (error || !data) return [];
-  return data as Debt[];
 }

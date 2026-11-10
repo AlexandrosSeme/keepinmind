@@ -69,6 +69,10 @@
   color: var(--km-text);
 }
 
+.km-dashboard__debt-amount {
+  font-size: 0.9rem;
+}
+
 .km-dashboard__body {
   display: grid;
   grid-template-columns: 1fr;

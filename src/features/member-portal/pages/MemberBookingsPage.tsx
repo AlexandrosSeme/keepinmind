@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Bookmark } from "lucide-react";
-import { useMemberSession } from "../../contexts/MemberSessionContext";
+import { StatusBadge } from "@/shared/ui";
 import {
   cancelMemberBooking,
   fetchMemberBookings,
-} from "../../services/bookingService";
-import type { Booking } from "../../types";
-import StatusBadge from "../ui/StatusBadge";
+  type Booking,
+} from "@/features/bookings";
+import { useMemberSession } from "../session/useMemberSession";
 
 const MemberBookings: React.FC = () => {
   const { member } = useMemberSession();
@@ -21,8 +21,8 @@ const MemberBookings: React.FC = () => {
     setBookings(
       data.sort(
         (a, b) =>
-          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-      )
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+      ),
     );
     setLoading(false);
   }, [member]);
@@ -42,11 +42,10 @@ const MemberBookings: React.FC = () => {
 
   const now = Date.now();
   const upcoming = bookings.filter(
-    (b) => b.status !== "cancelled" && new Date(b.startTime).getTime() >= now
+    (b) => b.status !== "cancelled" && new Date(b.startTime).getTime() >= now,
   );
   const past = bookings.filter(
-    (b) =>
-      b.status === "cancelled" || new Date(b.startTime).getTime() < now
+    (b) => b.status === "cancelled" || new Date(b.startTime).getTime() < now,
   );
 
   return (

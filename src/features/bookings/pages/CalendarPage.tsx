@@ -1,360 +1,259 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import moment from 'moment';
-import { 
-  Plus, 
-  X, 
-  Edit2, 
-  Trash2, 
-  User, 
-  Clock, 
-  Calendar as CalendarIcon,
-  Users,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Loader2,
-  Search,
-  Filter,
-  Dumbbell,
-  UserCheck
-} from 'lucide-react';
-import './Calendar.scss';
-import { useAppData } from '../contexts/AppDataContext';
-import { fetchBookings, createBooking, updateBooking, deleteBooking } from '../services/bookingService';
-import type { Booking, BookingFormData } from '../types';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import moment from "moment";
+import { Plus } from "lucide-react";
+import { useMembers } from "@/features/members";
+import {
+  createBooking,
+  deleteBooking,
+  fetchBookings,
+  updateBooking,
+} from "../api";
+import type { Booking, BookingFormData, BookingType } from "../types";
+import {
+  GENERAL_CLASS_NAME,
+  emptyBookingForm,
+  getBookingColor,
+} from "../lib/schedule";
+import CalendarStats from "../components/CalendarStats";
+import ScheduleControls from "../components/ScheduleControls";
+import ScheduleGrid from "../components/ScheduleGrid";
+import BookingFormModal from "../components/BookingFormModal";
+import BookingDetailsModal from "../components/BookingDetailsModal";
+import "./CalendarPage.scss";
 
-// Set moment locale to Greek
-moment.locale('el');
+moment.locale("el");
 
-// Time slots for the day (6:00 - 23:00)
-const TIME_SLOTS = Array.from({ length: 18 }, (_, i) => {
-  const hour = 6 + i;
-  return {
-    hour,
-    label: `${hour.toString().padStart(2, '0')}:00`,
-    value: hour
-  };
+type FormState = {
+  editing: Booking | null;
+  initialValues: BookingFormData;
+} | null;
+
+const toFormData = (booking: Booking): BookingFormData => ({
+  memberId: booking.memberId || null,
+  title: booking.title,
+  description: booking.description || "",
+  type: booking.type,
+  startTime: new Date(booking.startTime),
+  endTime: new Date(booking.endTime),
+  instructor: booking.instructor || "",
+  maxParticipants: booking.maxParticipants || null,
+  notes: booking.notes || "",
 });
 
-// Days of the week
-const DAYS_OF_WEEK = [
-  { key: 0, label: 'Δευτερα', short: 'Δευ' },
-  { key: 1, label: 'Τριτη', short: 'Τρι' },
-  { key: 2, label: 'Τεταρτη', short: 'Τετ' },
-  { key: 3, label: 'Πεμπτη', short: 'Πεμ' },
-  { key: 4, label: 'Παρασκευη', short: 'Παρ' },
-  { key: 5, label: 'Σαββατο', short: 'Σαβ' },
-  { key: 6, label: 'Κυριακη', short: 'Κυρ' }
-];
-
-// Color mapping for booking types
-const getBookingColor = (type: Booking['type']): string => {
-  switch (type) {
-    case 'class':
-      return '#2a8bb8';
-    case 'personal_training':
-      return '#1f9d63';
-    case 'appointment':
-      return '#d4a800';
-    case 'event':
-      return '#f5c400';
-    default:
-      return '#6b6b6b';
-  }
-};
-
-// Type labels in Greek
-const typeLabels: Record<Booking['type'], string> = {
-  class: 'Ταξη',
-  personal_training: 'Προσωπικη Προπονηση',
-  appointment: 'Ραντεβου',
-  event: 'Εκδηλωση'
-};
-
-const Calendar: React.FC = () => {
-  const { members } = useAppData();
-  const [currentWeek, setCurrentWeek] = useState(moment().startOf('week'));
+const CalendarPage: React.FC = () => {
+  const { members } = useMembers();
+  const [currentWeek, setCurrentWeek] = useState(moment().startOf("week"));
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showBookingModal, setShowBookingModal] = useState(false);
-  const [showBookingDetails, setShowBookingDetails] = useState(false);
+  const [form, setForm] = useState<FormState>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<Booking['type'] | 'all'>('all');
-  const [filterCoach, setFilterCoach] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<BookingType | "all">("all");
+  const [filterCoach, setFilterCoach] = useState("all");
 
-  const [formData, setFormData] = useState<BookingFormData>({
-    memberId: null,
-    title: '',
-    description: '',
-    type: 'class',
-    startTime: new Date(),
-    endTime: new Date(),
-    instructor: '',
-    maxParticipants: null,
-    notes: ''
-  });
+  const coaches = useMemo(
+    () =>
+      Array.from(
+        new Set(bookings.map((b) => b.instructor).filter(Boolean) as string[]),
+      ).sort(),
+    [bookings],
+  );
 
-  // Get unique coaches from bookings
-  const coaches = useMemo(() => {
-    const coachSet = new Set<string>();
-    bookings.forEach(b => {
-      if (b.instructor) coachSet.add(b.instructor);
-    });
-    return Array.from(coachSet).sort();
-  }, [bookings]);
-
-  // Load bookings for current week
-  useEffect(() => {
-    loadBookings();
-  }, [currentWeek]);
-
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     setLoading(true);
     try {
-      const weekStart = currentWeek.clone().startOf('week').toDate();
-      const weekEnd = currentWeek.clone().endOf('week').toDate();
-      const fetchedBookings = await fetchBookings(weekStart, weekEnd);
-      setBookings(fetchedBookings);
+      const weekStart = currentWeek.clone().startOf("week").toDate();
+      const weekEnd = currentWeek.clone().endOf("week").toDate();
+      setBookings(await fetchBookings(weekStart, weekEnd));
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      console.error("Error loading bookings:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentWeek]);
 
-  // Get bookings for a specific day and hour
+  useEffect(() => {
+    loadBookings();
+  }, [loadBookings]);
+
   const getBookingsForSlot = (day: number, hour: number): Booking[] => {
-    const dayDate = currentWeek.clone().day(day);
-    const slotStart = dayDate.clone().hour(hour).minute(0).second(0);
-    const slotEnd = slotStart.clone().add(1, 'hour');
+    const slotStart = currentWeek
+      .clone()
+      .day(day)
+      .hour(hour)
+      .minute(0)
+      .second(0);
+    const slotEnd = slotStart.clone().add(1, "hour");
+    const term = searchTerm.toLowerCase();
 
     return bookings
-      .filter(booking => {
-        if (filterType !== 'all' && booking.type !== filterType) return false;
-        if (filterCoach !== 'all' && booking.instructor !== filterCoach) return false;
-        if (searchTerm && !booking.title.toLowerCase().includes(searchTerm.toLowerCase()) && 
-            !booking.memberName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            !(booking.instructor && booking.instructor.toLowerCase().includes(searchTerm.toLowerCase()))) {
+      .filter((booking) => {
+        if (filterType !== "all" && booking.type !== filterType) return false;
+        if (filterCoach !== "all" && booking.instructor !== filterCoach)
+          return false;
+        if (
+          term &&
+          !booking.title.toLowerCase().includes(term) &&
+          !booking.memberName.toLowerCase().includes(term) &&
+          !booking.instructor?.toLowerCase().includes(term)
+        ) {
           return false;
         }
-
-        const bookingStart = moment(booking.startTime);
-        const bookingEnd = moment(booking.endTime);
-        
-        // Check if booking overlaps with this time slot
-        return bookingStart.isBefore(slotEnd) && bookingEnd.isAfter(slotStart);
+        return (
+          moment(booking.startTime).isBefore(slotEnd) &&
+          moment(booking.endTime).isAfter(slotStart)
+        );
       })
       .sort((a, b) => moment(a.startTime).diff(moment(b.startTime)));
   };
 
+  const openCreate = (start: Date, end: Date) =>
+    setForm({ editing: null, initialValues: emptyBookingForm(start, end) });
+
   const handleSlotClick = (day: number, hour: number) => {
     const dayDate = currentWeek.clone().day(day);
-    const startTime = dayDate.clone().hour(hour).minute(0).second(0).toDate();
-    const endTime = dayDate.clone().hour(hour + 1).minute(0).second(0).toDate();
-
-    setFormData(prev => ({
-      ...prev,
-      startTime: startTime,
-      endTime: endTime
-    }));
-    setEditingBooking(null);
-    setShowBookingModal(true);
+    openCreate(
+      dayDate.clone().hour(hour).minute(0).second(0).toDate(),
+      dayDate
+        .clone()
+        .hour(hour + 1)
+        .minute(0)
+        .second(0)
+        .toDate(),
+    );
   };
 
-  const handleBookingClick = (booking: Booking) => {
-    setSelectedBooking(booking);
-    setShowBookingDetails(true);
+  const closeAll = () => {
+    setForm(null);
+    setSelectedBooking(null);
   };
 
-  const handleCreateBooking = async () => {
-    if (!formData.title.trim() || !formData.instructor.trim()) {
-      alert('Παρακαλω συμπληρωστε τιτλο και προπονητη');
+  const findMember = (memberId: number | null) =>
+    memberId ? members.find((m) => m.id === memberId) : undefined;
+
+  const handleCreate = async (values: BookingFormData) => {
+    if (!values.title.trim() || !values.instructor.trim()) {
+      alert("Παρακαλω συμπληρωστε τιτλο και προπονητη");
       return;
     }
 
+    const member = findMember(values.memberId);
     try {
-      const bookingData: Omit<Booking, 'id' | 'created_at' | 'updated_at'> = {
-        memberId: formData.memberId || 0,
-        memberName: formData.memberId 
-          ? members.find(m => m.id === formData.memberId)?.name || 'Γενικη Ταξη'
-          : 'Γενικη Ταξη',
-        memberPhone: formData.memberId 
-          ? members.find(m => m.id === formData.memberId)?.phone || undefined
-          : undefined,
-        title: formData.title,
-        description: formData.description || undefined,
-        type: formData.type,
-        startTime: formData.startTime.toISOString(),
-        endTime: formData.endTime.toISOString(),
-        status: 'confirmed',
-        instructor: formData.instructor,
-        maxParticipants: formData.maxParticipants || undefined,
-        color: getBookingColor(formData.type),
-        notes: formData.notes || undefined
-      };
-
-      const newBooking = await createBooking(bookingData);
-      if (newBooking) {
+      const created = await createBooking({
+        memberId: values.memberId || 0,
+        memberName: member?.name || GENERAL_CLASS_NAME,
+        memberPhone: member?.phone || undefined,
+        title: values.title,
+        description: values.description || undefined,
+        type: values.type,
+        startTime: values.startTime.toISOString(),
+        endTime: values.endTime.toISOString(),
+        status: "confirmed",
+        instructor: values.instructor,
+        maxParticipants: values.maxParticipants || undefined,
+        color: getBookingColor(values.type),
+        notes: values.notes || undefined,
+      });
+      if (created) {
         await loadBookings();
-        handleCloseModal();
+        closeAll();
       } else {
-        alert('Σφαλμα κατα τη δημιουργια κρατησης');
+        alert("Σφαλμα κατα τη δημιουργια κρατησης");
       }
     } catch (error) {
-      console.error('Error creating booking:', error);
-      alert('Σφαλμα κατα τη δημιουργια κρατησης');
+      console.error("Error creating booking:", error);
+      alert("Σφαλμα κατα τη δημιουργια κρατησης");
     }
   };
 
-  const handleUpdateBooking = async () => {
-    if (!editingBooking || !formData.title.trim() || !formData.instructor.trim()) {
-      return;
+  const handleUpdate = async (editing: Booking, values: BookingFormData) => {
+    if (!values.title.trim() || !values.instructor.trim()) return;
+
+    const updates: Partial<Booking> = {
+      title: values.title,
+      description: values.description || undefined,
+      type: values.type,
+      startTime: values.startTime.toISOString(),
+      endTime: values.endTime.toISOString(),
+      instructor: values.instructor,
+      maxParticipants: values.maxParticipants || undefined,
+      notes: values.notes || undefined,
+      color: getBookingColor(values.type),
+    };
+
+    const member = findMember(values.memberId);
+    if (member) {
+      updates.memberId = member.id;
+      updates.memberName = member.name;
+      updates.memberPhone = member.phone;
     }
 
     try {
-      const updates: Partial<Booking> = {
-        title: formData.title,
-        description: formData.description || undefined,
-        type: formData.type,
-        startTime: formData.startTime.toISOString(),
-        endTime: formData.endTime.toISOString(),
-        instructor: formData.instructor,
-        maxParticipants: formData.maxParticipants || undefined,
-        notes: formData.notes || undefined,
-        color: getBookingColor(formData.type)
-      };
-
-      if (formData.memberId) {
-        const selectedMember = members.find(m => m.id === formData.memberId);
-        if (selectedMember) {
-          updates.memberId = selectedMember.id;
-          updates.memberName = selectedMember.name;
-          updates.memberPhone = selectedMember.phone;
-        }
-      }
-
-      const updated = await updateBooking(editingBooking.id, updates);
+      const updated = await updateBooking(editing.id, updates);
       if (updated) {
         await loadBookings();
-        handleCloseModal();
+        closeAll();
       } else {
-        alert('Σφαλμα κατα την ενημερωση κρατησης');
+        alert("Σφαλμα κατα την ενημερωση κρατησης");
       }
     } catch (error) {
-      console.error('Error updating booking:', error);
-      alert('Σφαλμα κατα την ενημερωση κρατησης');
+      console.error("Error updating booking:", error);
+      alert("Σφαλμα κατα την ενημερωση κρατησης");
     }
   };
 
-  const handleDeleteBooking = async (bookingId: number) => {
-    if (!confirm('Ειστε σιγουροι οτι θελετε να διαγραψετε αυτη την κρατηση;')) {
+  const handleDelete = async (bookingId: number) => {
+    if (
+      !window.confirm(
+        "Ειστε σιγουροι οτι θελετε να διαγραψετε αυτη την κρατηση;",
+      )
+    )
       return;
-    }
 
     try {
       const success = await deleteBooking(bookingId);
       if (success) {
         await loadBookings();
-        setShowBookingDetails(false);
         setSelectedBooking(null);
       } else {
-        alert('Σφαλμα κατα τη διαγραφη κρατησης');
+        alert("Σφαλμα κατα τη διαγραφη κρατησης");
       }
     } catch (error) {
-      console.error('Error deleting booking:', error);
-      alert('Σφαλμα κατα τη διαγραφη κρατησης');
+      console.error("Error deleting booking:", error);
+      alert("Σφαλμα κατα τη διαγραφη κρατησης");
     }
   };
 
-  const handleEditBooking = () => {
-    if (!selectedBooking) return;
-    
-    setEditingBooking(selectedBooking);
-    setFormData({
-      memberId: selectedBooking.memberId || null,
-      title: selectedBooking.title,
-      description: selectedBooking.description || '',
-      type: selectedBooking.type,
-      startTime: new Date(selectedBooking.startTime),
-      endTime: new Date(selectedBooking.endTime),
-      instructor: selectedBooking.instructor || '',
-      maxParticipants: selectedBooking.maxParticipants || null,
-      notes: selectedBooking.notes || ''
-    });
-    setShowBookingDetails(false);
-    setShowBookingModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowBookingModal(false);
-    setShowBookingDetails(false);
-    setSelectedBooking(null);
-    setEditingBooking(null);
-    setFormData({
-      memberId: null,
-      title: '',
-      description: '',
-      type: 'class',
-      startTime: new Date(),
-      endTime: new Date(),
-      instructor: '',
-      maxParticipants: null,
-      notes: ''
-    });
-  };
-
-  const goToPreviousWeek = () => {
-    setCurrentWeek(prev => prev.clone().subtract(1, 'week'));
-  };
-
-  const goToNextWeek = () => {
-    setCurrentWeek(prev => prev.clone().add(1, 'week'));
-  };
-
-  const goToToday = () => {
-    setCurrentWeek(moment().startOf('week'));
-  };
-
   const stats = useMemo(() => {
-    const today = moment().startOf('day');
-    const thisWeek = currentWeek.clone().endOf('week');
-    
+    const today = moment().startOf("day");
+    const weekStart = currentWeek.clone().startOf("week");
+    const weekEnd = currentWeek.clone().endOf("week");
     return {
       total: bookings.length,
-      today: bookings.filter(b => moment(b.startTime).isSame(today, 'day')).length,
-      thisWeek: bookings.filter(b => moment(b.startTime).isBetween(currentWeek.clone().startOf('week'), thisWeek, 'day', '[]')).length,
-      coaches: coaches.length
+      today: bookings.filter((b) => moment(b.startTime).isSame(today, "day"))
+        .length,
+      thisWeek: bookings.filter((b) =>
+        moment(b.startTime).isBetween(weekStart, weekEnd, "day", "[]"),
+      ).length,
+      coaches: coaches.length,
     };
   }, [bookings, currentWeek, coaches]);
 
   return (
     <div className="schedule-container">
-      {/* Header */}
       <div className="schedule-header">
         <div className="header-content">
           <div>
             <h2 className="page-title">Προγραμμα Προπονησεων</h2>
-            <p className="page-subtitle">Ταξεις & Προπονησεις - Εβδομαδιαιο Προγραμμα</p>
+            <p className="page-subtitle">
+              Ταξεις & Προπονησεις - Εβδομαδιαιο Προγραμμα
+            </p>
           </div>
-          <button 
+          <button
             className="btn btn-primary btn-add-booking"
-            onClick={() => {
-              setEditingBooking(null);
-              setFormData({
-                memberId: null,
-                title: '',
-                description: '',
-                type: 'class',
-                startTime: new Date(),
-                endTime: moment().add(1, 'hour').toDate(),
-                instructor: '',
-                maxParticipants: null,
-                notes: ''
-              });
-              setShowBookingModal(true);
-            }}
+            onClick={() =>
+              openCreate(new Date(), moment().add(1, "hour").toDate())
+            }
           >
             <Plus size={20} />
             Νεα Ταξη/Προπονηση
@@ -362,466 +261,61 @@ const Calendar: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon stat-icon-primary">
-            <Dumbbell size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Συνολο Προπονησεων</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon stat-icon-success">
-            <CheckCircle2 size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.today}</div>
-            <div className="stat-label">Σημερα</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon stat-icon-info">
-            <CalendarIcon size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.thisWeek}</div>
-            <div className="stat-label">Αυτη την Εβδομαδα</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon stat-icon-warning">
-            <UserCheck size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.coaches}</div>
-            <div className="stat-label">Προπονητες</div>
-          </div>
-        </div>
-      </div>
+      <CalendarStats {...stats} />
 
-      {/* Filters & Week Navigation */}
-      <div className="schedule-controls">
-        <div className="week-navigation">
-          <button className="btn-nav" onClick={goToPreviousWeek}>
-            <ChevronLeft size={20} />
-          </button>
-          <div className="week-display">
-            <button className="btn-today" onClick={goToToday}>
-              Σημερα
-            </button>
-            <h3 className="week-title">
-              {currentWeek.format('DD MMMM')} - {currentWeek.clone().endOf('week').format('DD MMMM YYYY')}
-            </h3>
-          </div>
-          <button className="btn-nav" onClick={goToNextWeek}>
-            <ChevronRight size={20} />
-          </button>
-        </div>
+      <ScheduleControls
+        currentWeek={currentWeek}
+        onPrevWeek={() =>
+          setCurrentWeek((prev) => prev.clone().subtract(1, "week"))
+        }
+        onNextWeek={() => setCurrentWeek((prev) => prev.clone().add(1, "week"))}
+        onToday={() => setCurrentWeek(moment().startOf("week"))}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filterType={filterType}
+        onFilterTypeChange={setFilterType}
+        filterCoach={filterCoach}
+        onFilterCoachChange={setFilterCoach}
+        coaches={coaches}
+      />
 
-        <div className="filters-section">
-          <div className="search-box">
-            <Search size={18} />
-            <input
-              type="text"
-              placeholder="Αναζητηση ταξης, προπονητη η μελους..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-          <div className="filter-group">
-            <Filter size={18} />
-            <select
-              className="filter-select"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value as Booking['type'])}
-            >
-              <option value="all">Ολοι οι τυποι</option>
-              <option value="class">Ταξη</option>
-              <option value="personal_training">Προσωπικη Προπονηση</option>
-              <option value="appointment">Ραντεβου</option>
-              <option value="event">Εκδηλωση</option>
-            </select>
-            <select
-              className="filter-select"
-              value={filterCoach}
-              onChange={(e) => setFilterCoach(e.target.value)}
-            >
-              <option value="all">Ολοι οι προπονητες</option>
-              {coaches.map(coach => (
-                <option key={coach} value={coach}>{coach}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
+      <ScheduleGrid
+        currentWeek={currentWeek}
+        loading={loading}
+        getBookingsForSlot={getBookingsForSlot}
+        onSlotClick={handleSlotClick}
+        onBookingClick={setSelectedBooking}
+      />
 
-      {/* Schedule Grid */}
-      <div className="schedule-grid-container">
-        {loading ? (
-          <div className="loading-overlay">
-            <Loader2 size={32} className="spinner" />
-            <p>Φορτωση προγραμματος...</p>
-          </div>
-        ) : (
-          <div className="schedule-grid">
-            {/* Time column header */}
-            <div className="time-header"></div>
-            
-            {/* Day headers */}
-            {DAYS_OF_WEEK.map(day => {
-              const dayDate = currentWeek.clone().day(day.key);
-              const isToday = dayDate.isSame(moment(), 'day');
-              
-              return (
-                <div key={day.key} className={`day-header ${isToday ? 'today' : ''}`}>
-                  <div className="day-name">{day.label}</div>
-                  <div className="day-date">{dayDate.format('DD/MM')}</div>
-                </div>
-              );
-            })}
-
-            {/* Time slots */}
-            {TIME_SLOTS.map((timeSlot) => (
-              <React.Fragment key={timeSlot.hour}>
-                {/* Time label */}
-                <div className="time-slot-label">
-                  <span>{timeSlot.label}</span>
-                </div>
-
-                {/* Day columns */}
-                {DAYS_OF_WEEK.map(day => {
-                  const slotBookings = getBookingsForSlot(day.key, timeSlot.hour);
-                  
-                  return (
-                    <div
-                      key={`${day.key}-${timeSlot.hour}`}
-                      className="schedule-cell"
-                      onClick={() => handleSlotClick(day.key, timeSlot.hour)}
-                    >
-                      {slotBookings.map(booking => (
-                        <div
-                          key={booking.id}
-                          className="booking-card"
-                          style={{
-                            backgroundColor: `${(booking.color || getBookingColor(booking.type))}18`,
-                            borderLeft: `3px solid ${booking.color || getBookingColor(booking.type)}`,
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleBookingClick(booking);
-                          }}
-                        >
-                          <div className="booking-title">{booking.title}</div>
-                          {booking.instructor && (
-                            <div className="booking-coach">
-                              <User size={12} />
-                              {booking.instructor}
-                            </div>
-                          )}
-                          {booking.memberName && booking.memberName !== 'Γενικη Ταξη' && (
-                            <div className="booking-member">
-                              <Users size={12} />
-                              {booking.memberName}
-                            </div>
-                          )}
-                          <div className="booking-time">
-                            {moment(booking.startTime).format('HH:mm')} - {moment(booking.endTime).format('HH:mm')}
-                          </div>
-                        </div>
-                      ))}
-                      {slotBookings.length === 0 && (
-                        <div className="empty-slot">
-                          <Plus size={16} />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </React.Fragment>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Booking Modal */}
-      {showBookingModal && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{editingBooking ? 'Επεξεργασια Προπονησης' : 'Νεα Ταξη/Προπονηση'}</h3>
-              <button className="modal-close" onClick={handleCloseModal}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="modal-body">
-              <div className="form-group">
-                <label className="form-label">
-                  <Dumbbell size={16} />
-                  Τιτλος Ταξης/Προπονησης <span className="required">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="π.χ. Boxing Class, Muay Thai, Προσωπικη Προπονηση"
-                  required
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">
-                    <UserCheck size={16} />
-                    Προπονητης <span className="required">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.instructor}
-                    onChange={(e) => setFormData(prev => ({ ...prev, instructor: e.target.value }))}
-                    placeholder="Ονομα προπονητη"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">
-                    <Filter size={16} />
-                    Τυπος
-                  </label>
-                  <select
-                    className="form-control"
-                    value={formData.type}
-                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as Booking['type'] }))}
-                  >
-                    <option value="class">Ταξη</option>
-                    <option value="personal_training">Προσωπικη Προπονηση</option>
-                    <option value="appointment">Ραντεβου</option>
-                    <option value="event">Εκδηλωση</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">
-                    <Clock size={16} />
-                    Εναρξη <span className="required">*</span>
-                  </label>
-                  <input
-                    type="datetime-local"
-                    className="form-control"
-                    value={moment(formData.startTime).format('YYYY-MM-DDTHH:mm')}
-                    onChange={(e) => {
-                      const newStart = new Date(e.target.value);
-                      const duration = formData.endTime.getTime() - formData.startTime.getTime();
-                      setFormData(prev => ({
-                        ...prev,
-                        startTime: newStart,
-                        endTime: new Date(newStart.getTime() + duration)
-                      }));
-                    }}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">
-                    <Clock size={16} />
-                    Ληξη <span className="required">*</span>
-                  </label>
-                  <input
-                    type="datetime-local"
-                    className="form-control"
-                    value={moment(formData.endTime).format('YYYY-MM-DDTHH:mm')}
-                    onChange={(e) => setFormData(prev => ({ ...prev, endTime: new Date(e.target.value) }))}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">
-                    <User size={16} />
-                    Μελος (Προαιρετικο)
-                  </label>
-                  <select
-                    className="form-control"
-                    value={formData.memberId || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, memberId: parseInt(e.target.value) || null }))}
-                  >
-                    <option value="">Γενικη Ταξη (Χωρις συγκεκριμενο μελος)</option>
-                    {members.map(member => (
-                      <option key={member.id} value={member.id}>
-                        {member.name} {member.status === 'active' ? '✓' : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">
-                    <Users size={16} />
-                    Μεγιστος Αριθμος Συμμετεχοντων
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.maxParticipants || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, maxParticipants: parseInt(e.target.value) || null }))}
-                    placeholder="Απεριοριστο"
-                    min="1"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Περιγραφη</label>
-                <textarea
-                  className="form-control"
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Περιγραφη της ταξης/προπονησης..."
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Σημειωσεις</label>
-                <textarea
-                  className="form-control"
-                  rows={2}
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Εσωτερικες σημειωσεις..."
-                />
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={handleCloseModal}>
-                Ακυρωση
-              </button>
-              <button 
-                className="btn btn-primary" 
-                onClick={editingBooking ? handleUpdateBooking : handleCreateBooking}
-                disabled={!formData.title.trim() || !formData.instructor.trim()}
-              >
-                {editingBooking ? 'Αποθηκευση' : 'Δημιουργια'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {form && (
+        <BookingFormModal
+          isEdit={Boolean(form.editing)}
+          initialValues={form.initialValues}
+          members={members}
+          onClose={closeAll}
+          onSubmit={(values) =>
+            form.editing
+              ? handleUpdate(form.editing, values)
+              : handleCreate(values)
+          }
+        />
       )}
 
-      {/* Booking Details Modal */}
-      {showBookingDetails && selectedBooking && (
-        <div className="modal-overlay" onClick={() => setShowBookingDetails(false)}>
-          <div className="modal-content modal-content-large" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{selectedBooking.title}</h3>
-              <button className="modal-close" onClick={() => setShowBookingDetails(false)}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="modal-body">
-              <div className="booking-details">
-                {selectedBooking.instructor && (
-                  <div className="detail-item highlight">
-                    <div className="detail-label">
-                      <UserCheck size={18} />
-                      Προπονητης
-                    </div>
-                    <div className="detail-value coach-name">{selectedBooking.instructor}</div>
-                  </div>
-                )}
-
-                <div className="detail-item">
-                  <div className="detail-label">
-                    <Filter size={18} />
-                    Τυπος
-                  </div>
-                  <div className="detail-value">
-                    <span className="badge badge-type">{typeLabels[selectedBooking.type]}</span>
-                  </div>
-                </div>
-
-                <div className="detail-item">
-                  <div className="detail-label">
-                    <Clock size={18} />
-                    Ημερομηνια & Ωρα
-                  </div>
-                  <div className="detail-value">
-                    {moment(selectedBooking.startTime).format('dddd, DD MMMM YYYY')}
-                    <br />
-                    <small>{moment(selectedBooking.startTime).format('HH:mm')} - {moment(selectedBooking.endTime).format('HH:mm')}</small>
-                  </div>
-                </div>
-
-                {selectedBooking.memberName && selectedBooking.memberName !== 'Γενικη Ταξη' && (
-                  <div className="detail-item">
-                    <div className="detail-label">
-                      <User size={18} />
-                      Μελος
-                    </div>
-                    <div className="detail-value">{selectedBooking.memberName}</div>
-                  </div>
-                )}
-
-                {selectedBooking.maxParticipants && (
-                  <div className="detail-item">
-                    <div className="detail-label">
-                      <Users size={18} />
-                      Συμμετεχοντες
-                    </div>
-                    <div className="detail-value">
-                      {selectedBooking.currentParticipants || 0} / {selectedBooking.maxParticipants}
-                    </div>
-                  </div>
-                )}
-
-                {selectedBooking.description && (
-                  <div className="detail-item">
-                    <div className="detail-label">Περιγραφη</div>
-                    <div className="detail-value">{selectedBooking.description}</div>
-                  </div>
-                )}
-
-                {selectedBooking.notes && (
-                  <div className="detail-item">
-                    <div className="detail-label">Σημειωσεις</div>
-                    <div className="detail-value">{selectedBooking.notes}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn btn-danger" onClick={() => handleDeleteBooking(selectedBooking.id)}>
-                <Trash2 size={18} />
-                Διαγραφη
-              </button>
-              <button className="btn btn-secondary" onClick={() => setShowBookingDetails(false)}>
-                Κλεισιμο
-              </button>
-              <button className="btn btn-primary" onClick={handleEditBooking}>
-                <Edit2 size={18} />
-                Επεξεργασια
-              </button>
-            </div>
-          </div>
-        </div>
+      {selectedBooking && !form && (
+        <BookingDetailsModal
+          booking={selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+          onEdit={() =>
+            setForm({
+              editing: selectedBooking,
+              initialValues: toFormData(selectedBooking),
+            })
+          }
+          onDelete={() => handleDelete(selectedBooking.id)}
+        />
       )}
     </div>
   );
 };
 
-export default Calendar;
+export default CalendarPage;

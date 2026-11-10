@@ -1,17 +1,23 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Calendar, Check } from "lucide-react";
-import { useMemberSession } from "../../contexts/MemberSessionContext";
 import {
   bookClassForMember,
   fetchClassSessions,
   fetchMemberBookings,
-} from "../../services/bookingService";
-import type { ClassSession, Booking } from "../../types";
+  type Booking,
+  type ClassSession,
+} from "@/features/bookings";
+import { useMemberSession } from "../session/useMemberSession";
 
 function buildDemoSessions(): ClassSession[] {
   const base = new Date();
   base.setMinutes(0, 0, 0);
-  const mk = (dayOffset: number, hour: number, title: string, instructor: string) => {
+  const mk = (
+    dayOffset: number,
+    hour: number,
+    title: string,
+    instructor: string,
+  ) => {
     const start = new Date(base);
     start.setDate(start.getDate() + dayOffset);
     start.setHours(hour, 0, 0, 0);
@@ -74,14 +80,14 @@ const MemberSchedule: React.FC = () => {
 
   const isBooked = (session: ClassSession) =>
     myBookings.some(
-      (b) => b.title === session.title && b.startTime === session.startTime
+      (b) => b.title === session.title && b.startTime === session.startTime,
     );
 
   const handleBook = async (session: ClassSession) => {
     if (!member) return;
     if (usingDemo) {
       setMessage(
-        "Δειγμα προγραμματος. Δημιουργησε ταξεις απο το admin Ημερολογιο για πραγματικες κρατησεις."
+        "Δειγμα προγραμματος. Δημιουργησε ταξεις απο το admin Ημερολογιο για πραγματικες κρατησεις.",
       );
       return;
     }
@@ -113,22 +119,21 @@ const MemberSchedule: React.FC = () => {
       </p>
 
       {usingDemo && (
-        <div className="mp-card" style={{ background: "var(--km-brand-soft)" }}>
+        <div className="mp-card mp-card--brand">
           <small>
-            Εμφανιζεται δειγμα προγραμματος. Οταν ο γυμναστης προσθεσει ταξεις στο
-            Ημερολογιο, θα φαινονται εδω για κρατηση.
+            Εμφανιζεται δειγμα προγραμματος. Οταν ο γυμναστης προσθεσει ταξεις
+            στο Ημερολογιο, θα φαινονται εδω για κρατηση.
           </small>
         </div>
       )}
 
       {message && (
         <div
-          className="mp-card"
-          style={{
-            borderColor: message.includes("επιτυχως")
-              ? "rgba(31,157,99,0.4)"
-              : "rgba(214,59,59,0.35)",
-          }}
+          className={`mp-card ${
+            message.includes("επιτυχως")
+              ? "mp-card--success"
+              : "mp-card--danger"
+          }`}
         >
           {message}
         </div>
@@ -180,7 +185,11 @@ const MemberSchedule: React.FC = () => {
               </div>
 
               {booked ? (
-                <button type="button" className="mp-btn mp-btn-ghost mt-3" disabled>
+                <button
+                  type="button"
+                  className="mp-btn mp-btn-ghost mt-3"
+                  disabled
+                >
                   <Check size={16} />
                   Κλεισμενο
                 </button>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useMemberSession } from "../../contexts/MemberSessionContext";
-import "../../layouts/MemberLayout.scss";
+import { useMemberSession } from "../session/useMemberSession";
+import "../styles/memberPortal.scss";
 
 const MemberLogin: React.FC = () => {
   const { session, login, loading } = useMemberSession();
@@ -59,10 +59,7 @@ const MemberLogin: React.FC = () => {
           </button>
         </form>
 
-        <p
-          className="text-muted text-center mt-3 mb-0"
-          style={{ fontSize: "0.8rem" }}
-        >
+        <p className="text-muted text-center mt-3 mb-0 mp-text-xs">
           Προβλημα εισοδου; Περασε απο τη reception.
         </p>
       </div>

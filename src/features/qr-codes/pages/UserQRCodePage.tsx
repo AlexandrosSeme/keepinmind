@@ -1,101 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import Barcode from "react-barcode";
+import React from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
-import type { Member } from "../types";
-import { CheckCircle, XCircle, Clock, ScanLine } from "lucide-react";
+import { ScanLine, XCircle } from "lucide-react";
+import { isBarcodeMember } from "../lib";
+import { useMemberLookup } from "../hooks/useMemberLookup";
+import { getMemberStatusInfo } from "../components/memberStatusInfo";
+import MemberCode from "../components/MemberCode";
+import QrLoading from "../components/QrLoading";
 
-// Helper function to check if member uses barcode (IDs 1001-1005)
-const isBarcodeMember = (memberId: number): boolean => {
-  return memberId >= 1001 && memberId <= 1005;
-};
-
-const UserQRCode: React.FC = () => {
+/** Admin preview of a member's QR code (`/user-qr?id=`). */
+const UserQRCodePage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const memberId = searchParams.get("id");
-  const [member, setMember] = useState<Member | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { member, loading, error } = useMemberLookup({
+    id: searchParams.get("id"),
+  });
 
-  useEffect(() => {
-    const fetchMember = async () => {
-      if (!memberId) {
-        setError("Δεν βρεθηκε ID μελους");
-        setLoading(false);
-        return;
-      }
-
-      if (!supabase) {
-        setError("Η συνδεση με τη βαση δεδομενων δεν ειναι διαθεσιμη");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error: fetchError } = await supabase
-          .from("members")
-          .select("*")
-          .eq("id", memberId)
-          .single();
-
-        if (fetchError) {
-          setError("Δεν βρεθηκε μελος με αυτο το ID");
-        } else {
-          setMember(data as Member);
-        }
-      } catch (err) {
-        setError("Σφαλμα κατα τη φορτωση των δεδομενων");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMember();
-  }, [memberId]);
-
-  const getStatusInfo = () => {
-    if (!member) return null;
-
-    switch (member.status) {
-      case "active":
-        return {
-          icon: <CheckCircle className="text-success" size={20} />,
-          text: "Ενεργη Συνδρομη",
-          color: "text-success",
-          bgColor: "bg-success bg-opacity-10",
-        };
-      case "expiring_soon":
-        return {
-          icon: <Clock className="text-warning" size={20} />,
-          text: "Ληγει Συντομα",
-          color: "text-warning",
-          bgColor: "bg-warning bg-opacity-10",
-        };
-      case "expired":
-        return {
-          icon: <XCircle className="text-danger" size={20} />,
-          text: "Ληγμενη Συνδρομη",
-          color: "text-danger",
-          bgColor: "bg-danger bg-opacity-10",
-        };
-      default:
-        return null;
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div className="text-center">
-          <div className="spinner-border text-primary mb-3" role="status" style={{ width: "3rem", height: "3rem" }}>
-            <span className="visually-hidden">Φορτωση...</span>
-          </div>
-          <p className="text-muted">Φορτωση...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <QrLoading />;
 
   if (error || !member) {
     return (
@@ -115,17 +34,8 @@ const UserQRCode: React.FC = () => {
     );
   }
 
-  const statusInfo = getStatusInfo();
+  const statusInfo = getMemberStatusInfo(member.status, 20);
   const isBarcode = isBarcodeMember(member.id);
-  const qrValue = JSON.stringify({
-    id: member.id,
-    memberId: member.id,
-    name: member.name,
-    phone: member.phone,
-    timestamp: Date.now(),
-  });
-  
-  console.log('[UserQRCode] Generated QR JSON:', qrValue);
 
   return (
     <div className="container mt-5">
@@ -149,18 +59,15 @@ const UserQRCode: React.FC = () => {
                 </p>
               </div>
 
-              {/* QR Code or Barcode */}
               <div className="d-flex justify-content-center mb-4">
                 <div className="p-3 bg-white border rounded">
                   {isBarcode ? (
                     <div className="d-flex flex-column align-items-center">
-                      <Barcode
-                        value={member.id.toString()}
-                        format="CODE128"
-                        width={2}
-                        height={80}
-                        displayValue={true}
-                        fontSize={18}
+                      <MemberCode
+                        member={member}
+                        qrSize={256}
+                        barcodeHeight={80}
+                        barcodeFontSize={18}
                       />
                       <div className="mt-2 text-center">
                         <ScanLine size={20} className="text-info mb-1" />
@@ -170,17 +77,15 @@ const UserQRCode: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <QRCodeSVG
-                      value={qrValue}
-                      size={256}
-                      level="H"
-                      includeMargin={true}
+                    <MemberCode
+                      member={member}
+                      qrSize={256}
+                      barcodeHeight={80}
                     />
                   )}
                 </div>
               </div>
 
-              {/* Member Info */}
               <div className="border-top pt-3">
                 <div className="mb-2">
                   <small className="text-muted">Ονομα:</small>
@@ -215,5 +120,4 @@ const UserQRCode: React.FC = () => {
   );
 };
 
-export default UserQRCode;
-
+export default UserQRCodePage;

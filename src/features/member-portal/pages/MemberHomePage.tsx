@@ -7,12 +7,14 @@ import {
   Bookmark,
   AlertTriangle,
 } from "lucide-react";
-import { useMemberSession } from "../../contexts/MemberSessionContext";
-import StatusBadge from "../ui/StatusBadge";
-import { fetchAnnouncements } from "../../services/announcementService";
-import { fetchMemberBookings } from "../../services/bookingService";
-import { fetchMemberDebts } from "../../services/memberAuthService";
-import type { Announcement, Booking, Debt } from "../../types";
+import { StatusBadge } from "@/shared/ui";
+import {
+  fetchAnnouncements,
+  type Announcement,
+} from "@/features/announcements";
+import { fetchMemberBookings, type Booking } from "@/features/bookings";
+import { fetchMemberDebts, type Debt } from "@/features/debts";
+import { useMemberSession } from "../session/useMemberSession";
 
 const MemberHome: React.FC = () => {
   const { member, session } = useMemberSession();
@@ -35,9 +37,9 @@ const MemberHome: React.FC = () => {
           .filter(
             (b) =>
               b.status !== "cancelled" &&
-              new Date(b.startTime).getTime() >= now
+              new Date(b.startTime).getTime() >= now,
           )
-          .slice(0, 3)
+          .slice(0, 3),
       );
       setDebts(d);
     })();
@@ -61,7 +63,7 @@ const MemberHome: React.FC = () => {
         </div>
         <div className="mp-stat">
           <div className="mp-stat-label">Ληξη</div>
-          <div className="mp-stat-value" style={{ fontSize: "1.1rem" }}>
+          <div className="mp-stat-value mp-stat-value--sm">
             {member.expiry || "—"}
           </div>
         </div>
@@ -69,7 +71,9 @@ const MemberHome: React.FC = () => {
 
       <div className="mp-card">
         <div className="mp-card-title">Πακετο</div>
-        <div className="fw-semibold">{member.package || "Δεν εχει οριστει"}</div>
+        <div className="fw-semibold">
+          {member.package || "Δεν εχει οριστει"}
+        </div>
         {member.card_lost && (
           <div className="mt-2">
             <StatusBadge status="card_lost" />
@@ -78,7 +82,7 @@ const MemberHome: React.FC = () => {
       </div>
 
       {debts.length > 0 && (
-        <div className="mp-card" style={{ borderColor: "rgba(214,59,59,0.35)" }}>
+        <div className="mp-card mp-card--danger">
           <div className="mp-card-title d-flex align-items-center gap-2">
             <AlertTriangle size={16} className="text-danger" />
             Οφειλες
@@ -105,7 +109,7 @@ const MemberHome: React.FC = () => {
             Τελευταια ανακοινωση
           </div>
           <div className="fw-semibold mb-1">{announcement.title}</div>
-          <p className="text-muted mb-2" style={{ fontSize: "0.9rem" }}>
+          <p className="text-muted mb-2 mp-text-sm">
             {announcement.body.length > 120
               ? `${announcement.body.slice(0, 120)}…`
               : announcement.body}

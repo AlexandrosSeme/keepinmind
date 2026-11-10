@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useMemberSession } from "../../contexts/MemberSessionContext";
-import StatusBadge from "../ui/StatusBadge";
-import { getEntranceLogsByMember } from "../../services/entranceLogService";
-import type { EntranceLog } from "../../types";
+import { StatusBadge } from "@/shared/ui";
+import {
+  getEntranceLogsByMember,
+  type EntranceLog,
+} from "@/features/attendance";
+import { useMemberSession } from "../session/useMemberSession";
 
 const MemberProfile: React.FC = () => {
   const { member, logout } = useMemberSession();
@@ -14,7 +16,7 @@ const MemberProfile: React.FC = () => {
   useEffect(() => {
     if (!member) return;
     getEntranceLogsByMember(member.id).then((data) =>
-      setLogs(data.slice(0, 8))
+      setLogs(data.slice(0, 8)),
     );
   }, [member]);
 
@@ -33,29 +35,14 @@ const MemberProfile: React.FC = () => {
       <div className="mp-card">
         <div className="d-flex align-items-center gap-3 mb-3">
           {member.photo_url ? (
-            <img
-              src={member.photo_url}
-              alt=""
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "3px solid var(--km-brand)",
-              }}
-            />
+            <img src={member.photo_url} alt="" className="mp-profile-photo" />
           ) : (
-            <div
-              className="km-avatar-soft"
-              style={{ width: 64, height: 64, fontSize: "1.5rem" }}
-            >
+            <div className="km-avatar-soft mp-profile-initial">
               {member.name.charAt(0)}
             </div>
           )}
           <div>
-            <div className="fw-bold" style={{ fontSize: "1.15rem" }}>
-              {member.name}
-            </div>
+            <div className="fw-bold mp-profile-name">{member.name}</div>
             <StatusBadge status={member.status} />
           </div>
         </div>
@@ -94,9 +81,7 @@ const MemberProfile: React.FC = () => {
               key={log.id}
               className="d-flex justify-content-between align-items-center py-2 border-bottom"
             >
-              <small>
-                {new Date(log.timestamp).toLocaleString("el-GR")}
-              </small>
+              <small>{new Date(log.timestamp).toLocaleString("el-GR")}</small>
               <StatusBadge status={log.validationStatus} showDot={false} />
             </div>
           ))

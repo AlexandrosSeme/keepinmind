@@ -1,5 +1,5 @@
-import { supabase } from "../lib/supabaseClient";
-import type { Announcement } from "../types";
+import { supabase } from "@/shared/api/supabaseClient";
+import type { Announcement } from "./types";
 
 const SAMPLE_ANNOUNCEMENTS: Announcement[] = [
   {
@@ -43,7 +43,7 @@ export async function fetchAnnouncements(): Promise<Announcement[]> {
     if (error) {
       console.warn(
         "[Announcements] Table missing or error — using sample:",
-        error.message
+        error.message,
       );
       return SAMPLE_ANNOUNCEMENTS;
     }
@@ -60,7 +60,7 @@ export async function fetchAnnouncements(): Promise<Announcement[]> {
 }
 
 export async function createAnnouncement(
-  announcement: Omit<Announcement, "id" | "created_at">
+  announcement: Omit<Announcement, "id" | "created_at">,
 ): Promise<Announcement | null> {
   if (!supabase) return null;
 

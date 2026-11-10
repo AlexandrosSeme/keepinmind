@@ -339,3 +339,52 @@
     border-right: 1px solid var(--km-border);
   }
 }
+
+/* Card variants */
+.mp-card--danger {
+  border-color: rgba(214, 59, 59, 0.35);
+}
+
+.mp-card--success {
+  border-color: rgba(31, 157, 99, 0.4);
+}
+
+.mp-card--brand {
+  background: var(--km-brand-soft);
+}
+
+/* Text helpers */
+.mp-text-pre {
+  white-space: pre-wrap;
+}
+
+.mp-text-sm {
+  font-size: 0.9rem;
+}
+
+.mp-text-xs {
+  font-size: 0.8rem;
+}
+
+.mp-stat-value--sm {
+  font-size: 1.1rem;
+}
+
+/* Profile */
+.mp-profile-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--km-brand);
+}
+
+.mp-profile-initial {
+  width: 64px;
+  height: 64px;
+  font-size: 1.5rem;
+}
+
+.mp-profile-name {
+  font-size: 1.15rem;
+}

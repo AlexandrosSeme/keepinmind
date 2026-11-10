@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Megaphone } from "lucide-react";
-import { fetchAnnouncements } from "../../services/announcementService";
-import type { Announcement } from "../../types";
+import {
+  fetchAnnouncements,
+  type Announcement,
+} from "@/features/announcements";
 
 const MemberAnnouncements: React.FC = () => {
   const [items, setItems] = useState<Announcement[]>([]);
@@ -39,9 +41,7 @@ const MemberAnnouncements: React.FC = () => {
                 year: "numeric",
               })}
             </small>
-            <p className="mb-0" style={{ whiteSpace: "pre-wrap" }}>
-              {a.body}
-            </p>
+            <p className="mb-0 mp-text-pre">{a.body}</p>
           </article>
         ))
       )}

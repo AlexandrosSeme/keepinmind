@@ -1,0 +1,72 @@
+.km-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.km-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+}
+
+.km-badge__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.km-badge__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.km-badge--success {
+  background: var(--km-success-soft);
+  color: var(--km-success);
+  border-color: rgba(31, 157, 99, 0.18);
+}
+
+.km-badge--warning {
+  background: var(--km-warning-soft);
+  color: #9a7a00;
+  border-color: rgba(245, 196, 0, 0.35);
+}
+
+.km-badge--danger {
+  background: var(--km-danger-soft);
+  color: var(--km-danger);
+  border-color: rgba(214, 59, 59, 0.2);
+}
+
+.km-badge--info {
+  background: var(--km-info-soft);
+  color: var(--km-info);
+  border-color: rgba(42, 139, 184, 0.2);
+}
+
+.km-badge--neutral {
+  background: rgba(20, 20, 20, 0.06);
+  color: var(--km-text-muted);
+  border-color: rgba(20, 20, 20, 0.08);
+}
+
+.km-badge--brand {
+  background: var(--km-brand-soft);
+  color: #9a7a00;
+  border-color: rgba(245, 196, 0, 0.35);
+}

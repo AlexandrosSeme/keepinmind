@@ -1,41 +1,18 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import type { Member } from "../types";
+import { useEffect, useState, type ReactNode } from "react";
+import { fetchMemberById, type Member } from "@/features/members";
 import {
   clearMemberSession,
-  fetchMemberById,
   loadMemberSession,
   loginMemberByPhone,
   type MemberSession,
-} from "../services/memberAuthService";
+} from "../api";
+import { MemberSessionContext } from "./context";
 
-interface MemberSessionContextType {
-  session: MemberSession | null;
-  member: Member | null;
-  loading: boolean;
-  login: (phone: string) => Promise<string | null>;
-  logout: () => void;
-  refreshMember: () => Promise<void>;
-}
-
-const MemberSessionContext = createContext<
-  MemberSessionContextType | undefined
->(undefined);
-
-export function useMemberSession() {
-  const ctx = useContext(MemberSessionContext);
-  if (!ctx) {
-    throw new Error("useMemberSession must be used within MemberSessionProvider");
-  }
-  return ctx;
-}
-
-export function MemberSessionProvider({ children }: { children: ReactNode }) {
+export default function MemberSessionProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [session, setSession] = useState<MemberSession | null>(null);
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);

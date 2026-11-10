@@ -1,27 +1,30 @@
 # Χαρακτηριστικό: Διαχείριση Χαμένων Καρτών (Card Lost Feature)
 
 ## Περιγραφή
+
 Προστέθηκε λειτουργικότητα για τη διαχείριση χαμένων/ακυρωμένων καρτών. Όταν μια κάρτα σημειωθεί ως χαμένη, δεν μπορεί να χρησιμοποιηθεί για είσοδο στο γυμναστήριο.
 
 ## Αλλαγές
 
 ### 1. Βάση Δεδομένων
-- **Αρχείο**: `supabase-card-lost-migration.sql`
+
+- **Αρχείο**: `supabase/supabase-card-lost-migration.sql`
 - Προστέθηκε πεδίο `card_lost` (boolean, default: false) στον πίνακα `members`
 - **Οδηγίες**: Τρέξε το SQL script στο Supabase SQL Editor
 
 ### 2. TypeScript Types
-- **Αρχείο**: `src/types/index.ts`
+
+- **Αρχείο**: `src/features/members/types.ts`
 - Προστέθηκε `card_lost?: boolean` στο interface `Member`
 
 ### 3. Επικύρωση QR Codes
-- **Αρχεία**: 
-  - `src/components/QRScanner.tsx`
-  - `src/components/GlobalQRScanner.tsx`
+
+- **Αρχείο**: `src/features/checkin/api.ts` (`validateMemberEntry`, κοινό για `QRScannerPage` και `GlobalQRScanner`)
 - Προστέθηκε έλεγχος: Αν `card_lost === true`, το QR code απορρίπτεται με μήνυμα "Κάρτα Ακυρωμένη"
 
 ### 4. UI για Admin
-- **Αρχείο**: `src/components/Members.tsx`
+
+- **Αρχεία**: `src/features/members/pages/MembersPage.tsx`, `src/features/members/hooks/useToggleCardLost.ts`
 - Προστέθηκαν:
   - Badge "Κάρτα Ακυρωμένη" όταν `card_lost === true`
   - Button για ακύρωση/ενεργοποίηση κάρτας
@@ -29,7 +32,8 @@
   - Υποστήριξη και για desktop και mobile view
 
 ### 5. Εκτύπωση Νέας Κάρτας
-- **Αρχείο**: `src/components/PrintAllQRCodes.tsx`
+
+- **Αρχείο**: `src/features/qr-codes/pages/PrintQRCodesPage.tsx`
 - Προστέθηκε υποστήριξη query parameter `?id=123` για να εκτυπώνεται αυτόματα η κάρτα ενός συγκεκριμένου μέλους
 
 ## Χρήση
@@ -49,6 +53,7 @@
    - Η σελίδα εκτύπωσης θα ανοίξει με το συγκεκριμένο μέλος ήδη επιλεγμένο
 
 ### Για Χρήστες:
+
 - Αν κάποιος προσπαθήσει να χρησιμοποιήσει μια ακυρωμένη κάρτα, θα δει μήνυμα:
   - "Κάρτα Ακυρωμένη"
   - "Η κάρτα έχει σημειωθεί ως χαμένη/ακυρωμένη. Παρακαλώ επικοινωνήστε με τον διαχειριστή."
@@ -59,12 +64,12 @@
 
 ```sql
 -- Προσθήκη πεδίου card_lost
-ALTER TABLE public.members 
+ALTER TABLE public.members
 ADD COLUMN IF NOT EXISTS card_lost BOOLEAN DEFAULT FALSE;
 
 -- Ενημέρωση υπάρχοντα records
-UPDATE public.members 
-SET card_lost = FALSE 
+UPDATE public.members
+SET card_lost = FALSE
 WHERE card_lost IS NULL;
 ```
 
@@ -74,4 +79,3 @@ WHERE card_lost IS NULL;
 - Η default τιμή στη βάση είναι `FALSE`
 - Όταν δημιουργείται νέο μέλος, η κάρτα είναι ενεργή από default
 - Η επικύρωση ελέγχει μόνο αν `card_lost === true` (strict equality)
-

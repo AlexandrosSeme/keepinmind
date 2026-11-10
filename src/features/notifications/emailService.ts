@@ -1,6 +1,8 @@
 // Email Service using Maileroo API
 // Documentation: https://maileroo.com/docs
 
+import { logger } from "@/shared/lib/logger";
+
 export interface EmailRecipient {
   email: string;
   name?: string;
@@ -31,9 +33,9 @@ export interface EmailResponse {
 
 class EmailService {
   private apiKey: string | null = null;
-  private fromEmail: string = 'noreply@807c33da300c12b9.maileroo.org'; // Verified Maileroo domain
-  private fromName: string = 'Colosseum Gym';
-  private baseUrl: string = 'https://smtp.maileroo.com/api/v2'; // Maileroo API endpoint
+  private fromEmail: string = "noreply@807c33da300c12b9.maileroo.org"; // Verified Maileroo domain
+  private fromName: string = "Colosseum Gym";
+  private baseUrl: string = "https://smtp.maileroo.com/api/v2"; // Maileroo API endpoint
 
   /**
    * Initialize the email service with API credentials
@@ -58,85 +60,93 @@ class EmailService {
     if (!this.apiKey) {
       return {
         success: false,
-        error: 'Email service not initialized. Please configure API key in settings.',
+        error:
+          "Email service not initialized. Please configure API key in settings.",
       };
     }
 
     const fromEmail = options.from?.email || this.fromEmail;
-    if (!fromEmail || fromEmail.trim() === '') {
+    if (!fromEmail || fromEmail.trim() === "") {
       return {
         success: false,
-        error: 'From email address is required. Please set a verified email address in Settings.',
+        error:
+          "From email address is required. Please set a verified email address in Settings.",
       };
     }
 
     try {
       const recipients = Array.isArray(options.to) ? options.to : [options.to];
-      
+
       const payload = {
         from: {
           email: options.from?.email || this.fromEmail,
           name: options.from?.name || this.fromName,
         },
-        to: recipients.map(r => ({
+        to: recipients.map((r) => ({
           email: r.email,
           name: r.name || r.email,
         })),
         subject: options.subject,
-        text: options.text || '',
-        html: options.html || options.text || '',
+        text: options.text || "",
+        html: options.html || options.text || "",
         ...(options.replyTo && { replyTo: options.replyTo }),
         ...(options.attachments && { attachments: options.attachments }),
       };
 
-      console.log('📤 Sending request to Maileroo API...');
-      console.log('API Key:', this.apiKey ? `${this.apiKey.substring(0, 10)}...` : 'NOT SET');
-      console.log('Payload:', JSON.stringify(payload, null, 2));
+      logger.debug("📤 Sending request to Maileroo API...");
 
       // Use backend proxy server to avoid CORS issues
       // The proxy server runs on http://localhost:3010
-      const proxyUrl = 'http://localhost:3010/api/maileroo/send';
+      const proxyUrl = "http://localhost:3010/api/maileroo/send";
       const isDevelopment = import.meta.env.DEV;
-      
+
       // In development, use the proxy server
       // In production, you'll need to deploy the proxy server or use a different solution
-      const endpoint = isDevelopment 
-        ? proxyUrl  // Use local proxy server
+      const endpoint = isDevelopment
+        ? proxyUrl // Use local proxy server
         : `${this.baseUrl}/emails`; // Direct API (will fail due to CORS, needs backend)
 
-      console.log(`🔄 Sending request to: ${endpoint}`);
-      console.log(`Environment: ${isDevelopment ? 'Development (using proxy server)' : 'Production'}`);
+      logger.debug(`🔄 Sending request to: ${endpoint}`);
+      logger.debug(
+        `Environment: ${isDevelopment ? "Development (using proxy server)" : "Production"}`,
+      );
 
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'X-Api-Key': this.apiKey, // Maileroo uses X-Api-Key header
-        'Authorization': `Bearer ${this.apiKey}`, // Also try Bearer token
+        "Content-Type": "application/json",
+        "X-Api-Key": this.apiKey, // Maileroo uses X-Api-Key header
+        Authorization: `Bearer ${this.apiKey}`, // Also try Bearer token
       };
 
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method: "POST",
         headers: headers,
         body: JSON.stringify(payload),
       });
 
-      console.log(`📊 Response status: ${response.status}`);
+      logger.debug(`📊 Response status: ${response.status}`);
 
       const data = await response.json().catch(() => {
-        console.error('Failed to parse response as JSON');
-        return { message: 'Unknown error', error: 'Invalid response from server' };
+        console.error("Failed to parse response as JSON");
+        return {
+          message: "Unknown error",
+          error: "Invalid response from server",
+        };
       });
 
-      console.log('📥 Response data:', data);
+      logger.debug("📥 Response data:", data);
 
       if (!response.ok) {
-        console.error('❌ API Error:', {
+        console.error("❌ API Error:", {
           status: response.status,
           statusText: response.statusText,
-          data: data
+          data: data,
         });
         return {
           success: false,
-          error: data.message || data.error || `Failed to send email (Status: ${response.status})`,
+          error:
+            data.message ||
+            data.error ||
+            `Failed to send email (Status: ${response.status})`,
         };
       }
 
@@ -145,10 +155,11 @@ class EmailService {
         messageId: data.messageId || data.id,
       };
     } catch (error) {
-      console.error('[EmailService] Error sending email:', error);
+      console.error("[EmailService] Error sending email:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -161,13 +172,13 @@ class EmailService {
     subject: string,
     message: string,
     htmlMessage?: string,
-    sendRate?: number
+    sendRate?: number,
   ): Promise<{ success: number; failed: number; errors: string[] }> {
     if (!this.apiKey) {
       return {
         success: 0,
         failed: recipients.length,
-        errors: ['Email service not initialized'],
+        errors: ["Email service not initialized"],
       };
     }
 
@@ -178,43 +189,46 @@ class EmailService {
     };
 
     // Get send rate from localStorage or use default (3)
-    const rate = sendRate || parseInt(localStorage.getItem('sendRate') || '3', 10);
-    
+    const rate =
+      sendRate || parseInt(localStorage.getItem("sendRate") || "3", 10);
+
     // Calculate batch size based on rate (1-5)
     // Rate 1: 1-2 per batch, Rate 2: 2-5, Rate 3: 5-10, Rate 4: 10-20, Rate 5: 20-50
     const batchSizes = [2, 5, 10, 20, 50];
     const batchSize = batchSizes[rate - 1] || 10;
-    
+
     // Calculate delay between batches (in milliseconds)
     // Rate 1: 2000ms, Rate 2: 1500ms, Rate 3: 1000ms, Rate 4: 500ms, Rate 5: 200ms
     const delays = [2000, 1500, 1000, 500, 200];
     const delay = delays[rate - 1] || 1000;
-    
+
     for (let i = 0; i < recipients.length; i += batchSize) {
       const batch = recipients.slice(i, i + batchSize);
-      
+
       try {
         const response = await this.sendEmail({
           to: batch,
           subject,
           text: message,
-          html: htmlMessage || message.replace(/\n/g, '<br>'),
+          html: htmlMessage || message.replace(/\n/g, "<br>"),
         });
 
         if (response.success) {
           results.success += batch.length;
         } else {
           results.failed += batch.length;
-          results.errors.push(response.error || 'Unknown error');
+          results.errors.push(response.error || "Unknown error");
         }
 
         // Delay between batches based on send rate
         if (i + batchSize < recipients.length) {
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       } catch (error) {
         results.failed += batch.length;
-        results.errors.push(error instanceof Error ? error.message : 'Unknown error');
+        results.errors.push(
+          error instanceof Error ? error.message : "Unknown error",
+        );
       }
     }
 
@@ -230,7 +244,7 @@ class EmailService {
     try {
       const response = await fetch(`${this.baseUrl}/quota`, {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
         },
       });
 
@@ -242,7 +256,7 @@ class EmailService {
         };
       }
     } catch (error) {
-      console.error('[EmailService] Error fetching quota:', error);
+      console.error("[EmailService] Error fetching quota:", error);
     }
 
     return null;
@@ -251,4 +265,3 @@ class EmailService {
 
 // Export singleton instance
 export const emailService = new EmailService();
-

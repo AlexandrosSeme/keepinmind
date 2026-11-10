@@ -92,9 +92,15 @@
 }
 
 .km-avatar {
+  width: 40px;
+  height: 40px;
   background-color: var(--km-brand) !important;
   color: var(--km-on-brand) !important;
   border-radius: 4px !important;
+}
+
+.km-sidebar-backdrop {
+  z-index: 1040;
 }
 
 .km-stat-value {
@@ -119,7 +125,10 @@
   cursor: pointer;
   appearance: none;
   background: var(--km-surface);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
 .km-dash-kpi:hover {
@@ -180,4 +189,3 @@
     transform: translateX(0);
   }
 }
-
