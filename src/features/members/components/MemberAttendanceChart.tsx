@@ -1,6 +1,7 @@
 import React from "react";
-import Chart from "react-apexcharts";
-import type { ApexOptions } from "apexcharts";
+import { Bar } from "react-chartjs-2";
+import type { ChartData, ChartOptions, Plugin } from "chart.js";
+import "@/shared/lib/chartjs";
 import { PanelCard } from "@/shared/ui";
 import { BRAND, CHART_FONT } from "@/shared/lib/brand";
 import type { AttendanceStats } from "../hooks/useMemberAttendance";
@@ -10,13 +11,28 @@ interface MemberAttendanceChartProps {
   monthly: { month: string; count: number }[];
 }
 
-// Empty months get a tiny bar so the axis still shows them.
-const EMPTY_BAR = 0.08;
+const axisTicks = {
+  color: BRAND.muted,
+  font: { size: 10, weight: 700 },
+} as const;
 
-const axisLabelStyle = {
-  colors: BRAND.muted,
-  fontSize: "10px",
-  fontWeight: 700,
+const barValueLabels: Plugin<"bar"> = {
+  id: "barValueLabels",
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    const meta = chart.getDatasetMeta(0);
+    const values = chart.data.datasets[0]?.data ?? [];
+    ctx.save();
+    ctx.font = `700 10px ${CHART_FONT}`;
+    ctx.fillStyle = BRAND.ink;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    meta.data.forEach((bar, i) => {
+      const value = Number(values[i]);
+      if (value > 0) ctx.fillText(String(value), bar.x, bar.y - 3);
+    });
+    ctx.restore();
+  },
 };
 
 const MemberAttendanceChart: React.FC<MemberAttendanceChartProps> = ({
@@ -26,55 +42,48 @@ const MemberAttendanceChart: React.FC<MemberAttendanceChartProps> = ({
   const maxAttendance = Math.max(...monthly.map((item) => item.count), 0);
   const yAxisMax = maxAttendance > 5 ? Math.ceil(maxAttendance * 1.15) : 5;
 
-  const options: ApexOptions = {
-    chart: {
-      type: "bar",
-      toolbar: { show: false },
-      fontFamily: CHART_FONT,
-      parentHeightOffset: 0,
-    },
-    colors: [BRAND.yellow],
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "42%",
-        borderRadius: 3,
-        borderRadiusApplication: "end",
+  const chartData: ChartData<"bar"> = {
+    labels: monthly.map((item) => item.month),
+    datasets: [
+      {
+        label: "Προσελευσεις",
+        data: monthly.map((item) => item.count),
+        backgroundColor: BRAND.yellow,
+        borderRadius: { topLeft: 3, topRight: 3 },
+        borderSkipped: "bottom",
+        categoryPercentage: 0.42,
+        barPercentage: 1,
+        // Empty months still get a sliver so the axis shows them.
+        minBarLength: 2,
+      },
+    ],
+  };
+
+  const options: ChartOptions<"bar"> = {
+    responsive: true,
+    layout: { padding: { left: 4, right: 4, top: 16 } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: (ctx) => `${ctx.parsed.y} προσελευσεις` },
       },
     },
-    dataLabels: {
-      enabled: true,
-      style: { fontSize: "10px", fontWeight: 700, colors: [BRAND.ink] },
-      offsetY: -14,
-      formatter: (val: number) => (val > 0.1 ? String(Math.round(val)) : ""),
-    },
-    stroke: { show: false },
-    xaxis: {
-      categories: monthly.map((item) => item.month),
-      labels: { style: axisLabelStyle, rotate: 0 },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-    },
-    yaxis: {
-      min: 0,
-      max: yAxisMax,
-      tickAmount: 4,
-      labels: {
-        style: axisLabelStyle,
-        formatter: (val: number) => String(Math.round(val)),
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { ...axisTicks, maxRotation: 0 },
       },
-    },
-    fill: { opacity: 1 },
-    grid: {
-      borderColor: BRAND.canvas,
-      strokeDashArray: 0,
-      padding: { left: 4, right: 4 },
-    },
-    tooltip: {
-      theme: "light",
       y: {
-        formatter: (val: number) =>
-          `${val < 0.1 ? 0 : Math.round(val)} προσελευσεις`,
+        min: 0,
+        max: yAxisMax,
+        grid: { color: BRAND.canvas },
+        border: { display: false },
+        ticks: {
+          ...axisTicks,
+          maxTicksLimit: 5,
+          callback: (val) => String(Math.round(Number(val))),
+        },
       },
     },
   };
@@ -100,19 +109,9 @@ const MemberAttendanceChart: React.FC<MemberAttendanceChartProps> = ({
         ))}
       </div>
 
-      <Chart
-        options={options}
-        series={[
-          {
-            name: "Προσελευσεις",
-            data: monthly.map((item) =>
-              item.count === 0 ? EMPTY_BAR : item.count,
-            ),
-          },
-        ]}
-        type="bar"
-        height={210}
-      />
+      <div style={{ height: 210 }}>
+        <Bar data={chartData} options={options} plugins={[barValueLabels]} />
+      </div>
     </PanelCard>
   );
 };

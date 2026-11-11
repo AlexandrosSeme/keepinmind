@@ -1,9 +1,10 @@
 import React from "react";
-import Chart from "react-apexcharts";
-import type { ApexOptions } from "apexcharts";
+import { Doughnut } from "react-chartjs-2";
+import type { ChartData, ChartOptions } from "chart.js";
+import "@/shared/lib/chartjs";
 import { Users } from "lucide-react";
 import { PanelCard } from "@/shared/ui";
-import { BRAND, CHART_FONT, CHART_FONT_CONDENSED } from "@/shared/lib/brand";
+import { BRAND, CHART_FONT_CONDENSED } from "@/shared/lib/brand";
 import DashboardEmpty from "./DashboardEmpty";
 
 interface MemberDistributionPanelProps {
@@ -17,50 +18,39 @@ const MemberDistributionPanel: React.FC<MemberDistributionPanelProps> = ({
   labels,
   total,
 }) => {
-  const options: ApexOptions = {
-    chart: { type: "donut", toolbar: { show: false }, fontFamily: CHART_FONT },
-    colors: [BRAND.active, BRAND.expiring, BRAND.expired],
+  const chartData: ChartData<"doughnut"> = {
     labels,
-    legend: {
-      position: "bottom",
-      fontSize: "11px",
-      fontWeight: 700,
-      fontFamily: CHART_FONT_CONDENSED,
-      markers: { size: 6, shape: "circle" },
-      itemMargin: { horizontal: 8, vertical: 2 },
-      labels: { colors: BRAND.charcoal },
-    },
-    dataLabels: { enabled: false },
-    plotOptions: {
-      pie: {
-        expandOnClick: false,
-        donut: {
-          size: "72%",
-          labels: {
-            show: true,
-            name: { show: false },
-            value: {
-              show: true,
-              fontSize: "1.35rem",
-              fontFamily: CHART_FONT_CONDENSED,
-              fontWeight: 800,
-              color: BRAND.ink,
-            },
-            total: {
-              show: true,
-              label: "ΜΕΛΗ",
-              fontSize: "0.65rem",
-              fontFamily: CHART_FONT_CONDENSED,
-              fontWeight: 700,
-              color: BRAND.muted,
-              formatter: () => String(total),
-            },
-          },
+    datasets: [
+      {
+        data: series,
+        backgroundColor: [BRAND.active, BRAND.expiring, BRAND.expired],
+        borderColor: "#ffffff",
+        borderWidth: 2,
+        hoverOffset: 0,
+      },
+    ],
+  };
+
+  const options: ChartOptions<"doughnut"> = {
+    responsive: true,
+    cutout: "72%",
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          color: BRAND.charcoal,
+          font: { size: 11, weight: 700, family: CHART_FONT_CONDENSED },
+          usePointStyle: true,
+          pointStyle: "circle",
+          boxWidth: 6,
+          boxHeight: 6,
+          padding: 10,
         },
       },
+      tooltip: {
+        callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed} μελη` },
+      },
     },
-    stroke: { width: 2, colors: ["#ffffff"] },
-    tooltip: { theme: "light", y: { formatter: (val) => `${val} μελη` } },
   };
 
   return (
@@ -75,13 +65,13 @@ const MemberDistributionPanel: React.FC<MemberDistributionPanelProps> = ({
           text="Χωρις μελη ακομη"
         />
       ) : (
-        <Chart
-          options={options}
-          series={series}
-          type="donut"
-          height={190}
-          width="100%"
-        />
+        <div className="km-dashboard__donut">
+          <Doughnut data={chartData} options={options} />
+          <div className="km-dashboard__donut-center">
+            <div className="km-dashboard__donut-value">{total}</div>
+            <div className="km-dashboard__donut-label">ΜΕΛΗ</div>
+          </div>
+        </div>
       )}
     </PanelCard>
   );
