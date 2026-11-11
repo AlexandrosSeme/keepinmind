@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/shared/api/supabaseClient";
+import { api, getOrNull, query } from "@/shared/api/httpClient";
 import type { Member } from "@/features/members";
 
 type LookupError =
@@ -33,21 +33,16 @@ export function useMemberLookup({ id, phone }: LookupParams) {
         return;
       }
 
-      if (!supabase) {
-        setError("connection");
-        setLoading(false);
-        return;
-      }
-
       try {
-        let query = supabase.from("members").select("*");
-        query = id ? query.eq("id", id) : query.eq("phone", phone!);
-        const { data, error: fetchError } = await query.single();
+        const found = id
+          ? await getOrNull<Member>(`/members/${encodeURIComponent(id)}`)
+          : ((await api.get<Member[]>(`/members${query({ phone: phone! })}`))[0] ??
+            null);
 
-        if (fetchError || !data) {
+        if (!found) {
           setError(supportsPhone ? "notFound" : "notFoundById");
         } else {
-          setMember(data as Member);
+          setMember(found);
         }
       } catch {
         setError("loadError");

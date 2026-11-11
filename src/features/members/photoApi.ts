@@ -1,5 +1,3 @@
-import { supabase } from "@/shared/api/supabaseClient";
-
 /**
  * Compresses an image file to reduce size
  * @param file - The image file to compress
@@ -85,93 +83,32 @@ export async function compressImage(
   });
 }
 
-/**
- * Uploads a member photo to Supabase Storage
- * @param memberId - The ID of the member
- * @param file - The image file to upload
- * @returns The public URL of the uploaded photo, or null if upload failed
- */
-export async function uploadMemberPhoto(
-  memberId: number,
-  file: File,
-): Promise<string | null> {
-  if (!supabase) {
-    console.error("[PhotoService] Supabase client not available");
-    return null;
-  }
-
-  try {
-    // Compress image before upload
-    const compressedFile = await compressImage(file, 0.8, 800, 800);
-
-    const fileExt = "jpg"; // Always use jpg after compression
-    const fileName = `${memberId}_${Date.now()}.${fileExt}`;
-    // File path should not include bucket name - just the file name or subfolder
-    const filePath = fileName;
-
-    // Upload to Supabase Storage
-    const { error } = await supabase.storage
-      .from("member-photos")
-      .upload(filePath, compressedFile, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (error) {
-      console.error("[PhotoService] Error uploading photo:", error);
-      if (
-        error.message?.includes("Bucket not found") ||
-        error.message?.includes("not found")
-      ) {
-        console.error(
-          '[PhotoService] The storage bucket "member-photos" does not exist. Please create it in Supabase Dashboard > Storage.',
-        );
-      }
-      return null;
-    }
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("member-photos").getPublicUrl(filePath);
-
-    return publicUrl;
-  } catch (error) {
-    console.error("[PhotoService] Exception during photo upload:", error);
-    return null;
-  }
+function readAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
 }
 
 /**
- * Deletes a member photo from Supabase Storage
- * @param photoUrl - The public URL of the photo to delete
- * @returns true if deletion was successful, false otherwise
+ * Prepares a member photo for storage. The local JSON API has no file storage,
+ * so the compressed image is returned as a data URL and saved in `photo_url`.
+ * @param _memberId - Kept for API compatibility with a future file-storage backend
+ * @param file - The image file to store
+ * @returns The data URL of the compressed photo, or null if processing failed
  */
-export async function deleteMemberPhoto(photoUrl: string): Promise<boolean> {
-  if (!supabase) {
-    console.error("[PhotoService] Supabase client not available");
-    return false;
-  }
-
+export async function uploadMemberPhoto(
+  _memberId: number,
+  file: File,
+): Promise<string | null> {
   try {
-    // Extract file path from URL
-    const urlParts = photoUrl.split("/");
-    const fileName = urlParts[urlParts.length - 1];
-    // File path should not include bucket name - just the file name
-    const filePath = fileName;
-
-    const { error } = await supabase.storage
-      .from("member-photos")
-      .remove([filePath]);
-
-    if (error) {
-      console.error("[PhotoService] Error deleting photo:", error);
-      return false;
-    }
-
-    return true;
+    // Small enough to keep db.json manageable, large enough for the profile view.
+    const compressedFile = await compressImage(file, 0.75, 480, 480);
+    return await readAsDataUrl(compressedFile);
   } catch (error) {
-    console.error("[PhotoService] Exception during photo deletion:", error);
-    return false;
+    console.error("[PhotoService] Error processing photo:", error);
+    return null;
   }
 }

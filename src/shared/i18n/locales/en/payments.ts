@@ -6,11 +6,10 @@ const payments: LocaleShape<typeof el> = {
     title: "Payments",
     newPayment: "New Payment",
     confirmDelete: "Delete payment of €{{amount}} from {{name}}?",
-    deleteError:
-      "Delete failed. Make sure you have run supabase-payments-setup.sql.",
-    updateError: "Update failed. Run supabase-payments-setup.sql in Supabase.",
+    deleteError: "Delete failed. Make sure the API is running (npm run api).",
+    updateError: "Update failed. Make sure the API is running (npm run api).",
     createError:
-      "Failed to create payment. Run supabase-payments-setup.sql in the Supabase SQL Editor.",
+      "Failed to create payment. Make sure the API is running (npm run api).",
   },
   fields: {
     member: "Member",

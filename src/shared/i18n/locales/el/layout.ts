@@ -1,6 +1,7 @@
 const layout = {
   nav: {
     dashboard: "Dashboard",
+    finance: "Οικονομικά",
     members: "Μέλη",
     subscriptions: "Συνδρομές",
     payments: "Πληρωμές",
@@ -13,11 +14,11 @@ const layout = {
     notifications: "Ειδοποιήσεις",
     announcements: "Ανακοινώσεις",
     settings: "Ρυθμίσεις",
+    staff: "Χρήστες",
     "member-portal": "Πύλη μέλους",
   },
   topbar: {
     welcome: "Καλώς ήρθατε στο σύστημα διαχείρισης",
-    role: "Διαχειριστής",
     openMenu: "Άνοιγμα μενού",
     closeMenu: "Κλείσιμο μενού",
     notifications: "Ειδοποιήσεις",

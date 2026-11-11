@@ -11,10 +11,11 @@ export const paymentKeys = {
   all: ["payments"] as const,
 };
 
-export function usePayments() {
+export function usePayments({ enabled = true }: { enabled?: boolean } = {}) {
   const { data = [], ...rest } = useQuery({
     queryKey: paymentKeys.all,
     queryFn: fetchPayments,
+    enabled,
   });
   return { payments: data, ...rest };
 }

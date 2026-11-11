@@ -6,11 +6,18 @@ import type { Package } from "../types";
 
 interface PackageCardProps {
   pkg: Package;
-  onEdit: (pkg: Package) => void;
-  onDelete: (pkg: Package) => void;
+  showPrice: boolean;
+  /** Edit/delete actions are rendered only when both handlers are given. */
+  onEdit?: (pkg: Package) => void;
+  onDelete?: (pkg: Package) => void;
 }
 
-const PackageCard: React.FC<PackageCardProps> = ({ pkg, onEdit, onDelete }) => {
+const PackageCard: React.FC<PackageCardProps> = ({
+  pkg,
+  showPrice,
+  onEdit,
+  onDelete,
+}) => {
   const { t } = useTranslation(["subscriptions", "common"]);
 
   return (
@@ -26,17 +33,20 @@ const PackageCard: React.FC<PackageCardProps> = ({ pkg, onEdit, onDelete }) => {
           <span className="text-dark">{pkg.duration}</span>
         </div>
 
-        <div className="mb-3">
-          <div className="km-stat-value text-primary">€{pkg.price}</div>
-        </div>
+        {showPrice && (
+          <div className="mb-3">
+            <div className="km-stat-value text-primary">€{pkg.price}</div>
+          </div>
+        )}
 
-        <div className="mb-4">
+        <div className={onEdit && onDelete ? "mb-4" : undefined}>
           <small className="text-muted d-block">
             {t("fields.activeMembers")}
           </small>
           <span className="fw-semibold text-dark">{pkg.active}</span>
         </div>
 
+        {onEdit && onDelete && (
         <div className="d-flex align-items-center gap-3">
           <button
             type="button"
@@ -55,6 +65,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ pkg, onEdit, onDelete }) => {
             {t("common:actions.delete")}
           </button>
         </div>
+        )}
       </div>
     </div>
   );

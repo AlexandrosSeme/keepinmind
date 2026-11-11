@@ -1,4 +1,4 @@
-import { supabase } from "@/shared/api/supabaseClient";
+import { getOrNull } from "@/shared/api/httpClient";
 import i18n from "@/shared/i18n";
 import type { Member } from "@/features/members";
 import { logEntrance } from "@/features/attendance";
@@ -8,23 +8,10 @@ import type { ValidationResult } from "./types";
 export async function validateMemberEntry(
   memberId: number,
 ): Promise<ValidationResult> {
-  if (!supabase) {
-    return {
-      valid: false,
-      member: null,
-      message: i18n.t("checkin:validation.connectionError"),
-      reason: i18n.t("checkin:validation.connectionUnavailable"),
-    };
-  }
-
   try {
-    const { data, error } = await supabase
-      .from("members")
-      .select("*")
-      .eq("id", memberId)
-      .single();
+    const member = await getOrNull<Member>(`/members/${memberId}`);
 
-    if (error || !data) {
+    if (!member) {
       return {
         valid: false,
         member: null,
@@ -32,8 +19,6 @@ export async function validateMemberEntry(
         reason: i18n.t("checkin:validation.memberNotFound"),
       };
     }
-
-    const member = data as Member;
 
     if (member.card_lost === true) {
       return {

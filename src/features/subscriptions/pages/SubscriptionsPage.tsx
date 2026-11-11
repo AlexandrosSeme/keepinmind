@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
+import { useStaffAuth } from "@/features/auth";
 import type { Package, PackageInput } from "../types";
 import { usePackageMutations, usePackages } from "../queries";
 import PackageCard from "../components/PackageCard";
@@ -12,6 +13,8 @@ type FormState = { pkg: Package | null } | null;
 
 const SubscriptionsPage: React.FC = () => {
   const { t } = useTranslation("subscriptions");
+  // Prices and package management are financial data.
+  const canManage = useStaffAuth().can("finance");
   const { packages } = usePackages();
   const { addPackage, editPackage, removePackage } = usePackageMutations();
   const [form, setForm] = useState<FormState>(null);
@@ -45,10 +48,12 @@ const SubscriptionsPage: React.FC = () => {
       <PageHeader
         title={t("page.title")}
         actions={
-          <button className="btn btn-primary" type="button" onClick={openAdd}>
-            <Plus size={16} className="me-2" />
-            {t("page.newPackage")}
-          </button>
+          canManage && (
+            <button className="btn btn-primary" type="button" onClick={openAdd}>
+              <Plus size={16} className="me-2" />
+              {t("page.newPackage")}
+            </button>
+          )
         }
       />
 
@@ -57,8 +62,9 @@ const SubscriptionsPage: React.FC = () => {
           <div key={pkg.id} className="col-12 col-md-6 col-lg-4 col-xl-3">
             <PackageCard
               pkg={pkg}
-              onEdit={(p) => setForm({ pkg: p })}
-              onDelete={handleDelete}
+              showPrice={canManage}
+              onEdit={canManage ? (p) => setForm({ pkg: p }) : undefined}
+              onDelete={canManage ? handleDelete : undefined}
             />
           </div>
         ))}
@@ -72,15 +78,21 @@ const SubscriptionsPage: React.FC = () => {
             </div>
             <h5 className="text-muted">{t("page.emptyTitle")}</h5>
             <p className="text-muted mb-4">{t("page.emptyText")}</p>
-            <button className="btn btn-primary" type="button" onClick={openAdd}>
-              <Plus size={16} className="me-2" />
-              {t("page.createPackage")}
-            </button>
+            {canManage && (
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={openAdd}
+              >
+                <Plus size={16} className="me-2" />
+                {t("page.createPackage")}
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {form && (
+      {canManage && form && (
         <PackageFormModal
           pkg={form.pkg}
           onClose={() => setForm(null)}

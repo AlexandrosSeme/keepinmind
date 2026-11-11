@@ -1,102 +1,685 @@
-/* Dashboard — natural page scroll, no clipped bottom band */
+/* Role dashboards (admin / owner / trainer) */
 
-.km-dashboard {
+.km-dash {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  height: auto;
-  min-height: 0;
-  overflow: visible;
-  padding-bottom: 0.25rem;
+  gap: 0.85rem;
+  padding-bottom: 0.5rem;
+  // Layout follows the dashboard's own width (the sidebar takes ~340px).
+  container-type: inline-size;
 }
 
-.km-dashboard__top {
+/* ---------- Hero ---------- */
+
+.km-dash-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.km-dash-hero__meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-.km-dashboard__heading {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.km-dashboard__date {
+  gap: 0.5rem;
   font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--km-text-muted);
-  white-space: nowrap;
 }
 
-.km-dashboard__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  justify-content: flex-end;
+.km-dash-hero__role {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--km-brand);
+  color: var(--km-on-brand);
 }
 
-.km-dashboard__kpis {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-@media (min-width: 992px) {
-  .km-dashboard__kpis {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-}
-
-.km-dashboard__kpi {
-  text-align: left;
-  width: 100%;
-}
-
-.km-dashboard__kpi-value {
+.km-dash-hero__title {
+  margin: 0.15rem 0 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.15rem;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  letter-spacing: 0.01em;
   color: var(--km-text);
 }
 
-.km-dashboard__debt-amount {
+.km-dash-hero__subtitle {
+  margin: 0;
+  color: var(--km-text-muted);
   font-size: 0.9rem;
 }
 
-.km-dashboard__body {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.65rem;
+.km-dash-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-@media (min-width: 992px) {
-  .km-dashboard__body {
-    grid-template-columns: 1fr 1fr;
+/* ---------- Tabs (admin) ---------- */
+
+.km-tabs {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--km-surface);
+  box-shadow: inset 0 0 0 1px var(--km-border);
+}
+
+.km-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--km-text-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.km-tabs__tab:hover {
+  color: var(--km-text);
+}
+
+.km-tabs__tab.is-active {
+  background: var(--km-ink);
+  color: var(--km-brand);
+}
+
+/* ---------- KPI tiles ---------- */
+
+.km-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@container (min-width: 620px) {
+  .km-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-.km-dashboard__panel {
-  min-height: 240px;
-  max-height: 320px;
+@container (min-width: 820px) {
+  .km-stat-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.km-stat-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 0;
+  border-radius: 14px;
+  background: var(--km-surface);
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.06), 0 0 0 1px var(--km-border);
+  text-align: left;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.km-stat-tile.is-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(17, 17, 17, 0.08), 0 0 0 1px var(--km-border);
+}
+
+.km-stat-tile__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.km-stat-tile__label {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--km-text-muted);
+}
+
+.km-stat-tile__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.km-stat-tile__icon--brand {
+  background: var(--km-brand);
+  color: var(--km-on-brand);
+}
+.km-stat-tile__icon--dark {
+  background: var(--km-ink);
+  color: var(--km-brand);
+}
+.km-stat-tile__icon--success {
+  background: var(--km-success-soft);
+  color: var(--km-success);
+}
+.km-stat-tile__icon--info {
+  background: var(--km-info-soft);
+  color: var(--km-info);
+}
+.km-stat-tile__icon--danger {
+  background: var(--km-danger-soft);
+  color: var(--km-danger);
+}
+.km-stat-tile__icon--neutral {
+  background: var(--km-canvas);
+  color: var(--km-text);
+}
+
+.km-stat-tile__value {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.2cqi, 1.65rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--km-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.km-stat-tile__foot {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.4rem;
+  min-height: 1.2rem;
+  font-size: 0.76rem;
+  line-height: 1.3;
+  color: var(--km-text-muted);
+}
+
+.km-stat-tile__hint {
+  min-width: 0;
+}
+
+.km-stat-tile__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.km-stat-tile__delta.is-good {
+  background: var(--km-success-soft);
+  color: var(--km-success);
+}
+
+.km-stat-tile__delta.is-bad {
+  background: var(--km-danger-soft);
+  color: var(--km-danger);
+}
+
+/* ---------- Grid & panels ---------- */
+
+.km-dash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
+}
+
+.km-dash-grid > * {
+  min-width: 0;
+}
+
+.km-dash-grid > * > .card {
+  height: 100%;
+}
+
+@container (min-width: 620px) {
+  .km-dash-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .km-dash-grid > .km-col-7,
+  .km-dash-grid > .km-col-8,
+  .km-dash-grid > .km-col-12 {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (min-width: 820px) {
+  .km-dash-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .km-dash-grid > .km-col-3 { grid-column: span 3; }
+  .km-dash-grid > .km-col-4 { grid-column: span 4; }
+  .km-dash-grid > .km-col-5 { grid-column: span 5; }
+  .km-dash-grid > .km-col-6 { grid-column: span 6; }
+  .km-dash-grid > .km-col-7 { grid-column: span 7; }
+  .km-dash-grid > .km-col-8 { grid-column: span 8; }
+  .km-dash-grid > .km-col-12 { grid-column: span 12; }
+}
+
+.km-dash-panel,
+.km-dash .km-dashboard__panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  max-height: none;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.km-dash .km-dashboard__panel {
+  height: 100%;
+  max-height: 360px;
+}
+
+.km-dash-grid .km-dash-panel--tall {
+  height: 400px;
+}
+
+.km-dash-grid .km-dash-panel--list {
+  height: 380px;
+}
+
+/* Row-wide click target that keeps normal text styling (no .btn uppercase). */
+.km-row-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.km-row-link:hover .fw-semibold {
+  text-decoration: underline;
+}
+
+.km-dash-panel .card-header,
+.km-dash .km-dashboard__panel .card-header {
+  flex-shrink: 0;
+  padding: 0.7rem 1rem !important;
+}
+
+.km-dash-panel .card-title,
+.km-dash .km-dashboard__panel .card-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+}
+
+.km-dash-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.km-dash-panel__hint {
+  padding: 0 1rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--km-text-muted);
+  border-bottom: 1px solid var(--km-border);
+}
+
+.km-chart {
+  position: relative;
+  width: 100%;
+}
+
+.km-count-badge {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--km-danger-soft);
+  color: var(--km-danger);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.km-chip {
+  padding: 0.05rem 0.45rem;
+  border-radius: 6px;
+  background: var(--km-canvas);
+  color: var(--km-text-muted);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.km-chip--brand {
+  background: var(--km-brand);
+  color: var(--km-on-brand);
+}
+
+.km-chip--live {
+  background: var(--km-success);
+  color: #ffffff;
+}
+
+.km-live-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--km-success);
+}
+
+.km-live-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--km-success);
+  animation: km-pulse 1.8s ease-out infinite;
+}
+
+@keyframes km-pulse {
+  from { transform: scale(0.5); opacity: 0.9; }
+  to { transform: scale(1.6); opacity: 0; }
+}
+
+/* ---------- Timeline (trainer schedule) ---------- */
+
+.km-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.km-timeline__item {
+  display: grid;
+  grid-template-columns: 52px 14px minmax(0, 1fr);
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  position: relative;
+}
+
+.km-timeline__item.is-mine {
+  background: var(--km-brand-soft);
+}
+
+.km-timeline__item.is-done {
+  opacity: 0.55;
+}
+
+.km-timeline__time {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
+  line-height: 1.15;
+  text-align: right;
+}
+
+.km-timeline__time strong {
+  font-size: 0.95rem;
+  color: var(--km-text);
+}
+
+.km-timeline__time span {
+  font-size: 0.72rem;
+  color: var(--km-text-faint);
+}
+
+.km-timeline__dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--km-surface);
+  border: 2px solid var(--km-text-faint);
+}
+
+.km-timeline__item:not(:last-child) .km-timeline__dot::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 10px;
+  width: 2px;
+  height: 48px;
+  background: var(--km-border);
+}
+
+.km-timeline__item.is-live .km-timeline__dot {
+  border-color: var(--km-success);
+  background: var(--km-success);
+  box-shadow: 0 0 0 4px var(--km-success-soft);
+}
+
+.km-timeline__item.is-mine .km-timeline__dot {
+  border-color: var(--km-brand-strong);
+}
+
+.km-timeline__title {
+  font-weight: 700;
+  color: var(--km-text);
+}
+
+.km-timeline__meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--km-text-muted);
+  margin-top: 0.1rem;
+}
+
+.km-timeline__track {
+  height: 5px;
+  margin-top: 0.4rem;
+  border-radius: 999px;
+  background: #eceae5;
   overflow: hidden;
 }
 
-.km-dashboard__panel .card-header {
-  flex-shrink: 0;
-  padding-top: 0.55rem !important;
-  padding-bottom: 0.55rem !important;
+.km-timeline__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--km-ink);
+}
+
+.km-timeline__fill.is-full {
+  background: var(--km-danger);
+}
+
+/* ---------- Live feed (trainer) ---------- */
+
+.km-feed__row {
+  display: grid;
+  grid-template-columns: 44px 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--km-border);
+  background: transparent;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.km-feed__row:hover {
+  background: var(--km-surface-raised);
+}
+
+.km-feed__time {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--km-text);
+}
+
+.km-feed__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--km-canvas);
+  color: var(--km-text-muted);
+}
+
+.km-feed__name {
+  font-weight: 600;
+  color: var(--km-text);
+}
+
+/* ---------- Debt aging (owner) ---------- */
+
+.km-aging {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.km-aging__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--km-border);
+}
+
+.km-aging__total-label,
+.km-aging__label {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--km-text-muted);
+}
+
+.km-aging__total-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--km-danger);
+}
+
+.km-aging__meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.km-aging__amount {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--km-text);
+}
+
+.km-aging__track {
+  height: 9px;
+  border-radius: 999px;
+  background: #eceae5;
+  overflow: hidden;
+}
+
+.km-aging__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+/* ---------- Data quality checklist (admin) ---------- */
+
+.km-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.km-checklist__item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--km-border);
+}
+
+.km-checklist__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+}
+
+.km-checklist__label {
+  font-size: 0.85rem;
+  color: var(--km-text);
+}
+
+.km-checklist__value {
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.km-checklist__item.is-ok .km-checklist__icon { background: var(--km-success-soft); color: var(--km-success); }
+.km-checklist__item.is-ok .km-checklist__value { color: var(--km-success); }
+.km-checklist__item.is-info .km-checklist__icon { background: var(--km-info-soft); color: var(--km-info); }
+.km-checklist__item.is-warning .km-checklist__icon { background: var(--km-warning-soft); color: var(--km-warning); }
+.km-checklist__item.is-warning .km-checklist__value { color: var(--km-warning); }
+.km-checklist__item.is-danger .km-checklist__icon { background: var(--km-danger-soft); color: var(--km-danger); }
+.km-checklist__item.is-danger .km-checklist__value { color: var(--km-danger); }
+
+/* ---------- Environment (admin) ---------- */
+
+.km-env {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.km-env__row dt {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--km-text-muted);
+}
+
+.km-env__row dd {
+  margin: 0.15rem 0 0;
+}
+
+.km-env__row code {
+  color: var(--km-text);
+  background: var(--km-canvas);
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+/* ---------- Shared panels reused from the previous dashboard ---------- */
+
+.km-dashboard__debt-amount {
+  font-size: 0.9rem;
 }
 
 .km-dashboard__scroll {
@@ -114,7 +697,7 @@
 .km-dashboard__donut {
   position: relative;
   width: 100%;
-  height: 190px;
+  height: 220px;
 }
 
 // Legend sits below (~30px), so center the label over the ring only.
@@ -144,7 +727,7 @@
 }
 
 .km-dashboard__row {
-  padding: 0.55rem 0.9rem;
+  padding: 0.55rem 1rem;
   border-bottom: 1px solid var(--km-border);
 }
 
@@ -168,10 +751,11 @@
 .km-dashboard__payments-bar {
   flex-shrink: 0;
   overflow: visible;
+  border-radius: 14px;
 }
 
 .km-dashboard__pay-status {
-  padding: 0.65rem 0.9rem 0.75rem;
+  padding: 0.85rem 1rem 1rem;
 }
 
 .km-dashboard__pay-status-head {
@@ -179,13 +763,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.65rem;
 }
 
 .km-dashboard__meters {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.45rem;
+  gap: 0.6rem;
 }
 
 @media (min-width: 768px) {
@@ -214,14 +798,14 @@
 
 .km-dashboard__meter-value {
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: var(--km-text);
   line-height: 1;
 }
 
 .km-dashboard__meter-track {
-  height: 8px;
+  height: 9px;
   border-radius: 999px;
   background: #eceae5;
   overflow: hidden;
@@ -234,19 +818,181 @@
   transition: width 0.35s ease;
 }
 
-.border-end-lg {
-  border-right: none;
+/* ---------- Gym monitoring (owner/admin) ---------- */
+
+.km-dash-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-@media (min-width: 992px) {
-  .border-end-lg {
-    border-right: 1px solid var(--km-border) !important;
-  }
+.km-trainer-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.25rem 0 0.7rem;
+  border-radius: 10px;
+  background: var(--km-ink);
+  color: var(--km-brand);
 }
 
-@media (max-width: 991.98px) {
-  .km-dashboard__panel {
-    max-height: none;
-    min-height: 220px;
-  }
+.km-trainer-select .form-select {
+  min-width: 190px;
+  border: 0;
+  background-color: transparent;
+  color: var(--km-text-inverse);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23f5c400' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.km-trainer-select .form-select option {
+  color: var(--km-text);
+}
+
+.km-day-picker {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--km-border);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.km-day-picker__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 52px;
+  padding: 0.3rem 0.5rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--km-surface-raised);
+  box-shadow: inset 0 0 0 1px var(--km-border);
+  font-family: var(--font-display);
+  line-height: 1.1;
+  color: var(--km-text-muted);
+  transition: background 0.15s ease;
+}
+
+.km-day-picker__day span {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.km-day-picker__day strong {
+  font-size: 1rem;
+  color: var(--km-text);
+}
+
+.km-day-picker__day:hover {
+  background: var(--km-canvas);
+}
+
+.km-day-picker__day.is-active {
+  background: var(--km-brand);
+  box-shadow: none;
+  color: var(--km-on-brand);
+}
+
+.km-day-picker__day.is-active strong {
+  color: var(--km-on-brand);
+}
+
+.km-trainers {
+  width: 100%;
+  font-size: 0.85rem;
+  border-collapse: collapse;
+}
+
+.km-trainers th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.5rem 0.75rem;
+  background: var(--km-surface-raised);
+  border-bottom: 1px solid var(--km-border);
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--km-text-muted);
+}
+
+.km-trainers td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--km-border);
+  vertical-align: middle;
+}
+
+.km-trainers tbody tr {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.km-trainers tbody tr:hover {
+  background: var(--km-surface-raised);
+}
+
+.km-trainers tbody tr.is-selected {
+  background: var(--km-brand-soft);
+  box-shadow: inset 3px 0 0 var(--km-brand);
+}
+
+.km-trainers__name {
+  font-weight: 700;
+  color: var(--km-text);
+}
+
+.km-trainers__fill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 90px;
+  font-weight: 700;
+}
+
+.km-trainers__track {
+  flex: 1 1 auto;
+  height: 6px;
+  border-radius: 999px;
+  background: #eceae5;
+  overflow: hidden;
+}
+
+.km-trainers__bar {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.km-trainers__bar.is-high { background: var(--km-success); }
+.km-trainers__bar.is-mid { background: var(--km-brand); }
+.km-trainers__bar.is-low { background: var(--km-text-faint); }
+
+.km-dash-panel > .card-body.min-h-0 {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.km-trainers__next {
+  font-size: 0.78rem;
+  color: var(--km-text-muted);
+  line-height: 1.3;
+}
+
+.km-peak-day {
+  width: auto;
+  min-width: 120px;
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.78rem;
 }

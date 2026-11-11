@@ -4,11 +4,11 @@ const payments = {
     newPayment: "Νέα Πληρωμή",
     confirmDelete: "Διαγραφή πληρωμής €{{amount}} από {{name}};",
     deleteError:
-      "Αποτυχία διαγραφής. Βεβαιωθείτε ότι έχετε τρέξει το supabase-payments-setup.sql.",
+      "Αποτυχία διαγραφής. Βεβαιωθείτε ότι τρέχει το API (npm run api).",
     updateError:
-      "Αποτυχία ενημέρωσης. Τρέξτε το supabase-payments-setup.sql στο Supabase.",
+      "Αποτυχία ενημέρωσης. Βεβαιωθείτε ότι τρέχει το API (npm run api).",
     createError:
-      "Αποτυχία δημιουργίας πληρωμής. Τρέξτε το supabase-payments-setup.sql στο Supabase SQL Editor.",
+      "Αποτυχία δημιουργίας πληρωμής. Βεβαιωθείτε ότι τρέχει το API (npm run api).",
   },
   fields: {
     member: "Μέλος",

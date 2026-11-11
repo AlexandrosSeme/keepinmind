@@ -1,14 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Bell, Menu, User } from "lucide-react";
+import { Bell, KeyRound, LogOut, Menu, User } from "lucide-react";
 import { LanguageSwitcher } from "@/shared/ui";
+import { ChangePasswordModal, useStaffAuth } from "@/features/auth";
 
 interface TopBarProps {
   onMenuClick: () => void;
 }
 
 const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
-  const { t } = useTranslation("layout");
+  const { t } = useTranslation(["layout", "auth"]);
+  const { profile, logout } = useStaffAuth();
+  const [changingPassword, setChangingPassword] = useState(false);
+  const displayName = profile?.fullName || profile?.email || "";
+
   return (
     <header className="km-topbar shadow-sm">
       <div className="container-fluid">
@@ -46,14 +51,39 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
                   <User size={20} />
                 </div>
                 <div className="d-none d-md-block">
-                  <div className="admin-name">Admin</div>
-                  <small className="welcome-label">{t("topbar.role")}</small>
+                  <div className="admin-name">{displayName}</div>
+                  {profile && (
+                    <small className="welcome-label">
+                      {t(`auth:roles.${profile.role}`)}
+                    </small>
+                  )}
                 </div>
               </div>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setChangingPassword(true)}
+                aria-label={t("auth:changePassword.title")}
+                title={t("auth:changePassword.title")}
+              >
+                <KeyRound size={20} />
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={logout}
+                aria-label={t("auth:logout")}
+                title={t("auth:logout")}
+              >
+                <LogOut size={20} />
+              </button>
             </div>
           </div>
         </div>
       </div>
+      {changingPassword && (
+        <ChangePasswordModal onClose={() => setChangingPassword(false)} />
+      )}
     </header>
   );
 };

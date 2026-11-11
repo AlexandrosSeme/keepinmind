@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
+import { hasAnyPermission, useStaffAuth } from "@/features/auth";
 import { navItems } from "./navItems";
 
 interface SidebarProps {
@@ -12,6 +13,10 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
   const { t } = useTranslation("layout");
+  const { role } = useStaffAuth();
+  const visibleItems = navItems.filter(
+    (item) => !item.requires || hasAnyPermission(role, item.requires),
+  );
 
   return (
     <>
@@ -43,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
 
         <nav className="km-sidebar__nav p-3">
           <ul className="nav nav-pills flex-column gap-2">
-            {navItems.map(({ id, icon: Icon, path, external }) => (
+            {visibleItems.map(({ id, icon: Icon, path, external }) => (
               <li key={id} className="nav-item">
                 {external ? (
                   <a

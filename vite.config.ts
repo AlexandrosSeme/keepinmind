@@ -3,6 +3,14 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 
 // https://vite.dev/config/
+const jsonApiProxy = {
+  "/data": {
+    target: process.env.API_TARGET ?? "http://localhost:3001",
+    changeOrigin: true,
+    rewrite: (path: string) => path.replace(/^\/data/, ""),
+  },
+};
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -10,8 +18,13 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  preview: {
+    proxy: jsonApiProxy,
+  },
   server: {
     proxy: {
+      // Local JSON data server (`npm run api`).
+      ...jsonApiProxy,
       "/api/maileroo": {
         target: "https://smtp.maileroo.com/api/v2",
         changeOrigin: true,

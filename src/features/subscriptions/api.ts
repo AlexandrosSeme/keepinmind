@@ -1,67 +1,18 @@
-import { supabase } from "@/shared/api/supabaseClient";
+import { createCollection } from "@/shared/api/collection";
 import type { Package, PackageInput } from "./types";
 
-export async function fetchPackages(): Promise<Package[]> {
-  if (!supabase) return [];
+const packages = createCollection<Package, PackageInput>("packages");
 
-  const { data, error } = await supabase
-    .from("packages")
-    .select("*")
-    .order("id", { ascending: true });
+export const fetchPackages = (): Promise<Package[]> =>
+  packages.list({ _sort: "id", _order: "asc" });
 
-  if (error) throw error;
-  return (data ?? []) as Package[];
-}
+export const createPackage = (pkg: PackageInput): Promise<Package | null> =>
+  packages.create(pkg);
 
-export async function createPackage(
-  pkg: PackageInput,
-): Promise<Package | null> {
-  if (!supabase) return null;
-
-  const { data, error } = await supabase
-    .from("packages")
-    .insert([pkg])
-    .select()
-    .single();
-
-  if (error) {
-    console.error("[Supabase] Error creating package:", error);
-    return null;
-  }
-
-  return data as Package;
-}
-
-export async function updatePackage(
+export const updatePackage = (
   id: number,
   updates: Partial<PackageInput>,
-): Promise<Package | null> {
-  if (!supabase) return null;
+): Promise<Package | null> => packages.update(id, updates);
 
-  const { data, error } = await supabase
-    .from("packages")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("[Supabase] Error updating package:", error);
-    return null;
-  }
-
-  return data as Package;
-}
-
-export async function deletePackage(id: number): Promise<boolean> {
-  if (!supabase) return false;
-
-  const { error } = await supabase.from("packages").delete().eq("id", id);
-
-  if (error) {
-    console.error("[Supabase] Error deleting package:", error);
-    return false;
-  }
-
-  return true;
-}
+export const deletePackage = (id: number): Promise<boolean> =>
+  packages.remove(id);
