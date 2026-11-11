@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Edit, Trash2, XCircle } from "lucide-react";
 import { supabase } from "@/shared/api/supabaseClient";
 import { ImageModal, PageHeader, PageLoader } from "@/shared/ui";
@@ -15,14 +16,17 @@ import MemberEntranceLogs from "../components/MemberEntranceLogs";
 import MemberAttendanceChart from "../components/MemberAttendanceChart";
 import "./MemberDetailsPage.scss";
 
+type LoadError = "noId" | "noDb" | "notFoundById" | "load";
+
 const MemberDetailsPage: React.FC = () => {
+  const { t } = useTranslation(["members", "common"]);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { members } = useMembers();
   const { editMember, removeMember } = useMemberMutations();
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<LoadError | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const attendance = useMemberAttendance(member?.id);
@@ -30,7 +34,7 @@ const MemberDetailsPage: React.FC = () => {
   useEffect(() => {
     const loadMember = async () => {
       if (!id) {
-        setError("Δεν βρεθηκε ID μελους");
+        setError("noId");
         setLoading(false);
         return;
       }
@@ -43,7 +47,7 @@ const MemberDetailsPage: React.FC = () => {
       }
 
       if (!supabase) {
-        setError("Η συνδεση με τη βαση δεδομενων δεν ειναι διαθεσιμη");
+        setError("noDb");
         setLoading(false);
         return;
       }
@@ -53,10 +57,10 @@ const MemberDetailsPage: React.FC = () => {
         if (data) {
           setMember(data);
         } else {
-          setError("Δεν βρεθηκε μελος με αυτο το ID");
+          setError("notFoundById");
         }
       } catch {
-        setError("Σφαλμα κατα τη φορτωση των δεδομενων");
+        setError("load");
       } finally {
         setLoading(false);
       }
@@ -67,9 +71,7 @@ const MemberDetailsPage: React.FC = () => {
 
   const handleDelete = async () => {
     if (!member) return;
-    if (
-      window.confirm("Ειστε σιγουροι οτι θελετε να διαγραψετε αυτο το μελος;")
-    ) {
+    if (window.confirm(t("confirmDelete"))) {
       const success = await removeMember(member.id);
       if (success) navigate("/members");
     }
@@ -104,14 +106,16 @@ const MemberDetailsPage: React.FC = () => {
       <div className="card border-0 shadow-sm">
         <div className="card-body text-center py-5">
           <XCircle size={48} className="text-danger mb-3" />
-          <h5 className="mb-2">Σφαλμα</h5>
-          <p className="text-muted mb-4">{error || "Δεν βρεθηκε μελος"}</p>
+          <h5 className="mb-2">{t("common:error")}</h5>
+          <p className="text-muted mb-4">
+            {t(error ? `details.errors.${error}` : "details.errors.notFound")}
+          </p>
           <button
             className="btn btn-primary"
             onClick={() => navigate("/members")}
           >
             <ArrowLeft size={16} className="me-2" />
-            Επιστροφη στη Λιστα
+            {t("details.backToList")}
           </button>
         </div>
       </div>
@@ -121,14 +125,14 @@ const MemberDetailsPage: React.FC = () => {
   return (
     <div className="km-member">
       <PageHeader
-        title="Στοιχεια Μελους"
+        title={t("details.title")}
         subtitle={`#${member.id} · ${stripAccents(member.name)}`}
         leading={
           <button
             type="button"
             className="btn btn-outline-secondary btn-sm"
             onClick={() => navigate("/members")}
-            aria-label="Πισω"
+            aria-label={t("common:actions.back")}
           >
             <ArrowLeft size={16} />
           </button>
@@ -141,7 +145,7 @@ const MemberDetailsPage: React.FC = () => {
               onClick={() => setShowEditModal(true)}
             >
               <Edit size={14} className="me-1" />
-              Επεξεργασια
+              {t("common:actions.edit")}
             </button>
             <button
               type="button"
@@ -149,7 +153,7 @@ const MemberDetailsPage: React.FC = () => {
               onClick={handleDelete}
             >
               <Trash2 size={14} className="me-1" />
-              Διαγραφη
+              {t("common:actions.delete")}
             </button>
           </>
         }
@@ -175,7 +179,7 @@ const MemberDetailsPage: React.FC = () => {
 
       {showEditModal && (
         <MemberFormModal
-          title="Επεξεργασια Μελους"
+          title={t("page.editTitle")}
           showEmail
           initialValues={{
             name: member.name,
@@ -193,9 +197,9 @@ const MemberDetailsPage: React.FC = () => {
 
       {showPhotoModal && member.photo_url && (
         <ImageModal
-          title="Φωτογραφια Προφιλ"
+          title={t("fields.photo")}
           src={member.photo_url}
-          alt="Profile"
+          alt={t("fields.photo")}
           onClose={() => setShowPhotoModal(false)}
         />
       )}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   initNotificationServices,
   loadEmailSettings,
@@ -20,6 +21,7 @@ import AppearanceSection, {
 } from "../components/AppearanceSection";
 
 const SettingsPage: React.FC = () => {
+  const { t } = useTranslation(["settings", "common"]);
   const [gymInfo, setGymInfo] = useState<GymInfo>({
     name: "Colosseum Gym",
     phone: "210 1234567",
@@ -43,9 +45,7 @@ const SettingsPage: React.FC = () => {
 
   const handleSave = () => {
     if (emailProvider.apiKey && !emailProvider.fromEmail.trim()) {
-      alert(
-        'Παρακαλω εισαγετε ενα email address στο πεδιο "Αποστολεας Email". Το email πρεπει να ειναι verified στο Maileroo account σας.',
-      );
+      alert(t("page.fromEmailRequired"));
       return;
     }
 
@@ -54,13 +54,13 @@ const SettingsPage: React.FC = () => {
     saveSendRate(sendRate);
     initNotificationServices(emailProvider, smsProvider);
 
-    alert("Οι ρυθμισεις αποθηκευτηκαν επιτυχως!");
+    alert(t("page.saved"));
   };
 
   return (
     <div>
       <div className="mb-4">
-        <h2 className="h4">Ρυθμισεις</h2>
+        <h2 className="h4">{t("page.title")}</h2>
       </div>
 
       <div className="row g-4">
@@ -79,9 +79,11 @@ const SettingsPage: React.FC = () => {
       </div>
 
       <div className="d-flex justify-content-end gap-2 mt-4">
-        <button className="btn btn-outline-secondary">Ακυρωση</button>
+        <button className="btn btn-outline-secondary">
+          {t("common:actions.cancel")}
+        </button>
         <button className="btn btn-primary" onClick={handleSave}>
-          Αποθηκευση
+          {t("common:actions.save")}
         </button>
       </div>
     </div>

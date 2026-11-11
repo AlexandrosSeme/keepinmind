@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
 import { useMembers } from "@/features/members";
@@ -10,6 +11,7 @@ import DebtFormModal from "../components/DebtFormModal";
 type FormState = { debt: Debt | null } | null;
 
 const DebtsPage: React.FC = () => {
+  const { t } = useTranslation("debts");
   const { debts } = useDebts();
   const { members } = useMembers();
   const { addDebt, editDebt, removeDebt } = useDebtMutations();
@@ -18,32 +20,31 @@ const DebtsPage: React.FC = () => {
   const handleDelete = async (debt: Debt) => {
     if (
       !window.confirm(
-        `Διαγραφη οφειλης του/της ${debt.name} (€${debt.amount});`,
+        t("page.confirmDelete", { name: debt.name, amount: debt.amount }),
       )
     ) {
       return;
     }
     const ok = await removeDebt(debt.id);
-    if (!ok) alert("Αποτυχια διαγραφης. Ελεγξτε τη συνδεση με τη βαση.");
+    if (!ok) alert(t("page.deleteError"));
   };
 
   const handleSubmit = async (editing: Debt | null, payload: DebtInput) => {
     if (editing) {
       const updated = await editDebt(editing.id, payload);
-      if (!updated) alert("Αποτυχια ενημερωσης οφειλης.");
+      if (!updated) alert(t("page.updateError"));
       return Boolean(updated);
     }
     const created = await addDebt(payload);
-    if (!created)
-      alert("Αποτυχια δημιουργιας οφειλης. Ελεγξτε τη συνδεση με τη βαση.");
+    if (!created) alert(t("page.createError"));
     return Boolean(created);
   };
 
   return (
     <div>
       <PageHeader
-        title="Οφειλες"
-        subtitle="Προβολη και διαχειριση ληξιπροθεσμων οφειλων"
+        title={t("page.title")}
+        subtitle={t("page.subtitle")}
         actions={
           <button
             className="btn btn-primary"
@@ -51,7 +52,7 @@ const DebtsPage: React.FC = () => {
             onClick={() => setForm({ debt: null })}
           >
             <Plus size={16} className="me-2" />
-            Νεα Οφειλη
+            {t("page.newDebt")}
           </button>
         }
       />

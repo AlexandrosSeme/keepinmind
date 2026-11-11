@@ -1,6 +1,7 @@
 // Email Service using Maileroo API
 // Documentation: https://maileroo.com/docs
 
+import i18n from "@/shared/i18n";
 import { logger } from "@/shared/lib/logger";
 
 export interface EmailRecipient {
@@ -60,8 +61,7 @@ class EmailService {
     if (!this.apiKey) {
       return {
         success: false,
-        error:
-          "Email service not initialized. Please configure API key in settings.",
+        error: i18n.t("notifications:errors.email.notInitialized"),
       };
     }
 
@@ -69,8 +69,7 @@ class EmailService {
     if (!fromEmail || fromEmail.trim() === "") {
       return {
         success: false,
-        error:
-          "From email address is required. Please set a verified email address in Settings.",
+        error: i18n.t("notifications:errors.email.fromRequired"),
       };
     }
 
@@ -128,8 +127,8 @@ class EmailService {
       const data = await response.json().catch(() => {
         console.error("Failed to parse response as JSON");
         return {
-          message: "Unknown error",
-          error: "Invalid response from server",
+          message: i18n.t("notifications:errors.unknown"),
+          error: i18n.t("notifications:errors.email.invalidResponse"),
         };
       });
 
@@ -146,7 +145,9 @@ class EmailService {
           error:
             data.message ||
             data.error ||
-            `Failed to send email (Status: ${response.status})`,
+            i18n.t("notifications:errors.email.sendFailed", {
+              status: response.status,
+            }),
         };
       }
 
@@ -159,7 +160,9 @@ class EmailService {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error
+            ? error.message
+            : i18n.t("notifications:errors.unknown"),
       };
     }
   }
@@ -178,7 +181,7 @@ class EmailService {
       return {
         success: 0,
         failed: recipients.length,
-        errors: ["Email service not initialized"],
+        errors: [i18n.t("notifications:errors.email.notInitializedShort")],
       };
     }
 
@@ -217,7 +220,9 @@ class EmailService {
           results.success += batch.length;
         } else {
           results.failed += batch.length;
-          results.errors.push(response.error || "Unknown error");
+          results.errors.push(
+            response.error || i18n.t("notifications:errors.unknown"),
+          );
         }
 
         // Delay between batches based on send rate
@@ -227,7 +232,9 @@ class EmailService {
       } catch (error) {
         results.failed += batch.length;
         results.errors.push(
-          error instanceof Error ? error.message : "Unknown error",
+          error instanceof Error
+            ? error.message
+            : i18n.t("notifications:errors.unknown"),
         );
       }
     }

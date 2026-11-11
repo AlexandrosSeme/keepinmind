@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { fetchMemberById, type Member } from "@/features/members";
+import i18n from "@/shared/i18n";
 import {
   clearMemberSession,
   loadMemberSession,
@@ -39,7 +40,7 @@ export default function MemberSessionProvider({
 
   const login = async (phone: string) => {
     const { member: m, error } = await loginMemberByPhone(phone);
-    if (error || !m) return error || "Αποτυχια συνδεσης";
+    if (error || !m) return error || i18n.t("memberPortal:errors.loginFailed");
     setSession(loadMemberSession());
     setMember(m);
     return null;

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -19,28 +20,29 @@ const CalendarStats: React.FC<CalendarStatsProps> = ({
   thisWeek,
   coaches,
 }) => {
+  const { t } = useTranslation("bookings");
   const cards = [
     {
       value: total,
-      label: "Συνολο Προπονησεων",
+      label: t("stats.total"),
       icon: <Dumbbell size={24} />,
       tone: "primary",
     },
     {
       value: today,
-      label: "Σημερα",
+      label: t("stats.today"),
       icon: <CheckCircle2 size={24} />,
       tone: "success",
     },
     {
       value: thisWeek,
-      label: "Αυτη την Εβδομαδα",
+      label: t("stats.thisWeek"),
       icon: <CalendarIcon size={24} />,
       tone: "info",
     },
     {
       value: coaches,
-      label: "Προπονητες",
+      label: t("stats.coaches"),
       icon: <UserCheck size={24} />,
       tone: "warning",
     },

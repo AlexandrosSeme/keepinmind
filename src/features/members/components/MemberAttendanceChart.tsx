@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Bar } from "react-chartjs-2";
 import type { ChartData, ChartOptions, Plugin } from "chart.js";
 import "@/shared/lib/chartjs";
@@ -39,6 +40,7 @@ const MemberAttendanceChart: React.FC<MemberAttendanceChartProps> = ({
   stats,
   monthly,
 }) => {
+  const { t } = useTranslation("members");
   const maxAttendance = Math.max(...monthly.map((item) => item.count), 0);
   const yAxisMax = maxAttendance > 5 ? Math.ceil(maxAttendance * 1.15) : 5;
 
@@ -46,7 +48,7 @@ const MemberAttendanceChart: React.FC<MemberAttendanceChartProps> = ({
     labels: monthly.map((item) => item.month),
     datasets: [
       {
-        label: "Προσελευσεις",
+        label: t("attendance.title"),
         data: monthly.map((item) => item.count),
         backgroundColor: BRAND.yellow,
         borderRadius: { topLeft: 3, topRight: 3 },
@@ -65,7 +67,9 @@ const MemberAttendanceChart: React.FC<MemberAttendanceChartProps> = ({
     plugins: {
       legend: { display: false },
       tooltip: {
-        callbacks: { label: (ctx) => `${ctx.parsed.y} προσελευσεις` },
+        callbacks: {
+          label: (ctx) => t("attendance.tooltip", { count: ctx.parsed.y ?? 0 }),
+        },
       },
     },
     scales: {
@@ -89,14 +93,14 @@ const MemberAttendanceChart: React.FC<MemberAttendanceChartProps> = ({
   };
 
   const summary = [
-    { label: "Εβδομαδα", value: stats.thisWeek },
-    { label: "Μηνας", value: stats.thisMonth },
-    { label: "Ετος", value: stats.thisYear },
+    { label: t("attendance.week"), value: stats.thisWeek },
+    { label: t("attendance.month"), value: stats.thisMonth },
+    { label: t("attendance.year"), value: stats.thisYear },
   ];
 
   return (
     <PanelCard
-      title="Προσελευσεις ανα μηνα"
+      title={t("attendance.chartTitle")}
       className="km-member__panel"
       bodyClassName="p-3 pt-2"
     >

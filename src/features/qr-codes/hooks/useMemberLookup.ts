@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/shared/api/supabaseClient";
 import type { Member } from "@/features/members";
+
+type LookupError =
+  | "noIdOrPhone"
+  | "noId"
+  | "connection"
+  | "notFound"
+  | "notFoundById"
+  | "loadError";
 
 interface LookupParams {
   id: string | null;
@@ -10,25 +19,22 @@ interface LookupParams {
 
 /** Loads a single member by id (or phone as fallback) for the standalone QR pages. */
 export function useMemberLookup({ id, phone }: LookupParams) {
+  const { t } = useTranslation("qrCodes");
   const supportsPhone = phone !== undefined;
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<LookupError | null>(null);
 
   useEffect(() => {
     const load = async () => {
       if (!id && !phone) {
-        setError(
-          supportsPhone
-            ? "Δεν βρεθηκε ID η τηλεφωνο μελους"
-            : "Δεν βρεθηκε ID μελους",
-        );
+        setError(supportsPhone ? "noIdOrPhone" : "noId");
         setLoading(false);
         return;
       }
 
       if (!supabase) {
-        setError("Η συνδεση με τη βαση δεδομενων δεν ειναι διαθεσιμη");
+        setError("connection");
         setLoading(false);
         return;
       }
@@ -39,16 +45,12 @@ export function useMemberLookup({ id, phone }: LookupParams) {
         const { data, error: fetchError } = await query.single();
 
         if (fetchError || !data) {
-          setError(
-            supportsPhone
-              ? "Δεν βρεθηκε μελος"
-              : "Δεν βρεθηκε μελος με αυτο το ID",
-          );
+          setError(supportsPhone ? "notFound" : "notFoundById");
         } else {
           setMember(data as Member);
         }
       } catch {
-        setError("Σφαλμα κατα τη φορτωση των δεδομενων");
+        setError("loadError");
       } finally {
         setLoading(false);
       }
@@ -57,5 +59,5 @@ export function useMemberLookup({ id, phone }: LookupParams) {
     load();
   }, [id, phone, supportsPhone]);
 
-  return { member, loading, error };
+  return { member, loading, error: error ? t(`lookup.${error}`) : null };
 }

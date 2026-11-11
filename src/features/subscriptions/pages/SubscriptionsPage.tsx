@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
 import type { Package, PackageInput } from "../types";
@@ -10,6 +11,7 @@ import "./SubscriptionsPage.scss";
 type FormState = { pkg: Package | null } | null;
 
 const SubscriptionsPage: React.FC = () => {
+  const { t } = useTranslation("subscriptions");
   const { packages } = usePackages();
   const { addPackage, editPackage, removePackage } = usePackageMutations();
   const [form, setForm] = useState<FormState>(null);
@@ -17,15 +19,11 @@ const SubscriptionsPage: React.FC = () => {
   const openAdd = () => setForm({ pkg: null });
 
   const handleDelete = async (pkg: Package) => {
-    if (
-      !window.confirm(
-        `Ειστε σιγουροι οτι θελετε να διαγραψετε το πακετο «${pkg.name}»;`,
-      )
-    ) {
+    if (!window.confirm(t("confirmDelete", { name: pkg.name }))) {
       return;
     }
     const ok = await removePackage(pkg.id);
-    if (!ok) alert("Αποτυχια διαγραφης. Ελεγξτε τη συνδεση με τη βαση.");
+    if (!ok) alert(t("errors.delete"));
   };
 
   const handleSubmit = async (
@@ -34,23 +32,22 @@ const SubscriptionsPage: React.FC = () => {
   ) => {
     if (editing) {
       const updated = await editPackage(editing.id, payload);
-      if (!updated) alert("Αποτυχια ενημερωσης πακετου.");
+      if (!updated) alert(t("errors.update"));
       return Boolean(updated);
     }
     const created = await addPackage(payload);
-    if (!created)
-      alert("Αποτυχια δημιουργιας πακετου. Ελεγξτε τη συνδεση με τη βαση.");
+    if (!created) alert(t("errors.create"));
     return Boolean(created);
   };
 
   return (
     <div>
       <PageHeader
-        title="Πακετα Συνδρομων"
+        title={t("page.title")}
         actions={
           <button className="btn btn-primary" type="button" onClick={openAdd}>
             <Plus size={16} className="me-2" />
-            Νεο Πακετο
+            {t("page.newPackage")}
           </button>
         }
       />
@@ -73,13 +70,11 @@ const SubscriptionsPage: React.FC = () => {
             <div className="km-avatar-soft d-inline-flex mb-3 km-subscriptions__empty-icon">
               <Plus size={32} />
             </div>
-            <h5 className="text-muted">Δεν υπαρχουν πακετα συνδρομων</h5>
-            <p className="text-muted mb-4">
-              Δημιουργηστε το πρωτο πακετο συνδρομης για να ξεκινησετε
-            </p>
+            <h5 className="text-muted">{t("page.emptyTitle")}</h5>
+            <p className="text-muted mb-4">{t("page.emptyText")}</p>
             <button className="btn btn-primary" type="button" onClick={openAdd}>
               <Plus size={16} className="me-2" />
-              Δημιουργια Πακετου
+              {t("page.createPackage")}
             </button>
           </div>
         </div>

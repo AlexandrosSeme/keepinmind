@@ -1,17 +1,8 @@
-export const GREEK_MONTHS_SHORT = [
-  "Ιαν",
-  "Φεβ",
-  "Μαρ",
-  "Απρ",
-  "Μαι",
-  "Ιουν",
-  "Ιουλ",
-  "Αυγ",
-  "Σεπ",
-  "Οκτ",
-  "Νοε",
-  "Δεκ",
-] as const;
+import i18n from "@/shared/i18n";
+
+/** Short month name (0-11) in the given language (defaults to the active one). */
+export const monthShort = (monthIndex: number, lng?: string): string =>
+  i18n.t(`monthsShort.${String(monthIndex) as "0"}`, { lng });
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 

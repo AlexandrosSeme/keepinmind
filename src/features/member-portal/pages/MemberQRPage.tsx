@@ -1,16 +1,18 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StatusBadge } from "@/shared/ui";
 import { MemberCode } from "@/features/qr-codes";
 import { useMemberSession } from "../session/useMemberSession";
 
 const MemberQRPage: React.FC = () => {
+  const { t } = useTranslation("memberPortal");
   const { member } = useMemberSession();
   if (!member) return null;
 
   return (
     <div>
-      <h1 className="mp-page-title">QR εισοδου</h1>
-      <p className="mp-page-sub">Δειξε αυτο στην εισοδο για check-in.</p>
+      <h1 className="mp-page-title">{t("qr.title")}</h1>
+      <p className="mp-page-sub">{t("qr.subtitle")}</p>
 
       <div className="mp-qr-wrap">
         <MemberCode
@@ -31,9 +33,7 @@ const MemberQRPage: React.FC = () => {
       {member.card_lost && (
         <div className="mp-card mp-card--danger mt-3">
           <StatusBadge status="card_lost" />
-          <p className="mb-0 mt-2 text-muted mp-text-sm">
-            Η καρτα σου εχει ακυρωθει. Περασε απο reception για νεα καρτα.
-          </p>
+          <p className="mb-0 mt-2 text-muted mp-text-sm">{t("qr.cardLost")}</p>
         </div>
       )}
     </div>

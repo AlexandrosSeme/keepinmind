@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface FormActionsProps {
   saving: boolean;
@@ -11,20 +12,27 @@ const FormActions: React.FC<FormActionsProps> = ({
   saving,
   isEdit,
   onCancel,
-}) => (
-  <>
-    <button
-      type="button"
-      className="btn btn-outline-secondary"
-      disabled={saving}
-      onClick={onCancel}
-    >
-      Ακυρωση
-    </button>
-    <button type="submit" className="btn btn-primary" disabled={saving}>
-      {saving ? "Αποθηκευση..." : isEdit ? "Αποθηκευση" : "Δημιουργια"}
-    </button>
-  </>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <>
+      <button
+        type="button"
+        className="btn btn-outline-secondary"
+        disabled={saving}
+        onClick={onCancel}
+      >
+        {t("actions.cancel")}
+      </button>
+      <button type="submit" className="btn btn-primary" disabled={saving}>
+        {saving
+          ? t("actions.saving")
+          : isEdit
+            ? t("actions.save")
+            : t("actions.create")}
+      </button>
+    </>
+  );
+};
 
 export default FormActions;

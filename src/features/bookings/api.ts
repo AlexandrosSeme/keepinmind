@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/api/supabaseClient";
+import i18n from "@/shared/i18n";
 import type { Booking, ClassSession } from "./types";
 
 // Database row format
@@ -353,7 +354,7 @@ export async function bookClassForMember(
     session.maxParticipants &&
     session.bookedCount >= session.maxParticipants
   ) {
-    return { booking: null, error: "Η ταξη ειναι γεματη" };
+    return { booking: null, error: i18n.t("bookings:errors.classFull") };
   }
 
   const mine = await fetchMemberBookings(member.id);
@@ -364,7 +365,7 @@ export async function bookClassForMember(
       b.startTime === session.startTime,
   );
   if (already) {
-    return { booking: null, error: "Εχεις ηδη κλεισει αυτη τη θεση" };
+    return { booking: null, error: i18n.t("bookings:errors.alreadyBooked") };
   }
 
   const created = await createBooking({
@@ -386,7 +387,7 @@ export async function bookClassForMember(
   if (!created) {
     return {
       booking: null,
-      error: "Αποτυχια κρατησης. Ελεγξε αν υπαρχει ο πινακας bookings.",
+      error: i18n.t("bookings:errors.bookingFailed"),
     };
   }
 

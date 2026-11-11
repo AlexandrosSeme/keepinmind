@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/api/supabaseClient";
+import i18n from "@/shared/i18n";
 import { normalizePhone } from "@/shared/lib/phone";
 import type { Member } from "@/features/members";
 
@@ -35,18 +36,24 @@ export async function loginMemberByPhone(
 ): Promise<{ member: Member | null; error: string | null }> {
   const phone = normalizePhone(phoneInput);
   if (phone.length < 10) {
-    return { member: null, error: "Βαλε εγκυρο αριθμο τηλεφωνου" };
+    return { member: null, error: i18n.t("memberPortal:errors.invalidPhone") };
   }
 
   if (!supabase) {
-    return { member: null, error: "Η συνδεση με τη βαση δεν ειναι διαθεσιμη" };
+    return {
+      member: null,
+      error: i18n.t("memberPortal:errors.dbUnavailable"),
+    };
   }
 
   try {
     const { data, error } = await supabase.from("members").select("*");
 
     if (error || !data) {
-      return { member: null, error: "Αποτυχια αναζητησης μελους" };
+      return {
+        member: null,
+        error: i18n.t("memberPortal:errors.lookupFailed"),
+      };
     }
 
     const member = (data as Member[]).find(
@@ -56,7 +63,7 @@ export async function loginMemberByPhone(
     if (!member) {
       return {
         member: null,
-        error: "Δεν βρεθηκε μελος με αυτο το τηλεφωνο. Μιλησε στη reception.",
+        error: i18n.t("memberPortal:errors.notFound"),
       };
     }
 
@@ -69,6 +76,6 @@ export async function loginMemberByPhone(
 
     return { member, error: null };
   } catch {
-    return { member: null, error: "Σφαλμα κατα τη συνδεση" };
+    return { member: null, error: i18n.t("memberPortal:errors.loginError") };
   }
 }

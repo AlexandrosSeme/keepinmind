@@ -1,15 +1,17 @@
+import { useTranslation } from "react-i18next";
 import { useMemberMutations } from "../queries";
 import type { Member } from "../types";
 
 /** Confirms with the user, then flips `card_lost` and reports the outcome. */
 export function useToggleCardLost() {
+  const { t } = useTranslation("members");
   const { editMember } = useMemberMutations();
 
   return async (member: Member): Promise<Member | null> => {
     const isCurrentlyLost = member.card_lost === true;
     const confirmMessage = isCurrentlyLost
-      ? `Ειστε σιγουροι οτι θελετε να ενεργοποιησετε την καρτα του ${member.name};`
-      : `Ειστε σιγουροι οτι θελετε να ακυρωσετε την καρτα του ${member.name};\n\nΑυτο θα εμποδισει τη χρηση της καρτας μεχρι να εκτυπωθει νεα.`;
+      ? t("cardLost.confirmActivate", { name: member.name })
+      : t("cardLost.confirmCancel", { name: member.name });
 
     if (!window.confirm(confirmMessage)) return null;
 
@@ -19,8 +21,8 @@ export function useToggleCardLost() {
     if (updated) {
       alert(
         isCurrentlyLost
-          ? `Η καρτα του ${member.name} ενεργοποιηθηκε επιτυχως.`
-          : `Η καρτα του ${member.name} ακυρωθηκε. Μπορειτε να εκτυπωσετε νεα καρτα.`,
+          ? t("cardLost.activated", { name: member.name })
+          : t("cardLost.cancelled", { name: member.name }),
       );
     }
     return updated;

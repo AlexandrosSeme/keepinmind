@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Calendar, Filter, LogIn, Search } from "lucide-react";
-import moment from "moment";
 import { PageHeader, StatusBadge } from "@/shared/ui";
 import { useMembers } from "@/features/members";
 import type { AttendanceRecord, EntranceLog, Program } from "../types";
@@ -11,13 +11,12 @@ import AttendanceRecordsTable from "../components/AttendanceRecordsTable";
 import EntranceLogsTable from "../components/EntranceLogsTable";
 import RecordAttendanceModal from "../components/RecordAttendanceModal";
 
-moment.locale("el");
-
 type Tab = "programs" | "entrance";
 type StatusFilter = "all" | AttendanceRecord["status"];
 type CategoryFilter = "all" | Program["type"];
 
 const AttendancePage: React.FC = () => {
+  const { t } = useTranslation(["attendance", "common"]);
   const { members } = useMembers();
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -97,10 +96,7 @@ const AttendancePage: React.FC = () => {
 
   return (
     <div>
-      <PageHeader
-        title="Προσελευση"
-        subtitle="Διαχειριση προσελευσης σε προγραμματα και καταγραφη εισοδων"
-      />
+      <PageHeader title={t("page.title")} subtitle={t("page.subtitle")} />
 
       <ul className="nav nav-tabs mb-4" role="tablist">
         <li className="nav-item" role="presentation">
@@ -109,7 +105,7 @@ const AttendancePage: React.FC = () => {
             onClick={() => setActiveTab("programs")}
           >
             <Calendar className="me-2" size={18} />
-            Προγραμματα & Ραντεβου
+            {t("tabs.programs")}
           </button>
         </li>
         <li className="nav-item" role="presentation">
@@ -118,7 +114,7 @@ const AttendancePage: React.FC = () => {
             onClick={() => setActiveTab("entrance")}
           >
             <LogIn className="me-2" size={18} />
-            Logs Εισοδων
+            {t("tabs.entranceLogs")}
             {entranceLogs.length > 0 && (
               <StatusBadge
                 tone="brand"
@@ -143,7 +139,7 @@ const AttendancePage: React.FC = () => {
                 <input
                   type="text"
                   className="form-control ps-5"
-                  placeholder="Αναζητηση..."
+                  placeholder={t("page.searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -163,11 +159,13 @@ const AttendancePage: React.FC = () => {
                         setFilterCategory(e.target.value as CategoryFilter)
                       }
                     >
-                      <option value="all">Ολες οι κατηγοριες</option>
-                      <option value="group">Ομαδικα</option>
-                      <option value="program">Προγραμματα</option>
-                      <option value="appointment">Ραντεβου</option>
-                      <option value="class">Ταξεις</option>
+                      <option value="all">{t("filters.allCategories")}</option>
+                      <option value="group">{t("filters.group")}</option>
+                      <option value="program">{t("filters.program")}</option>
+                      <option value="appointment">
+                        {t("filters.appointment")}
+                      </option>
+                      <option value="class">{t("filters.class")}</option>
                     </select>
                   </div>
                 </div>
@@ -179,10 +177,14 @@ const AttendancePage: React.FC = () => {
                       setFilterStatus(e.target.value as StatusFilter)
                     }
                   >
-                    <option value="all">Ολες οι καταστασεις</option>
-                    <option value="attended">Παρεστη</option>
-                    <option value="absent">Απουσια</option>
-                    <option value="cancelled">Ακυρωθηκε</option>
+                    <option value="all">{t("filters.allStatuses")}</option>
+                    <option value="attended">
+                      {t("common:status.attended")}
+                    </option>
+                    <option value="absent">{t("common:status.absent")}</option>
+                    <option value="cancelled">
+                      {t("common:status.cancelled")}
+                    </option>
                   </select>
                 </div>
               </>

@@ -1,0 +1,98 @@
+import type { LocaleShape } from "../../types";
+import type el from "../el/memberPortal";
+
+const memberPortal: LocaleShape<typeof el> = {
+  nav: {
+    ariaLabel: "Member navigation",
+    home: "Home",
+    announcements: "News",
+    schedule: "Schedule",
+    bookings: "Bookings",
+    qr: "QR",
+    profile: "Profile",
+  },
+  errors: {
+    invalidPhone: "Enter a valid phone number",
+    dbUnavailable: "The database connection is not available",
+    lookupFailed: "Member lookup failed",
+    notFound: "No member found with this phone. Please talk to reception.",
+    loginError: "Error while signing in",
+    loginFailed: "Sign-in failed",
+  },
+  login: {
+    subtitle: "Sign in with the phone number you registered at the gym.",
+    phone: "Phone",
+    submitting: "Signing in...",
+    submit: "Sign in",
+    help: "Trouble signing in? Stop by reception.",
+  },
+  home: {
+    greeting: "Hi, {{name}}",
+    subtitle: "Your Melos account at a glance.",
+    status: "Status",
+    expiry: "Expiry",
+    package: "Package",
+    noPackage: "Not set",
+    debts: "Outstanding balance",
+    debtsHint: "Stop by reception to settle up.",
+    latestAnnouncement: "Latest announcement",
+    allAnnouncements: "All announcements",
+    upcomingBookings: "Upcoming bookings",
+    noBookings: "No bookings yet. Check the schedule.",
+    schedule: "Schedule",
+    entryQr: "Entry QR",
+  },
+  announcements: {
+    title: "Announcements",
+    subtitle: "News and updates from Melos.",
+    empty: "No announcements",
+  },
+  bookings: {
+    title: "My bookings",
+    subtitle: "Upcoming and history.",
+    upcoming: "Upcoming",
+    noUpcoming: "No upcoming bookings",
+    instructor: "Coach: {{name}}",
+    confirmCancel: "Cancel this booking?",
+    cancelling: "Cancelling...",
+    cancel: "Cancel booking",
+    history: "History",
+  },
+  schedule: {
+    title: "Schedule",
+    subtitle: "Book a spot in classes and sessions (next 14 days).",
+    demoBookNotice:
+      "Sample schedule. Create classes from the admin Calendar for real bookings.",
+    expired: "Your membership has expired. Renew at reception.",
+    booked: "Spot booked successfully!",
+    demoBanner:
+      "Showing a sample schedule. When the coach adds classes to the Calendar, they will appear here for booking.",
+    loading: "Loading schedule...",
+    empty: "No available slots",
+    instructor: "Coach: {{name}}",
+    spots: "Spots: {{booked}}/{{max}}",
+    alreadyBooked: "Booked",
+    full: "Full",
+    booking: "Booking...",
+    book: "Book a spot",
+  },
+  qr: {
+    title: "Entry QR",
+    subtitle: "Show this at the entrance to check in.",
+    cardLost: "Your card has been cancelled. Stop by reception for a new card.",
+  },
+  profile: {
+    title: "Profile",
+    subtitle: "Your account details.",
+    phone: "Phone",
+    email: "Email",
+    package: "Package",
+    expiry: "Expiry",
+    memberId: "Member ID",
+    recentVisits: "Recent visits",
+    noVisits: "No visits yet",
+    logout: "Sign out",
+  },
+};
+
+export default memberPortal;

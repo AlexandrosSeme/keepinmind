@@ -1,0 +1,73 @@
+const checkin = {
+  page: {
+    title: "Σάρωση QR Code",
+    usbTitle: "Plug & Play QR Scanner (USB) ή χειροκίνητη εισαγωγή:",
+    usbHelpTitle: "Plug & Play Scanner:",
+    usbHelp:
+      "Συνδέστε το USB QR scanner και σκανάρετε απευθείας. Το scanner λειτουργεί αυτόματα - απλά σκανάρετε το QR code!",
+    manualPlaceholder: "ID μέλους (ή σκανάρετε με USB scanner)",
+    validate: "Επικύρωση",
+  },
+  validation: {
+    connectionError: "Σφάλμα σύνδεσης",
+    connectionUnavailable: "Η σύνδεση με τη βάση δεδομένων δεν είναι διαθέσιμη",
+    invalidCode: "Μη έγκυρο QR Code",
+    memberNotFound: "Δεν βρέθηκε μέλος με αυτό το ID",
+    cardLost: "Κάρτα Ακυρωμένη",
+    cardLostReason:
+      "Η κάρτα έχει σημειωθεί ως χαμένη/ακυρωμένη. Παρακαλώ επικοινωνήστε με τον διαχειριστή.",
+    expired: "Ληγμένη Συνδρομή",
+    expiredReason: "Η συνδρομή έληξε στις {{date}}",
+    expiringSoon: "Ενεργή Συνδρομή (Λήγει Σύντομα)",
+    expiringSoonReason: "Η συνδρομή λήγει στις {{date}}",
+    active: "Ενεργή Συνδρομή",
+    invalidStatus: "Μη έγκυρη Κατάσταση",
+    invalidStatusReason: "Η κατάσταση της συνδρομής δεν είναι έγκυρη",
+    validationError: "Σφάλμα Επικύρωσης",
+    dbError: "Σφάλμα κατά την επικοινωνία με τη βάση δεδομένων",
+  },
+  scan: {
+    noMemberId: "Δεν βρέθηκε έγκυρο Member ID. Δεδομένα: {{data}}",
+    processingError: "Σφάλμα Επεξεργασίας",
+    processingErrorReason: "Σφάλμα κατά την επεξεργασία του QR code",
+    invalidData: "Το QR code δεν περιέχει έγκυρα δεδομένα",
+    readError: "Δεν ήταν δυνατή η ανάγνωση του QR code",
+    invalidMemberId: "Παρακαλώ εισάγετε έγκυρο ID μέλους",
+  },
+  camera: {
+    label: "Επιλογή Κάμερας",
+    loading: "Φόρτωση καμερών...",
+    noneAvailable: "Δεν βρέθηκαν διαθέσιμες κάμερες",
+    quality: "Ποιότητα Σάρωσης",
+    qualityOptions: {
+      fast: "⚡ Γρήγορη (30 FPS, Μεγάλο QR Box)",
+      balanced: "⚖️ Ισορροπημένη (20 FPS, Μέτριο QR Box)",
+      accurate: "🎯 Ακριβής (15 FPS, Μικρό QR Box)",
+    },
+    qualityHints: {
+      fast: "Γρήγορη σάρωση με μεγάλο scanning area - Προτεινόμενη",
+      balanced: "Ισορροπημένη ταχύτητα και ακρίβεια",
+      accurate: "Πιο ακριβής αλλά πιο αργή σάρωση",
+    },
+    scan: "Σάρωση",
+    start: "Έναρξη Σάρωσης",
+    stop: "Διακοπή Σάρωσης",
+    defaultLabel: "Κάμερα {{index}}",
+    notFound: "Δεν βρέθηκαν κάμερες",
+    loadError: "Σφάλμα κατά τη φόρτωση των καμερών",
+    selectCamera: "Παρακαλώ επιλέξτε κάμερα",
+    startError: "Σφάλμα κατά την έναρξη της σάρωσης",
+  },
+  result: {
+    title: "Αποτέλεσμα Επικύρωσης",
+    empty: "Σαρώστε ένα QR code για να δείτε το αποτέλεσμα",
+    memberDetails: "Στοιχεία Μέλους:",
+    name: "Όνομα:",
+    phone: "Τηλέφωνο:",
+    package: "Πακέτο:",
+    expiry: "Λήξη:",
+    newScan: "Νέα Σάρωση",
+  },
+} as const;
+
+export default checkin;

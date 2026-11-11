@@ -1,5 +1,6 @@
 import React from "react";
 import moment from "moment";
+import { useTranslation } from "react-i18next";
 import {
   Clock,
   Edit2,
@@ -11,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import type { Booking } from "../types";
-import { BOOKING_TYPE_LABELS, GENERAL_CLASS_NAME } from "../lib/schedule";
+import { GENERAL_CLASS_NAME } from "../lib/schedule";
 
 interface BookingDetailsModalProps {
   booking: Booking;
@@ -37,116 +38,125 @@ const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   onClose,
   onEdit,
   onDelete,
-}) => (
-  <div className="modal-overlay" onClick={onClose}>
-    <div
-      className="modal-content modal-content-large"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="modal-header">
-        <h3>{booking.title}</h3>
-        <button className="modal-close" onClick={onClose}>
-          <X size={20} />
-        </button>
-      </div>
+}) => {
+  const { t } = useTranslation(["bookings", "common"]);
 
-      <div className="modal-body">
-        <div className="booking-details">
-          {booking.instructor && (
-            <DetailItem
-              highlight
-              valueClassName="coach-name"
-              label={
-                <>
-                  <UserCheck size={18} />
-                  Προπονητης
-                </>
-              }
-            >
-              {booking.instructor}
-            </DetailItem>
-          )}
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="modal-content modal-content-large"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <h3>{booking.title}</h3>
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
 
-          <DetailItem
-            label={
-              <>
-                <Filter size={18} />
-                Τυπος
-              </>
-            }
-          >
-            <span className="badge badge-type">
-              {BOOKING_TYPE_LABELS[booking.type]}
-            </span>
-          </DetailItem>
+        <div className="modal-body">
+          <div className="booking-details">
+            {booking.instructor && (
+              <DetailItem
+                highlight
+                valueClassName="coach-name"
+                label={
+                  <>
+                    <UserCheck size={18} />
+                    {t("details.coach")}
+                  </>
+                }
+              >
+                {booking.instructor}
+              </DetailItem>
+            )}
 
-          <DetailItem
-            label={
-              <>
-                <Clock size={18} />
-                Ημερομηνια & Ωρα
-              </>
-            }
-          >
-            {moment(booking.startTime).format("dddd, DD MMMM YYYY")}
-            <br />
-            <small>
-              {moment(booking.startTime).format("HH:mm")} -{" "}
-              {moment(booking.endTime).format("HH:mm")}
-            </small>
-          </DetailItem>
-
-          {booking.memberName && booking.memberName !== GENERAL_CLASS_NAME && (
             <DetailItem
               label={
                 <>
-                  <User size={18} />
-                  Μελος
+                  <Filter size={18} />
+                  {t("details.type")}
                 </>
               }
             >
-              {booking.memberName}
+              <span className="badge badge-type">
+                {t(`types.${booking.type}`)}
+              </span>
             </DetailItem>
-          )}
 
-          {booking.maxParticipants && (
             <DetailItem
               label={
                 <>
-                  <Users size={18} />
-                  Συμμετεχοντες
+                  <Clock size={18} />
+                  {t("details.dateTime")}
                 </>
               }
             >
-              {booking.currentParticipants || 0} / {booking.maxParticipants}
+              {moment(booking.startTime).format("dddd, DD MMMM YYYY")}
+              <br />
+              <small>
+                {moment(booking.startTime).format("HH:mm")} -{" "}
+                {moment(booking.endTime).format("HH:mm")}
+              </small>
             </DetailItem>
-          )}
 
-          {booking.description && (
-            <DetailItem label="Περιγραφη">{booking.description}</DetailItem>
-          )}
+            {booking.memberName &&
+              booking.memberName !== GENERAL_CLASS_NAME && (
+                <DetailItem
+                  label={
+                    <>
+                      <User size={18} />
+                      {t("details.member")}
+                    </>
+                  }
+                >
+                  {booking.memberName}
+                </DetailItem>
+              )}
 
-          {booking.notes && (
-            <DetailItem label="Σημειωσεις">{booking.notes}</DetailItem>
-          )}
+            {booking.maxParticipants && (
+              <DetailItem
+                label={
+                  <>
+                    <Users size={18} />
+                    {t("details.participants")}
+                  </>
+                }
+              >
+                {booking.currentParticipants || 0} / {booking.maxParticipants}
+              </DetailItem>
+            )}
+
+            {booking.description && (
+              <DetailItem label={t("details.description")}>
+                {booking.description}
+              </DetailItem>
+            )}
+
+            {booking.notes && (
+              <DetailItem label={t("details.notes")}>
+                {booking.notes}
+              </DetailItem>
+            )}
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="btn btn-danger" onClick={onDelete}>
+            <Trash2 size={18} />
+            {t("common:actions.delete")}
+          </button>
+          <button className="btn btn-secondary" onClick={onClose}>
+            {t("common:actions.close")}
+          </button>
+          <button className="btn btn-primary" onClick={onEdit}>
+            <Edit2 size={18} />
+            {t("common:actions.edit")}
+          </button>
         </div>
       </div>
-
-      <div className="modal-footer">
-        <button className="btn btn-danger" onClick={onDelete}>
-          <Trash2 size={18} />
-          Διαγραφη
-        </button>
-        <button className="btn btn-secondary" onClick={onClose}>
-          Κλεισιμο
-        </button>
-        <button className="btn btn-primary" onClick={onEdit}>
-          <Edit2 size={18} />
-          Επεξεργασια
-        </button>
-      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default BookingDetailsModal;

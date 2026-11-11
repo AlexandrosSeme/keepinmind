@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Calendar, Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { intlLocale } from "@/shared/i18n";
 import {
   bookClassForMember,
   fetchClassSessions,
@@ -45,12 +47,16 @@ function buildDemoSessions(): ClassSession[] {
 }
 
 const MemberSchedule: React.FC = () => {
+  const { t } = useTranslation("memberPortal");
   const { member } = useMemberSession();
   const [sessions, setSessions] = useState<ClassSession[]>([]);
   const [myBookings, setMyBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{
+    text: string;
+    ok: boolean;
+  } | null>(null);
   const [usingDemo, setUsingDemo] = useState(false);
 
   const reload = useCallback(async () => {
@@ -86,13 +92,11 @@ const MemberSchedule: React.FC = () => {
   const handleBook = async (session: ClassSession) => {
     if (!member) return;
     if (usingDemo) {
-      setMessage(
-        "Δειγμα προγραμματος. Δημιουργησε ταξεις απο το admin Ημερολογιο για πραγματικες κρατησεις.",
-      );
+      setMessage({ text: t("schedule.demoBookNotice"), ok: false });
       return;
     }
     if (member.status === "expired") {
-      setMessage("Η συνδρομη σου εχει ληξει. Ανανεωσε στη reception.");
+      setMessage({ text: t("schedule.expired"), ok: false });
       return;
     }
     setBusyKey(session.key);
@@ -104,47 +108,40 @@ const MemberSchedule: React.FC = () => {
     });
     setBusyKey(null);
     if (error) {
-      setMessage(error);
+      setMessage({ text: error, ok: false });
       return;
     }
-    setMessage("Η θεση κλειστηκε επιτυχως!");
+    setMessage({ text: t("schedule.booked"), ok: true });
     await reload();
   };
 
   return (
     <div>
-      <h1 className="mp-page-title">Προγραμμα</h1>
-      <p className="mp-page-sub">
-        Κλεισε θεση σε ταξεις και προπονησεις (επομενες 14 ημερες).
-      </p>
+      <h1 className="mp-page-title">{t("schedule.title")}</h1>
+      <p className="mp-page-sub">{t("schedule.subtitle")}</p>
 
       {usingDemo && (
         <div className="mp-card mp-card--brand">
-          <small>
-            Εμφανιζεται δειγμα προγραμματος. Οταν ο γυμναστης προσθεσει ταξεις
-            στο Ημερολογιο, θα φαινονται εδω για κρατηση.
-          </small>
+          <small>{t("schedule.demoBanner")}</small>
         </div>
       )}
 
       {message && (
         <div
           className={`mp-card ${
-            message.includes("επιτυχως")
-              ? "mp-card--success"
-              : "mp-card--danger"
+            message.ok ? "mp-card--success" : "mp-card--danger"
           }`}
         >
-          {message}
+          {message.text}
         </div>
       )}
 
       {loading ? (
-        <div className="mp-empty">Φορτωση προγραμματος...</div>
+        <div className="mp-empty">{t("schedule.loading")}</div>
       ) : sessions.length === 0 ? (
         <div className="mp-empty">
           <Calendar size={28} className="mb-2 opacity-50" />
-          <div>Δεν υπαρχουν διαθεσιμα slots</div>
+          <div>{t("schedule.empty")}</div>
         </div>
       ) : (
         sessions.map((s) => {
@@ -157,7 +154,7 @@ const MemberSchedule: React.FC = () => {
                 <div>
                   <div className="mp-card-title mb-1">{s.title}</div>
                   <div className="mp-session-time">
-                    {new Date(s.startTime).toLocaleString("el-GR", {
+                    {new Date(s.startTime).toLocaleString(intlLocale(), {
                       weekday: "short",
                       day: "numeric",
                       month: "short",
@@ -165,19 +162,22 @@ const MemberSchedule: React.FC = () => {
                       minute: "2-digit",
                     })}
                     {" – "}
-                    {new Date(s.endTime).toLocaleTimeString("el-GR", {
+                    {new Date(s.endTime).toLocaleTimeString(intlLocale(), {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </div>
                   {s.instructor && (
                     <small className="text-muted d-block mt-1">
-                      Προπονητης: {s.instructor}
+                      {t("schedule.instructor", { name: s.instructor })}
                     </small>
                   )}
                   {s.maxParticipants && (
                     <small className="text-muted d-block">
-                      Θεσεις: {s.bookedCount}/{s.maxParticipants}
+                      {t("schedule.spots", {
+                        booked: s.bookedCount,
+                        max: s.maxParticipants,
+                      })}
                     </small>
                   )}
                 </div>
@@ -191,7 +191,7 @@ const MemberSchedule: React.FC = () => {
                   disabled
                 >
                   <Check size={16} />
-                  Κλεισμενο
+                  {t("schedule.alreadyBooked")}
                 </button>
               ) : (
                 <button
@@ -201,10 +201,10 @@ const MemberSchedule: React.FC = () => {
                   onClick={() => handleBook(s)}
                 >
                   {full
-                    ? "Γεματο"
+                    ? t("schedule.full")
                     : busyKey === s.key
-                      ? "Κρατηση..."
-                      : "Κλεισε θεση"}
+                      ? t("schedule.booking")
+                      : t("schedule.book")}
                 </button>
               )}
             </div>

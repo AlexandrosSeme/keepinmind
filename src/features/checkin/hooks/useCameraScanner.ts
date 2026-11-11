@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
+import i18n from "@/shared/i18n";
 
 export type ScanQuality = "fast" | "balanced" | "accurate";
 
@@ -53,16 +54,18 @@ export function useCameraScanner(
         if (devices && devices.length > 0) {
           const list = devices.map((device, index) => ({
             id: device.id,
-            label: device.label || `Καμερα ${index + 1}`,
+            label:
+              device.label ||
+              i18n.t("checkin:camera.defaultLabel", { index: index + 1 }),
           }));
           setCameras(list);
           setCameraId((current) => current ?? list[0].id);
         } else {
-          onErrorRef.current("Δεν βρεθηκαν καμερες");
+          onErrorRef.current(i18n.t("checkin:camera.notFound"));
         }
       } catch (err) {
         console.error("Error loading cameras:", err);
-        onErrorRef.current("Σφαλμα κατα τη φορτωση των καμερων");
+        onErrorRef.current(i18n.t("checkin:camera.loadError"));
       } finally {
         setLoadingCameras(false);
       }
@@ -78,7 +81,7 @@ export function useCameraScanner(
 
   const start = async (deviceId: string | null = cameraId) => {
     if (!deviceId) {
-      onErrorRef.current("Παρακαλω επιλεξτε καμερα");
+      onErrorRef.current(i18n.t("checkin:camera.selectCamera"));
       return;
     }
 
@@ -105,7 +108,7 @@ export function useCameraScanner(
       onErrorRef.current(
         err instanceof Error
           ? err.message
-          : "Σφαλμα κατα την εναρξη της σαρωσης",
+          : i18n.t("checkin:camera.startError"),
       );
       setScanning(false);
     }

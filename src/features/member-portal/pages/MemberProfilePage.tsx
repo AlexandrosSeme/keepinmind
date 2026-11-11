@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { intlLocale } from "@/shared/i18n";
 import { StatusBadge } from "@/shared/ui";
 import {
   getEntranceLogsByMember,
@@ -9,6 +11,7 @@ import {
 import { useMemberSession } from "../session/useMemberSession";
 
 const MemberProfile: React.FC = () => {
+  const { t } = useTranslation("memberPortal");
   const { member, logout } = useMemberSession();
   const navigate = useNavigate();
   const [logs, setLogs] = useState<EntranceLog[]>([]);
@@ -29,8 +32,8 @@ const MemberProfile: React.FC = () => {
 
   return (
     <div>
-      <h1 className="mp-page-title">Προφιλ</h1>
-      <p className="mp-page-sub">Τα στοιχεια του λογαριασμου σου.</p>
+      <h1 className="mp-page-title">{t("profile.title")}</h1>
+      <p className="mp-page-sub">{t("profile.subtitle")}</p>
 
       <div className="mp-card">
         <div className="d-flex align-items-center gap-3 mb-3">
@@ -49,39 +52,41 @@ const MemberProfile: React.FC = () => {
 
         <div className="row g-2">
           <div className="col-6">
-            <div className="mp-stat-label">Τηλεφωνο</div>
+            <div className="mp-stat-label">{t("profile.phone")}</div>
             <div className="fw-semibold">{member.phone}</div>
           </div>
           <div className="col-6">
-            <div className="mp-stat-label">Email</div>
+            <div className="mp-stat-label">{t("profile.email")}</div>
             <div className="fw-semibold">{member.email || "—"}</div>
           </div>
           <div className="col-6">
-            <div className="mp-stat-label">Πακετο</div>
+            <div className="mp-stat-label">{t("profile.package")}</div>
             <div className="fw-semibold">{member.package || "—"}</div>
           </div>
           <div className="col-6">
-            <div className="mp-stat-label">Ληξη</div>
+            <div className="mp-stat-label">{t("profile.expiry")}</div>
             <div className="fw-semibold">{member.expiry || "—"}</div>
           </div>
           <div className="col-12">
-            <div className="mp-stat-label">Member ID</div>
+            <div className="mp-stat-label">{t("profile.memberId")}</div>
             <div className="fw-semibold">#{member.id}</div>
           </div>
         </div>
       </div>
 
       <div className="mp-card">
-        <div className="mp-card-title">Τελευταιες προσελευσεις</div>
+        <div className="mp-card-title">{t("profile.recentVisits")}</div>
         {logs.length === 0 ? (
-          <div className="text-muted">Καμια καταγραφη ακομα</div>
+          <div className="text-muted">{t("profile.noVisits")}</div>
         ) : (
           logs.map((log) => (
             <div
               key={log.id}
               className="d-flex justify-content-between align-items-center py-2 border-bottom"
             >
-              <small>{new Date(log.timestamp).toLocaleString("el-GR")}</small>
+              <small>
+                {new Date(log.timestamp).toLocaleString(intlLocale())}
+              </small>
               <StatusBadge status={log.validationStatus} showDot={false} />
             </div>
           ))
@@ -94,7 +99,7 @@ const MemberProfile: React.FC = () => {
         onClick={handleLogout}
       >
         <LogOut size={16} />
-        Αποσυνδεση
+        {t("profile.logout")}
       </button>
     </div>
   );

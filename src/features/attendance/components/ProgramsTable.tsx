@@ -1,5 +1,6 @@
 import React from "react";
 import moment from "moment";
+import { useTranslation } from "react-i18next";
 import {
   Calendar,
   CalendarDays,
@@ -36,6 +37,7 @@ const ProgramsTable: React.FC<ProgramsTableProps> = ({
   records,
   onRecord,
 }) => {
+  const { t } = useTranslation("attendance");
   const statsFor = (programId: number) => {
     const programRecords = records.filter((r) => r.programId === programId);
     return {
@@ -48,10 +50,10 @@ const ProgramsTable: React.FC<ProgramsTableProps> = ({
   return (
     <div className="card border-0 shadow-sm km-table-card">
       <div className="card-header border-0 py-3 d-flex justify-content-between align-items-center">
-        <h5 className="mb-0">Προγραμματα & Ραντεβου</h5>
+        <h5 className="mb-0">{t("tabs.programs")}</h5>
         <StatusBadge
           tone="neutral"
-          label={`${programs.length} προγραμματα`}
+          label={t("programs.count", { count: programs.length })}
           showDot={false}
         />
       </div>
@@ -60,20 +62,20 @@ const ProgramsTable: React.FC<ProgramsTableProps> = ({
           <table className="table table-hover mb-0 km-table">
             <thead className="table-light">
               <tr>
-                <th className="border-0 ps-4">Ημερομηνια</th>
-                <th className="border-0">Ωρα</th>
-                <th className="border-0">Προγραμμα</th>
-                <th className="border-0">Κατηγορια</th>
-                <th className="border-0">Εκπαιδευτης</th>
-                <th className="border-0">Στατιστικα</th>
-                <th className="border-0 pe-4">Ενεργειες</th>
+                <th className="border-0 ps-4">{t("fields.date")}</th>
+                <th className="border-0">{t("fields.time")}</th>
+                <th className="border-0">{t("fields.program")}</th>
+                <th className="border-0">{t("fields.category")}</th>
+                <th className="border-0">{t("fields.instructor")}</th>
+                <th className="border-0">{t("fields.stats")}</th>
+                <th className="border-0 pe-4">{t("fields.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {programs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center text-muted py-4">
-                    Δεν βρεθηκαν προγραμματα
+                    {t("programs.empty")}
                   </td>
                 </tr>
               ) : (
@@ -118,7 +120,7 @@ const ProgramsTable: React.FC<ProgramsTableProps> = ({
                           onClick={() => onRecord(program)}
                         >
                           <Plus size={14} className="me-1" />
-                          Καταγραφη
+                          {t("programs.record")}
                         </button>
                       </td>
                     </tr>

@@ -1,16 +1,10 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FormActions, Modal } from "@/shared/ui";
 import { todayGR } from "@/shared/lib/date";
 import type { Member } from "@/features/members";
 import type { Payment, PaymentInput } from "../types";
-
-const METHOD_OPTIONS = [
-  "Μετρητα",
-  "Καρτα",
-  "Τραπεζικη Μεταφορα",
-  "IRIS",
-  "Αλλο",
-];
+import { DEFAULT_METHOD, METHOD_OPTIONS, paymentMethodLabel } from "../methods";
 
 const toForm = (payment: Payment | null): PaymentInput =>
   payment
@@ -26,7 +20,7 @@ const toForm = (payment: Payment | null): PaymentInput =>
         amount: 0,
         date: todayGR(),
         status: "completed",
-        method: "Μετρητα",
+        method: DEFAULT_METHOD,
       };
 
 interface PaymentFormModalProps {
@@ -43,6 +37,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation(["payments", "common"]);
   const [formData, setFormData] = useState<PaymentInput>(() => toForm(payment));
   const [saving, setSaving] = useState(false);
 
@@ -70,7 +65,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
 
   return (
     <Modal
-      title={payment ? "Επεξεργασια Πληρωμης" : "Νεα Πληρωμη"}
+      title={payment ? t("form.editTitle") : t("page.newPayment")}
       onClose={onClose}
       closeDisabled={saving}
       onSubmit={handleSubmit}
@@ -84,7 +79,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
     >
       {members.length > 0 && (
         <div className="mb-3">
-          <label className="form-label">Επιλογη μελους</label>
+          <label className="form-label">{t("form.pickMember")}</label>
           <select
             className="form-select"
             value={
@@ -96,7 +91,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
               if (e.target.value) setField("memberName", e.target.value);
             }}
           >
-            <option value="">— Χειροκινητη εισαγωγη —</option>
+            <option value="">{t("form.manualEntry")}</option>
             {members.map((m) => (
               <option key={m.id} value={m.name}>
                 {m.name}
@@ -106,7 +101,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
         </div>
       )}
       <div className="mb-3">
-        <label className="form-label">Ονοματεπωνυμο</label>
+        <label className="form-label">{t("fields.fullName")}</label>
         <input
           type="text"
           className="form-control"
@@ -117,7 +112,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
       </div>
       <div className="row g-3 mb-3">
         <div className="col-6">
-          <label className="form-label">Ποσο (€)</label>
+          <label className="form-label">{t("fields.amountEuro")}</label>
           <input
             type="number"
             className="form-control"
@@ -129,7 +124,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
           />
         </div>
         <div className="col-6">
-          <label className="form-label">Ημερομηνια</label>
+          <label className="form-label">{t("fields.date")}</label>
           <input
             type="text"
             className="form-control"
@@ -141,7 +136,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
         </div>
       </div>
       <div className="mb-3">
-        <label className="form-label">Μεθοδος</label>
+        <label className="form-label">{t("fields.method")}</label>
         <select
           className="form-select"
           value={formData.method}
@@ -150,13 +145,13 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
         >
           {METHOD_OPTIONS.map((m) => (
             <option key={m} value={m}>
-              {m}
+              {paymentMethodLabel(m)}
             </option>
           ))}
         </select>
       </div>
       <div className="mb-0">
-        <label className="form-label">Κατασταση</label>
+        <label className="form-label">{t("fields.status")}</label>
         <select
           className="form-select"
           value={formData.status}
@@ -165,9 +160,9 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
           }
           required
         >
-          <option value="completed">Ολοκληρωθηκε</option>
-          <option value="pending">Εκκρεμει</option>
-          <option value="failed">Αποτυχια</option>
+          <option value="completed">{t("common:status.completed")}</option>
+          <option value="pending">{t("common:status.pending")}</option>
+          <option value="failed">{t("common:status.failed")}</option>
         </select>
       </div>
     </Modal>

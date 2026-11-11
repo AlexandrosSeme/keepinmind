@@ -1,0 +1,101 @@
+import type { LocaleShape } from "../../types";
+import type el from "../el/qrCodes";
+
+const qrCodes: LocaleShape<typeof el> = {
+  lookup: {
+    noIdOrPhone: "No member ID or phone provided",
+    noId: "No member ID provided",
+    connection: "The database connection is not available",
+    notFound: "Member not found",
+    notFoundById: "No member found with this ID",
+    loadError: "Error loading data",
+  },
+  status: {
+    active: "Active Subscription",
+    expiring_soon: "Expiring Soon",
+    expired: "Expired Subscription",
+  },
+  member: {
+    name: "Name",
+    phone: "Phone",
+    package: "Package",
+    expiry: "Expiry",
+  },
+  myCode: {
+    myBarcode: "My Barcode",
+    myQr: "My QR Code",
+    instructions: "📱 Instructions:",
+    showBarcodeGym: "Show this barcode to the staff to enter the gym",
+    showQrGym: "Show this QR code to the staff to enter the gym",
+    showBarcode: "Show this barcode to the staff to enter",
+    showQr: "Show this QR code to the staff to enter",
+  },
+  card: {
+    status: {
+      active: "ACTIVE",
+      expiring_soon: "EXPIRING SOON",
+      expired: "EXPIRED",
+    },
+    lost: "CANCELLED",
+    printThis: "Print this card",
+    activateTitle: "Activate Card",
+    activate: "Activate",
+    printNewTitle: "Print New Card (activates and prints)",
+    printNew: "Print New",
+    cancelTitle: "Cancel Card",
+    phone: "Tel:",
+    package: "Package:",
+  },
+  print: {
+    title: "Member Cards",
+    selectAll: "Select All",
+    deselect: "Deselect",
+    printCount: "Print ({{count}})",
+    searchLabel: "Search Member",
+    searchPlaceholder: "Search by name, phone or ID...",
+    cardStatus: "Card Status",
+    filterAll: "All Cards",
+    filterActive: "Active Cards",
+    filterLost: "Cancelled Cards",
+    found_one: "{{count}} member found",
+    found_other: "{{count}} members found",
+    selectedMember: "Selected member:",
+    clear: "Clear",
+    searchResults: "Search Results:",
+    instructionsTitle: "Instructions:",
+    instructions:
+      "Select the cards you want to print by clicking the checkbox. Search for a member to filter, or leave empty to see all.",
+    totalMembers: "Total members: {{count}}",
+    shown: "Shown: {{count}}",
+    selectedForPrint: "Selected for printing: {{count}}",
+    lostCount: "Cancelled: {{count}}",
+    willPrint_one:
+      "✓ <strong>{{count}}</strong> card will be printed (select any cards, even those at the bottom of the list)",
+    willPrint_other:
+      "✓ <strong>{{count}}</strong> cards will be printed (select any cards, even those at the bottom of the list)",
+    noneSelected: "You have not selected any cards to print.",
+    confirmReactivate:
+      "Do you want to activate {{name}}'s card and print a new card?\n\nAll member data (name, phone, subscription, photo) will remain the same.",
+  },
+  view: {
+    title: "View Member QR Code",
+    selectMember: "Select Member",
+    searchLabel: "Search Member",
+    searchPlaceholder: "Search by name or phone...",
+    noMembers: "No members found",
+    manualLabel: "Or enter member ID:",
+    idPlaceholder: "Member ID",
+    viewQr: "View QR",
+    invalidId: "Please enter a valid member ID",
+    instructions: "Instructions",
+    forAdmin: "For the Admin:",
+    step1: "Select a member from the list or enter an ID",
+    step2: "The member's QR code page will open",
+    step3: "You can scan it with the QR Scanner",
+    linkTitle: "Link for End Users:",
+    or: "or",
+    linkHelp: "Send this link to users so they can see their QR code",
+  },
+};
+
+export default qrCodes;

@@ -1,0 +1,47 @@
+.km-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  border: 1px solid var(--km-border);
+  border-radius: 999px;
+  background: var(--km-surface);
+}
+
+.km-lang__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  opacity: 0.55;
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &.is-active {
+    opacity: 1;
+    border-color: var(--km-brand);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--km-brand);
+    outline-offset: 2px;
+  }
+}
+
+.km-lang__flag {
+  display: block;
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}

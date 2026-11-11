@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import moment from "moment";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { useMembers } from "@/features/members";
 import {
@@ -21,8 +22,6 @@ import BookingFormModal from "../components/BookingFormModal";
 import BookingDetailsModal from "../components/BookingDetailsModal";
 import "./CalendarPage.scss";
 
-moment.locale("el");
-
 type FormState = {
   editing: Booking | null;
   initialValues: BookingFormData;
@@ -41,6 +40,7 @@ const toFormData = (booking: Booking): BookingFormData => ({
 });
 
 const CalendarPage: React.FC = () => {
+  const { t } = useTranslation("bookings");
   const { members } = useMembers();
   const [currentWeek, setCurrentWeek] = useState(moment().startOf("week"));
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -133,7 +133,7 @@ const CalendarPage: React.FC = () => {
 
   const handleCreate = async (values: BookingFormData) => {
     if (!values.title.trim() || !values.instructor.trim()) {
-      alert("Παρακαλω συμπληρωστε τιτλο και προπονητη");
+      alert(t("alerts.requiredFields"));
       return;
     }
 
@@ -158,11 +158,11 @@ const CalendarPage: React.FC = () => {
         await loadBookings();
         closeAll();
       } else {
-        alert("Σφαλμα κατα τη δημιουργια κρατησης");
+        alert(t("alerts.createError"));
       }
     } catch (error) {
       console.error("Error creating booking:", error);
-      alert("Σφαλμα κατα τη δημιουργια κρατησης");
+      alert(t("alerts.createError"));
     }
   };
 
@@ -194,21 +194,16 @@ const CalendarPage: React.FC = () => {
         await loadBookings();
         closeAll();
       } else {
-        alert("Σφαλμα κατα την ενημερωση κρατησης");
+        alert(t("alerts.updateError"));
       }
     } catch (error) {
       console.error("Error updating booking:", error);
-      alert("Σφαλμα κατα την ενημερωση κρατησης");
+      alert(t("alerts.updateError"));
     }
   };
 
   const handleDelete = async (bookingId: number) => {
-    if (
-      !window.confirm(
-        "Ειστε σιγουροι οτι θελετε να διαγραψετε αυτη την κρατηση;",
-      )
-    )
-      return;
+    if (!window.confirm(t("alerts.deleteConfirm"))) return;
 
     try {
       const success = await deleteBooking(bookingId);
@@ -216,11 +211,11 @@ const CalendarPage: React.FC = () => {
         await loadBookings();
         setSelectedBooking(null);
       } else {
-        alert("Σφαλμα κατα τη διαγραφη κρατησης");
+        alert(t("alerts.deleteError"));
       }
     } catch (error) {
       console.error("Error deleting booking:", error);
-      alert("Σφαλμα κατα τη διαγραφη κρατησης");
+      alert(t("alerts.deleteError"));
     }
   };
 
@@ -244,10 +239,8 @@ const CalendarPage: React.FC = () => {
       <div className="schedule-header">
         <div className="header-content">
           <div>
-            <h2 className="page-title">Προγραμμα Προπονησεων</h2>
-            <p className="page-subtitle">
-              Ταξεις & Προπονησεις - Εβδομαδιαιο Προγραμμα
-            </p>
+            <h2 className="page-title">{t("page.title")}</h2>
+            <p className="page-subtitle">{t("page.subtitle")}</p>
           </div>
           <button
             className="btn btn-primary btn-add-booking"
@@ -256,7 +249,7 @@ const CalendarPage: React.FC = () => {
             }
           >
             <Plus size={20} />
-            Νεα Ταξη/Προπονηση
+            {t("page.newSession")}
           </button>
         </div>
       </div>

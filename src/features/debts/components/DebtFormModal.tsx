@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FormActions, Modal } from "@/shared/ui";
 import type { Member } from "@/features/members";
 import type { Debt, DebtInput } from "../types";
@@ -37,6 +38,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation(["debts", "common"]);
   const [formData, setFormData] = useState<DebtInput>(
     debt ? toForm(debt) : emptyForm,
   );
@@ -76,7 +78,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
 
   return (
     <Modal
-      title={debt ? "Επεξεργασια Οφειλης" : "Νεα Οφειλη"}
+      title={debt ? t("form.editTitle") : t("page.newDebt")}
       onClose={onClose}
       closeDisabled={saving}
       onSubmit={handleSubmit}
@@ -90,7 +92,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
     >
       {members.length > 0 && (
         <div className="mb-3">
-          <label className="form-label">Επιλογη μελους</label>
+          <label className="form-label">{t("form.pickMember")}</label>
           <select
             className="form-select"
             value={
@@ -100,7 +102,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
               if (e.target.value) handleMemberPick(e.target.value);
             }}
           >
-            <option value="">— Χειροκινητη εισαγωγη —</option>
+            <option value="">{t("form.manualEntry")}</option>
             {members.map((m) => (
               <option key={m.id} value={m.name}>
                 {m.name}
@@ -110,7 +112,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
         </div>
       )}
       <div className="mb-3">
-        <label className="form-label">Ονοματεπωνυμο</label>
+        <label className="form-label">{t("fields.fullName")}</label>
         <input
           type="text"
           className="form-control"
@@ -121,7 +123,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
       </div>
       <div className="row g-3 mb-3">
         <div className="col-6">
-          <label className="form-label">Ποσο (€)</label>
+          <label className="form-label">{t("fields.amountEuro")}</label>
           <input
             type="number"
             className="form-control"
@@ -133,7 +135,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
           />
         </div>
         <div className="col-6">
-          <label className="form-label">Ημερες καθυστερηση</label>
+          <label className="form-label">{t("fields.daysOverdue")}</label>
           <input
             type="number"
             className="form-control"
@@ -145,20 +147,20 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
         </div>
       </div>
       <div className="mb-3">
-        <label className="form-label">Κατασταση</label>
+        <label className="form-label">{t("fields.status")}</label>
         <select
           className="form-select"
           value={formData.status}
           onChange={(e) => setField("status", e.target.value as Debt["status"])}
           required
         >
-          <option value="warning">Προειδοποιηση</option>
-          <option value="overdue">Ληξιπροθεσμη</option>
-          <option value="critical">Κρισιμη</option>
+          <option value="warning">{t("common:status.warning")}</option>
+          <option value="overdue">{t("common:status.overdue")}</option>
+          <option value="critical">{t("common:status.critical")}</option>
         </select>
       </div>
       <div className="mb-3">
-        <label className="form-label">Τηλεφωνο</label>
+        <label className="form-label">{t("fields.phone")}</label>
         <input
           type="text"
           className="form-control"
@@ -167,7 +169,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
         />
       </div>
       <div className="mb-3">
-        <label className="form-label">Email</label>
+        <label className="form-label">{t("fields.email")}</label>
         <input
           type="email"
           className="form-control"
@@ -176,7 +178,7 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
         />
       </div>
       <div className="mb-0">
-        <label className="form-label">Τελευταια επαφη</label>
+        <label className="form-label">{t("fields.lastContact")}</label>
         <input
           type="text"
           className="form-control"

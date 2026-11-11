@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "@/shared/i18n";
 import { recordEntrance, validateMemberEntry } from "../api";
 import type { ValidationResult } from "../types";
 import { extractMemberId } from "../lib/parseScan";
@@ -14,11 +16,12 @@ const QR_READER_ID = "qr-reader";
 const invalidCode = (reason: string): ValidationResult => ({
   valid: false,
   member: null,
-  message: "Μη εγκυρο QR Code",
+  message: i18n.t("checkin:validation.invalidCode"),
   reason,
 });
 
 const QRScannerPage: React.FC = () => {
+  const { t } = useTranslation("checkin");
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [manualId, setManualId] = useState("");
@@ -43,9 +46,7 @@ const QRScannerPage: React.FC = () => {
       const memberId = extractMemberId(data);
       if (!memberId) {
         setResult(
-          invalidCode(
-            `Δεν βρεθηκε εγκυρο Member ID. Δεδομενα: ${data.substring(0, 100)}`,
-          ),
+          invalidCode(t("scan.noMemberId", { data: data.substring(0, 100) })),
         );
         return;
       }
@@ -54,8 +55,8 @@ const QRScannerPage: React.FC = () => {
       setResult({
         valid: false,
         member: null,
-        message: "Σφαλμα Επεξεργασιας",
-        reason: "Σφαλμα κατα την επεξεργασια του QR code",
+        message: t("scan.processingError"),
+        reason: t("scan.processingErrorReason"),
       });
     } finally {
       refocusSoon();
@@ -65,13 +66,13 @@ const QRScannerPage: React.FC = () => {
   const handleCameraDecode = async (text: string) => {
     const memberId = extractMemberId(text);
     if (!memberId) {
-      setResult(invalidCode("Το QR code δεν περιεχει εγκυρα δεδομενα"));
+      setResult(invalidCode(t("scan.invalidData")));
       return;
     }
     try {
       await checkIn(memberId, "qr_scan");
     } catch {
-      setResult(invalidCode("Δεν ηταν δυνατη η αναγνωση του QR code"));
+      setResult(invalidCode(t("scan.readError")));
     }
   };
 
@@ -88,7 +89,7 @@ const QRScannerPage: React.FC = () => {
   const handleManualValidation = async () => {
     const id = parseInt(manualId);
     if (isNaN(id) || id <= 0) {
-      setError("Παρακαλω εισαγετε εγκυρο ID μελους");
+      setError(t("scan.invalidMemberId"));
       return;
     }
     setError(null);
@@ -99,7 +100,7 @@ const QRScannerPage: React.FC = () => {
     <div className="container mt-4">
       <div className="row">
         <div className="col-12">
-          <h2 className="mb-4">Σαρωση QR Code</h2>
+          <h2 className="mb-4">{t("page.title")}</h2>
         </div>
       </div>
 
@@ -146,14 +147,11 @@ const QRScannerPage: React.FC = () => {
               />
 
               <div className="mt-4 border-top pt-3">
-                <h6 className="mb-3">
-                  Plug & Play QR Scanner (USB) η χειροκινητη εισαγωγη:
-                </h6>
+                <h6 className="mb-3">{t("page.usbTitle")}</h6>
                 <div className="alert alert-info mb-3" role="alert">
                   <small>
-                    <strong>Plug & Play Scanner:</strong> Συνδεστε το USB QR
-                    scanner και σκαναρετε απευθειας. Το scanner λειτουργει
-                    αυτοματα - απλα σκαναρετε το QR code!
+                    <strong>{t("page.usbHelpTitle")}</strong>{" "}
+                    {t("page.usbHelp")}
                     <br />
                     <span
                       className={inputFocused ? "text-success" : "text-warning"}
@@ -168,7 +166,7 @@ const QRScannerPage: React.FC = () => {
                   <input
                     type="number"
                     className="form-control"
-                    placeholder="ID μελους (η σκαναρετε με USB scanner)"
+                    placeholder={t("page.manualPlaceholder")}
                     value={manualId}
                     onChange={(e) => setManualId(e.target.value)}
                     onKeyDown={(e) => {
@@ -180,7 +178,7 @@ const QRScannerPage: React.FC = () => {
                     type="button"
                     onClick={handleManualValidation}
                   >
-                    Επικυρωση
+                    {t("page.validate")}
                   </button>
                 </div>
               </div>

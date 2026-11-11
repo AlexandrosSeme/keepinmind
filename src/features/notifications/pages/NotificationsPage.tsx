@@ -1,14 +1,16 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Bell, Clock, CheckCircle } from "lucide-react";
 import { PageHeader, StatusBadge } from "@/shared/ui";
 
 const Notifications: React.FC = () => {
+  const { t } = useTranslation(["notifications", "common"]);
   const notifications = [
     {
       id: 1,
       type: "expiry_warning",
-      title: "7 ημερες πριν ληξη",
-      message: "Μαρια Γεωργιου - Η συνδρομη σας ληγει σε 7 ημερες",
+      title: t("demo.sevenDaysTitle"),
+      message: t("demo.sevenDaysMessage", { name: "Μαρία Γεωργίου" }),
       channel: "SMS",
       status: "scheduled",
       scheduledFor: "13/10/2025 10:00",
@@ -19,8 +21,8 @@ const Notifications: React.FC = () => {
     {
       id: 2,
       type: "expiry_today",
-      title: "Ημερα ληξης",
-      message: "Νικος Παπαδοπουλος - Η συνδρομη σας ληγει σημερα",
+      title: t("demo.expiryTodayTitle"),
+      message: t("demo.expiryTodayMessage", { name: "Νίκος Παπαδόπουλος" }),
       channel: "SMS",
       status: "sent",
       sentAt: "13/10/2025 10:05",
@@ -33,11 +35,11 @@ const Notifications: React.FC = () => {
   return (
     <div>
       <PageHeader
-        title="Ειδοποιησεις"
+        title={t("page.title")}
         actions={
           <button className="btn btn-primary">
             <Bell size={16} className="me-2" />
-            Νεα Ειδοποιηση
+            {t("page.new")}
           </button>
         }
       />
@@ -45,15 +47,17 @@ const Notifications: React.FC = () => {
       <div className="card border-0 shadow-sm mb-4 km-toolbar-card">
         <div className="card-body">
           <div className="d-flex flex-wrap gap-2">
-            <button className="btn btn-primary btn-sm">Ολες</button>
-            <button className="btn btn-outline-secondary btn-sm">
-              Προγραμματισμενες
+            <button className="btn btn-primary btn-sm">
+              {t("page.filters.all")}
             </button>
             <button className="btn btn-outline-secondary btn-sm">
-              Σταλμενες
+              {t("page.filters.scheduled")}
             </button>
             <button className="btn btn-outline-secondary btn-sm">
-              Αποτυχημενες
+              {t("page.filters.sent")}
+            </button>
+            <button className="btn btn-outline-secondary btn-sm">
+              {t("page.filters.failed")}
             </button>
           </div>
         </div>
@@ -84,8 +88,12 @@ const Notifications: React.FC = () => {
                         <StatusBadge tone="info" label={notification.channel} />
                         <small className="text-muted">
                           {notification.status === "scheduled"
-                            ? `Προγραμματισμενο για ${notification.scheduledFor}`
-                            : `Σταλθηκε ${notification.sentAt}`}
+                            ? t("page.scheduledFor", {
+                                date: notification.scheduledFor ?? "",
+                              })
+                            : t("page.sentAt", {
+                                date: notification.sentAt ?? "",
+                              })}
                         </small>
                       </div>
                     </div>
@@ -94,9 +102,9 @@ const Notifications: React.FC = () => {
                     status={notification.status}
                     label={
                       notification.status === "scheduled"
-                        ? "Εκκρεμει"
+                        ? t("common:status.pending")
                         : notification.status === "sent"
-                          ? "Σταλμενο"
+                          ? t("page.sentBadge")
                           : undefined
                     }
                   />
@@ -110,7 +118,7 @@ const Notifications: React.FC = () => {
       {notifications.length === 0 && (
         <div className="text-center py-5">
           <Bell size={48} className="text-muted mb-3" />
-          <h5 className="text-muted">Δεν υπαρχουν ειδοποιησεις</h5>
+          <h5 className="text-muted">{t("page.empty")}</h5>
         </div>
       )}
     </div>

@@ -21,7 +21,7 @@ export type RecipientGroup =
 export interface SentAnnouncement {
   id: number;
   title: string;
-  sentTo: string;
+  recipientCount: number;
   channel: string;
   date: string;
   status: "sent" | "scheduled" | "draft";

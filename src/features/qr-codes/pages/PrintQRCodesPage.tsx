@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { CheckSquare, Printer, Search, Square, X } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
 import {
@@ -16,6 +17,7 @@ type CardLostFilter = "all" | "lost" | "active";
 const CARDS_PER_PRINTED_PAGE = 6;
 
 const PrintQRCodesPage: React.FC = () => {
+  const { t } = useTranslation("qrCodes");
   const { members } = useMembers();
   const { editMember } = useMemberMutations();
   const toggleCardLost = useToggleCardLost();
@@ -70,7 +72,7 @@ const PrintQRCodesPage: React.FC = () => {
 
   const handlePrint = () => {
     if (membersToPrint.length === 0) {
-      alert("Δεν εχετε επιλεξει καμια καρτα για εκτυπωση.");
+      alert(t("print.noneSelected"));
       return;
     }
 
@@ -117,7 +119,9 @@ const PrintQRCodesPage: React.FC = () => {
 
   const handlePrintNewCard = async (member: Member) => {
     if (member.card_lost === true) {
-      const confirmMessage = `Θελετε να ενεργοποιησετε την καρτα του ${member.name} και να εκτυπωσετε νεα καρτα;\n\nΟλα τα δεδομενα του μελους (ονομα, τηλεφωνο, συνδρομη, φωτογραφια) θα παραμεινουν ιδια.`;
+      const confirmMessage = t("print.confirmReactivate", {
+        name: member.name,
+      });
       if (!window.confirm(confirmMessage)) return;
       const updated = await editMember(member.id, { card_lost: false });
       if (!updated) return;
@@ -129,7 +133,7 @@ const PrintQRCodesPage: React.FC = () => {
     <div>
       <div className="d-print-none mb-4">
         <PageHeader
-          title="Καρτες Μελων"
+          title={t("print.title")}
           actions={
             <>
               <button
@@ -140,7 +144,7 @@ const PrintQRCodesPage: React.FC = () => {
                 disabled={membersToDisplay.length === 0}
               >
                 <CheckSquare size={18} className="me-2" />
-                Επιλογη Ολων
+                {t("print.selectAll")}
               </button>
               <button
                 className="btn btn-outline-secondary"
@@ -148,7 +152,7 @@ const PrintQRCodesPage: React.FC = () => {
                 disabled={membersToDisplay.length === 0}
               >
                 <Square size={18} className="me-2" />
-                Αποεπιλογη
+                {t("print.deselect")}
               </button>
               <button
                 className="btn btn-primary"
@@ -156,7 +160,7 @@ const PrintQRCodesPage: React.FC = () => {
                 disabled={membersToPrint.length === 0}
               >
                 <Printer size={18} className="me-2" />
-                Εκτυπωση ({membersToPrint.length})
+                {t("print.printCount", { count: membersToPrint.length })}
               </button>
             </>
           }
@@ -167,7 +171,7 @@ const PrintQRCodesPage: React.FC = () => {
             <div className="row g-3">
               <div className="col-12 col-md-8">
                 <label className="form-label fw-semibold">
-                  Αναζητηση Μελους
+                  {t("print.searchLabel")}
                 </label>
                 <div className="input-group">
                   <span className="input-group-text">
@@ -176,7 +180,7 @@ const PrintQRCodesPage: React.FC = () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Αναζητηση με ονομα, τηλεφωνο η ID..."
+                    placeholder={t("print.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     disabled={!!selectedMember}
@@ -194,7 +198,7 @@ const PrintQRCodesPage: React.FC = () => {
               </div>
               <div className="col-12 col-md-4">
                 <label className="form-label fw-semibold">
-                  Κατασταση Καρτας
+                  {t("print.cardStatus")}
                 </label>
                 <select
                   className="form-select"
@@ -204,16 +208,16 @@ const PrintQRCodesPage: React.FC = () => {
                   }
                   disabled={!!selectedMember}
                 >
-                  <option value="all">Ολες οι Καρτες</option>
-                  <option value="active">Ενεργες Καρτες</option>
-                  <option value="lost">Ακυρωμενες Καρτες</option>
+                  <option value="all">{t("print.filterAll")}</option>
+                  <option value="active">{t("print.filterActive")}</option>
+                  <option value="lost">{t("print.filterLost")}</option>
                 </select>
               </div>
             </div>
             {searchTerm && !selectedMember && (
               <div className="mt-2">
                 <small className="text-muted">
-                  Βρεθηκαν {filteredMembers.length} μελη
+                  {t("print.found", { count: filteredMembers.length })}
                 </small>
               </div>
             )}
@@ -223,15 +227,15 @@ const PrintQRCodesPage: React.FC = () => {
         {selectedMember && (
           <div className="alert alert-success d-flex justify-content-between align-items-center">
             <div>
-              <strong>Επιλεγμενο μελος:</strong> {selectedMember.name} (ID:{" "}
-              {selectedMember.id})
+              <strong>{t("print.selectedMember")}</strong> {selectedMember.name}{" "}
+              (ID: {selectedMember.id})
             </div>
             <button
               className="btn btn-sm btn-outline-success"
               onClick={handleClearSelection}
             >
               <X size={16} className="me-1" />
-              Καθαρισμος
+              {t("print.clear")}
             </button>
           </div>
         )}
@@ -239,7 +243,7 @@ const PrintQRCodesPage: React.FC = () => {
         {searchTerm && !selectedMember && filteredMembers.length > 0 && (
           <div className="card mb-3">
             <div className="card-body">
-              <h6 className="mb-2">Αποτελεσματα Αναζητησης:</h6>
+              <h6 className="mb-2">{t("print.searchResults")}</h6>
               <div className="list-group km-print-search-results">
                 {filteredMembers.map((member) => (
                   <button
@@ -266,26 +270,29 @@ const PrintQRCodesPage: React.FC = () => {
 
         <div className="alert alert-info mb-0">
           <p className="mb-0">
-            <strong>Οδηγιες:</strong> Επιλεξτε τις καρτες που θελετε να
-            εκτυπωσετε κανοντας κλικ στο checkbox. Αναζητηστε ενα μελος για να
-            φιλτραρετε, η αφηστε κενο για να δειτε ολα.
+            <strong>{t("print.instructionsTitle")}</strong>{" "}
+            {t("print.instructions")}
             <br />
             <small>
-              Συνολικα μελη: {sortedMembers.length} | Εμφανιζονται:{" "}
-              {membersToDisplay.length} |{" "}
+              {t("print.totalMembers", { count: sortedMembers.length })} |{" "}
+              {t("print.shown", { count: membersToDisplay.length })} |{" "}
               <strong className="text-primary">
-                Επιλεγμενα για εκτυπωση: {membersToPrint.length}
+                {t("print.selectedForPrint", { count: membersToPrint.length })}
               </strong>{" "}
-              | Ακυρωμενες:{" "}
-              {sortedMembers.filter((m) => m.card_lost === true).length}
+              |{" "}
+              {t("print.lostCount", {
+                count: sortedMembers.filter((m) => m.card_lost === true).length,
+              })}
             </small>
             {membersToPrint.length > 0 && (
               <span className="d-block mt-2">
                 <small className="text-success">
-                  ✓ Θα εκτυπωθουν <strong>{membersToPrint.length}</strong>{" "}
-                  {membersToPrint.length === 1 ? "καρτα" : "καρτες"} (επιλεξτε
-                  οποιεσδηποτε καρτες, ακομα και αυτες που ειναι στο κατω μερος
-                  της λιστας)
+                  <Trans
+                    t={t}
+                    i18nKey="print.willPrint"
+                    count={membersToPrint.length}
+                    components={{ strong: <strong /> }}
+                  />
                 </small>
               </span>
             )}

@@ -6,22 +6,15 @@ export const TIME_SLOTS = Array.from({ length: 18 }, (_, i) => {
   return { hour, label: `${hour.toString().padStart(2, "0")}:00` };
 });
 
-export const DAYS_OF_WEEK = [
-  { key: 0, label: "Δευτερα", short: "Δευ" },
-  { key: 1, label: "Τριτη", short: "Τρι" },
-  { key: 2, label: "Τεταρτη", short: "Τετ" },
-  { key: 3, label: "Πεμπτη", short: "Πεμ" },
-  { key: 4, label: "Παρασκευη", short: "Παρ" },
-  { key: 5, label: "Σαββατο", short: "Σαβ" },
-  { key: 6, label: "Κυριακη", short: "Κυρ" },
-];
+/** Day keys (0 = Monday); labels come from the `bookings:days.*` translations. */
+export const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5, 6] as const;
 
-export const BOOKING_TYPE_LABELS: Record<BookingType, string> = {
-  class: "Ταξη",
-  personal_training: "Προσωπικη Προπονηση",
-  appointment: "Ραντεβου",
-  event: "Εκδηλωση",
-};
+export const BOOKING_TYPES: BookingType[] = [
+  "class",
+  "personal_training",
+  "appointment",
+  "event",
+];
 
 const BOOKING_TYPE_COLORS: Record<BookingType, string> = {
   class: "#2a8bb8",

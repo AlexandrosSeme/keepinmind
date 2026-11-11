@@ -2,6 +2,7 @@
 // Documentation: https://rest.smsme.gr/swagger/index.html
 // Wiki: https://wiki.smsme.gr/index.php?title=REST_API#Authentication
 
+import i18n from "@/shared/i18n";
 import { logger } from "@/shared/lib/logger";
 
 export interface SMSRecipient {
@@ -163,8 +164,7 @@ class SMSService {
       console.error("[SMSService] Service not initialized");
       return {
         success: false,
-        error:
-          "SMS service not initialized. Please configure SMSme.gr credentials in settings.",
+        error: i18n.t("notifications:errors.sms.notInitialized"),
       };
     }
 
@@ -173,8 +173,7 @@ class SMSService {
       console.error("[SMSService] Failed to get auth token");
       return {
         success: false,
-        error:
-          "Failed to authenticate with SMSme.gr. Please check your credentials.",
+        error: i18n.t("notifications:errors.sms.authFailed"),
       };
     }
 
@@ -196,8 +195,7 @@ class SMSService {
       if (!sender || sender.length === 0) {
         return {
           success: false,
-          error:
-            "Invalid sender ID. Sender must contain at least one alphanumeric character.",
+          error: i18n.t("notifications:errors.sms.invalidSender"),
         };
       }
 
@@ -237,7 +235,7 @@ class SMSService {
       if (!options.message || options.message.trim().length === 0) {
         return {
           success: false,
-          error: "Message cannot be empty.",
+          error: i18n.t("notifications:errors.sms.emptyMessage"),
         };
       }
 
@@ -245,7 +243,7 @@ class SMSService {
       if (normalizedRecipients.length === 0) {
         return {
           success: false,
-          error: "At least one recipient is required.",
+          error: i18n.t("notifications:errors.sms.noRecipients"),
         };
       }
 
@@ -254,7 +252,9 @@ class SMSService {
         if (!/^[0-9]{10,15}$/.test(recipient)) {
           return {
             success: false,
-            error: `Invalid phone number format: ${recipient}. Phone numbers must be 10-15 digits with country code.`,
+            error: i18n.t("notifications:errors.sms.invalidPhoneFormat", {
+              phone: recipient,
+            }),
           };
         }
       }
@@ -330,7 +330,11 @@ class SMSService {
           // User should use web interface directly or add balance
         }
 
-        let errorMessage = `Αποτυχια αποστολης SMS (${response.status} ${response.statusText})`;
+        const genericError = i18n.t("notifications:errors.sms.sendFailed", {
+          status: response.status,
+          statusText: response.statusText,
+        });
+        let errorMessage: string = genericError;
 
         // Parse error text (may be plain text or JSON)
         let apiErrorMessage = "";
@@ -343,7 +347,7 @@ class SMSService {
           apiErrorMessage = errorText.trim();
         }
 
-        // Translate common error messages to Greek
+        // Map common API errors to localized messages
         const lowerErrorMessage = apiErrorMessage.toLowerCase();
         if (
           lowerErrorMessage.includes("out of credit") ||
@@ -351,57 +355,38 @@ class SMSService {
           lowerErrorMessage.includes("no credit") ||
           lowerErrorMessage.includes("account is out")
         ) {
-          errorMessage =
-            "Ο λογαριασμος σας δεν εχει διαθεσιμα credits στο REST API. Παρακαλω:\n" +
-            "1. Προσθεστε balance στο SMSme.gr account (https://smsme.gr/MyAccount.aspx)\n" +
-            "2. Η χρησιμοποιηστε το web interface του SMSme.gr για αποστολη (https://smsme.gr) - μπορει να εχει διαθεσιμα δωρεαν SMS credits\n" +
-            "3. Ελεγξτε το balance σας στο SMSme.gr account\n" +
-            "\nΣημειωση: Το web interface μπορει να εχει διαθεσιμα δωρεαν SMS credits που δεν φαινονται στο REST API.";
+          errorMessage = i18n.t("notifications:errors.sms.outOfCredit");
         } else if (
           apiErrorMessage.toLowerCase().includes("sender") &&
           (apiErrorMessage.toLowerCase().includes("not approved") ||
             apiErrorMessage.toLowerCase().includes("invalid"))
         ) {
-          errorMessage =
-            'Το Sender ID δεν ειναι approved. Τα alphanumeric sender IDs (οπως "ColosseumGy") πρεπει να εγκριθουν απο το SMSme.gr support. Επικοινωνηστε με την υποστηριξη για να approve το sender ID σας.';
+          errorMessage = i18n.t("notifications:errors.sms.senderNotApproved");
         } else if (
           apiErrorMessage.toLowerCase().includes("invalid recipient") ||
           apiErrorMessage.toLowerCase().includes("invalid phone")
         ) {
-          errorMessage =
-            "Μη εγκυρος αριθμος παραληπτη. Παρακαλω ελεγξτε τη μορφη του αριθμου τηλεφωνου.";
+          errorMessage = i18n.t("notifications:errors.sms.invalidRecipient");
         } else if (
           apiErrorMessage.toLowerCase().includes("authentication") ||
           apiErrorMessage.toLowerCase().includes("unauthorized")
         ) {
-          errorMessage =
-            "Αποτυχια authentication. Παρακαλω ελεγξτε τα credentials σας στο Settings.";
+          errorMessage = i18n.t("notifications:errors.sms.authCredentials");
         } else if (apiErrorMessage) {
           // Use the API error message if available
           errorMessage = apiErrorMessage;
         }
 
         // Provide specific error messages for common status codes if no specific message found
-        if (
-          errorMessage ===
-          `Αποτυχια αποστολης SMS (${response.status} ${response.statusText})`
-        ) {
+        if (errorMessage === genericError) {
           if (response.status === 400) {
-            errorMessage =
-              "Μη εγκυρο αιτημα. Παρακαλω ελεγξτε το sender ID, τους παραληπτες και τη μορφη του μηνυματος.";
+            errorMessage = i18n.t("notifications:errors.sms.badRequest");
           } else if (response.status === 401) {
-            errorMessage =
-              "Αποτυχια authentication. Παρακαλω ελεγξτε τα SMSme.gr credentials σας στο Settings.";
+            errorMessage = i18n.t("notifications:errors.sms.unauthorized");
           } else if (response.status === 403) {
-            errorMessage =
-              "Απαγορευμενη προσβαση. Ο λογαριασμος σας μπορει να μην εχει αδεια αποστολης SMS η το sender ID δεν ειναι approved.";
+            errorMessage = i18n.t("notifications:errors.sms.forbidden");
           } else if (response.status === 500) {
-            errorMessage =
-              "Σφαλμα SMSme.gr server. Αυτο μπορει να οφειλεται σε:\n" +
-              "1. Sender ID δεν ειναι approved (τα alphanumeric sender IDs πρεπει να εγκριθουν απο το SMSme.gr support)\n" +
-              "2. Ανεπαρκες balance/credits\n" +
-              "3. Μη εγκυρη μορφη παραληπτη\n" +
-              "Παρακαλω ελεγξτε τις ρυθμισεις του SMSme.gr account σας η επικοινωνηστε με την υποστηριξη.";
+            errorMessage = i18n.t("notifications:errors.sms.serverError");
           }
         }
 
@@ -445,7 +430,9 @@ class SMSService {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error
+            ? error.message
+            : i18n.t("notifications:errors.unknown"),
       };
     }
   }
@@ -464,7 +451,7 @@ class SMSService {
       return {
         success: 0,
         failed: recipients.length,
-        errors: ["SMS service not initialized"],
+        errors: [i18n.t("notifications:errors.sms.notInitializedShort")],
       };
     }
 
@@ -473,9 +460,7 @@ class SMSService {
       return {
         success: 0,
         failed: recipients.length,
-        errors: [
-          "Viber is not supported by SMSme.gr REST API. Please use SMS channel.",
-        ],
+        errors: [i18n.t("notifications:errors.sms.viberUnsupported")],
       };
     }
 
@@ -537,7 +522,8 @@ class SMSService {
           );
         } else {
           results.failed += batch.length;
-          const errorMsg = response.error || "Unknown error";
+          const errorMsg =
+            response.error || i18n.t("notifications:errors.unknown");
           results.errors.push(errorMsg);
           console.error(
             `[SMSService] ❌ Batch ${Math.floor(i / batchSize) + 1} failed:`,
@@ -552,7 +538,9 @@ class SMSService {
       } catch (error) {
         results.failed += batch.length;
         results.errors.push(
-          error instanceof Error ? error.message : "Unknown error",
+          error instanceof Error
+            ? error.message
+            : i18n.t("notifications:errors.unknown"),
         );
       }
     }
@@ -681,8 +669,7 @@ class SMSService {
     if (!this.isInitialized()) {
       return {
         success: false,
-        message:
-          "SMS service not initialized. Please configure credentials in Settings.",
+        message: i18n.t("notifications:errors.sms.testNotInitialized"),
       };
     }
 
@@ -690,8 +677,7 @@ class SMSService {
     if (!token) {
       return {
         success: false,
-        message:
-          "Failed to authenticate. Please check your username and password.",
+        message: i18n.t("notifications:errors.sms.testAuthFailed"),
       };
     }
 
@@ -716,15 +702,16 @@ class SMSService {
     if (balance === null) {
       return {
         success: false,
-        message:
-          "Token is valid but failed to retrieve balance. Please check your account permissions.",
+        message: i18n.t("notifications:errors.sms.testBalanceFailed"),
         tokenInfo,
       };
     }
 
     return {
       success: true,
-      message: `Connection successful! Account balance: €${balance.balance.toFixed(2)}`,
+      message: i18n.t("notifications:errors.sms.testSuccess", {
+        balance: balance.balance.toFixed(2),
+      }),
       balance: balance.balance,
       tokenInfo,
     };

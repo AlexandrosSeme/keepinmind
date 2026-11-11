@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/api/supabaseClient";
+import i18n from "@/shared/i18n";
 import type { Member } from "@/features/members";
 import { logEntrance } from "@/features/attendance";
 import type { ValidationResult } from "./types";
@@ -11,8 +12,8 @@ export async function validateMemberEntry(
     return {
       valid: false,
       member: null,
-      message: "Σφαλμα συνδεσης",
-      reason: "Η συνδεση με τη βαση δεδομενων δεν ειναι διαθεσιμη",
+      message: i18n.t("checkin:validation.connectionError"),
+      reason: i18n.t("checkin:validation.connectionUnavailable"),
     };
   }
 
@@ -27,8 +28,8 @@ export async function validateMemberEntry(
       return {
         valid: false,
         member: null,
-        message: "Μη εγκυρο QR Code",
-        reason: "Δεν βρεθηκε μελος με αυτο το ID",
+        message: i18n.t("checkin:validation.invalidCode"),
+        reason: i18n.t("checkin:validation.memberNotFound"),
       };
     }
 
@@ -38,9 +39,8 @@ export async function validateMemberEntry(
       return {
         valid: false,
         member,
-        message: "Καρτα Ακυρωμενη",
-        reason:
-          "Η καρτα εχει σημειωθει ως χαμενη/ακυρωμενη. Παρακαλω επικοινωνηστε με τον διαχειριστη.",
+        message: i18n.t("checkin:validation.cardLost"),
+        reason: i18n.t("checkin:validation.cardLostReason"),
       };
     }
 
@@ -49,32 +49,40 @@ export async function validateMemberEntry(
         return {
           valid: false,
           member,
-          message: "Ληγμενη Συνδρομη",
-          reason: `Η συνδρομη εληξε στις ${member.expiry}`,
+          message: i18n.t("checkin:validation.expired"),
+          reason: i18n.t("checkin:validation.expiredReason", {
+            date: member.expiry,
+          }),
         };
       case "expiring_soon":
         return {
           valid: true,
           member,
-          message: "Ενεργη Συνδρομη (Ληγει Συντομα)",
-          reason: `Η συνδρομη ληγει στις ${member.expiry}`,
+          message: i18n.t("checkin:validation.expiringSoon"),
+          reason: i18n.t("checkin:validation.expiringSoonReason", {
+            date: member.expiry,
+          }),
         };
       case "active":
-        return { valid: true, member, message: "Ενεργη Συνδρομη" };
+        return {
+          valid: true,
+          member,
+          message: i18n.t("checkin:validation.active"),
+        };
       default:
         return {
           valid: false,
           member,
-          message: "Μη εγκυρη Κατασταση",
-          reason: "Η κατασταση της συνδρομης δεν ειναι εγκυρη",
+          message: i18n.t("checkin:validation.invalidStatus"),
+          reason: i18n.t("checkin:validation.invalidStatusReason"),
         };
     }
   } catch {
     return {
       valid: false,
       member: null,
-      message: "Σφαλμα Επικυρωσης",
-      reason: "Σφαλμα κατα την επικοινωνια με τη βαση δεδομενων",
+      message: i18n.t("checkin:validation.validationError"),
+      reason: i18n.t("checkin:validation.dbError"),
     };
   }
 }

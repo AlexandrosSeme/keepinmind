@@ -1,5 +1,6 @@
 import React, { type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import "./Modal.scss";
 
 export interface ModalProps {
@@ -32,6 +33,7 @@ const Modal: React.FC<ModalProps> = ({
   closeDisabled = false,
   bodyClassName = "",
 }) => {
+  const { t } = useTranslation();
   const handleClose = () => {
     if (!closeDisabled) onClose();
   };
@@ -77,7 +79,7 @@ const Modal: React.FC<ModalProps> = ({
             <button
               type="button"
               className={`btn-close ${dark ? "btn-close-white" : ""}`.trim()}
-              aria-label="Κλεισιμο"
+              aria-label={t("actions.close")}
               disabled={closeDisabled}
               onClick={handleClose}
             />

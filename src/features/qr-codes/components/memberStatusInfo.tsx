@@ -1,5 +1,6 @@
 import React from "react";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
+import i18n from "@/shared/i18n";
 import type { MemberStatus } from "@/features/members";
 
 export interface MemberStatusInfo {
@@ -18,21 +19,21 @@ export function getMemberStatusInfo(
     case "active":
       return {
         icon: <CheckCircle className="text-success" size={iconSize} />,
-        text: "Ενεργη Συνδρομη",
+        text: i18n.t("qrCodes:status.active"),
         color: "text-success",
         bgColor: "bg-success bg-opacity-10",
       };
     case "expiring_soon":
       return {
         icon: <Clock className="text-warning" size={iconSize} />,
-        text: "Ληγει Συντομα",
+        text: i18n.t("qrCodes:status.expiring_soon"),
         color: "text-warning",
         bgColor: "bg-warning bg-opacity-10",
       };
     case "expired":
       return {
         icon: <XCircle className="text-danger" size={iconSize} />,
-        text: "Ληγμενη Συνδρομη",
+        text: i18n.t("qrCodes:status.expired"),
         color: "text-danger",
         bgColor: "bg-danger bg-opacity-10",
       };

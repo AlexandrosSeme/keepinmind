@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { CheckCircle } from "lucide-react";
 import { LinkButton, PanelCard, StatusBadge } from "@/shared/ui";
 import type { Debt } from "@/features/debts";
@@ -7,6 +8,7 @@ import DashboardEmpty from "./DashboardEmpty";
 
 const DebtsPanel: React.FC<{ debts: Debt[] }> = ({ debts }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
   const sorted = useMemo(
     () =>
       [...debts]
@@ -17,15 +19,17 @@ const DebtsPanel: React.FC<{ debts: Debt[] }> = ({ debts }) => {
 
   return (
     <PanelCard
-      title="Οφειλες"
-      action={<LinkButton onClick={() => navigate("/debts")}>Ολα</LinkButton>}
+      title={t("debts.title")}
+      action={
+        <LinkButton onClick={() => navigate("/debts")}>{t("all")}</LinkButton>
+      }
       className="km-dashboard__panel"
       bodyClassName="p-0 km-dashboard__scroll"
     >
       {sorted.length === 0 ? (
         <DashboardEmpty
           icon={<CheckCircle size={22} className="mb-1 opacity-50" />}
-          text="Καμια οφειλη"
+          text={t("debts.empty")}
         />
       ) : (
         sorted.map((debt) => (
@@ -38,12 +42,12 @@ const DebtsPanel: React.FC<{ debts: Debt[] }> = ({ debts }) => {
                 {debt.name}
               </div>
               <small className="text-muted">
-                {debt.daysOverdue} ημ. ·{" "}
+                {t("debts.days", { count: debt.daysOverdue })} ·{" "}
                 <LinkButton
                   className="align-baseline"
                   onClick={() => navigate("/payments")}
                 >
-                  Πληρωμη
+                  {t("debts.payment")}
                 </LinkButton>
               </small>
             </div>

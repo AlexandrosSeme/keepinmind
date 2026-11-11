@@ -1,5 +1,6 @@
 import React from "react";
 import moment from "moment";
+import { useTranslation } from "react-i18next";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 import { Modal, StatusBadge } from "@/shared/ui";
 import type { Member } from "@/features/members";
@@ -20,99 +21,104 @@ const RecordAttendanceModal: React.FC<RecordAttendanceModalProps> = ({
   records,
   onRecord,
   onClose,
-}) => (
-  <Modal
-    title={`Καταγραφη Προσελευσης - ${program.title}`}
-    onClose={onClose}
-    size="lg"
-    closeOnBackdrop={false}
-    footer={
-      <button type="button" className="btn btn-secondary" onClick={onClose}>
-        Κλεισιμο
-      </button>
-    }
-  >
-    <div className="mb-3">
-      <p className="mb-1">
-        <strong>Ημερομηνια:</strong> {moment(program.date).format("DD/MM/YYYY")}
-      </p>
-      <p className="mb-1">
-        <strong>Ωρα:</strong> {program.time}
-      </p>
-      <p className="mb-0">
-        <strong>Εκπαιδευτης:</strong> {program.instructor || "-"}
-      </p>
-    </div>
+}) => {
+  const { t } = useTranslation(["attendance", "common"]);
 
-    <hr />
+  return (
+    <Modal
+      title={t("modal.title", { title: program.title })}
+      onClose={onClose}
+      size="lg"
+      closeOnBackdrop={false}
+      footer={
+        <button type="button" className="btn btn-secondary" onClick={onClose}>
+          {t("common:actions.close")}
+        </button>
+      }
+    >
+      <div className="mb-3">
+        <p className="mb-1">
+          <strong>{t("fields.date")}:</strong>{" "}
+          {moment(program.date).format("DD/MM/YYYY")}
+        </p>
+        <p className="mb-1">
+          <strong>{t("fields.time")}:</strong> {program.time}
+        </p>
+        <p className="mb-0">
+          <strong>{t("fields.instructor")}:</strong> {program.instructor || "-"}
+        </p>
+      </div>
 
-    <h6 className="mb-3">Μελη</h6>
-    <div className="table-responsive km-record-attendance__list">
-      <table className="table table-sm">
-        <thead>
-          <tr>
-            <th>Ονομα</th>
-            <th>Τηλεφωνο</th>
-            <th>Κατασταση</th>
-            <th>Ενεργειες</th>
-          </tr>
-        </thead>
-        <tbody>
-          {members.length > 0 ? (
-            members.map((member) => {
-              const existing = records.find(
-                (r) => r.programId === program.id && r.memberId === member.id,
-              );
-              return (
-                <tr key={member.id}>
-                  <td>{member.name}</td>
-                  <td>{member.phone}</td>
-                  <td>
-                    {existing ? (
-                      <StatusBadge status={existing.status} />
-                    ) : (
-                      <span className="text-muted">-</span>
-                    )}
-                  </td>
-                  <td>
-                    <div className="btn-group btn-group-sm" role="group">
-                      <button
-                        className="btn btn-outline-success"
-                        onClick={() => onRecord(member.id, "attended")}
-                        title="Παρεστη"
-                      >
-                        <CheckCircle size={16} />
-                      </button>
-                      <button
-                        className="btn btn-outline-danger"
-                        onClick={() => onRecord(member.id, "absent")}
-                        title="Απουσια"
-                      >
-                        <XCircle size={16} />
-                      </button>
-                      <button
-                        className="btn btn-outline-warning"
-                        onClick={() => onRecord(member.id, "cancelled")}
-                        title="Ακυρωθηκε"
-                      >
-                        <Clock size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
-          ) : (
+      <hr />
+
+      <h6 className="mb-3">{t("modal.members")}</h6>
+      <div className="table-responsive km-record-attendance__list">
+        <table className="table table-sm">
+          <thead>
             <tr>
-              <td colSpan={4} className="text-center text-muted py-3">
-                Δεν υπαρχουν μελη
-              </td>
+              <th>{t("fields.name")}</th>
+              <th>{t("fields.phone")}</th>
+              <th>{t("fields.status")}</th>
+              <th>{t("fields.actions")}</th>
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  </Modal>
-);
+          </thead>
+          <tbody>
+            {members.length > 0 ? (
+              members.map((member) => {
+                const existing = records.find(
+                  (r) => r.programId === program.id && r.memberId === member.id,
+                );
+                return (
+                  <tr key={member.id}>
+                    <td>{member.name}</td>
+                    <td>{member.phone}</td>
+                    <td>
+                      {existing ? (
+                        <StatusBadge status={existing.status} />
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="btn-group btn-group-sm" role="group">
+                        <button
+                          className="btn btn-outline-success"
+                          onClick={() => onRecord(member.id, "attended")}
+                          title={t("common:status.attended")}
+                        >
+                          <CheckCircle size={16} />
+                        </button>
+                        <button
+                          className="btn btn-outline-danger"
+                          onClick={() => onRecord(member.id, "absent")}
+                          title={t("common:status.absent")}
+                        >
+                          <XCircle size={16} />
+                        </button>
+                        <button
+                          className="btn btn-outline-warning"
+                          onClick={() => onRecord(member.id, "cancelled")}
+                          title={t("common:status.cancelled")}
+                        >
+                          <Clock size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={4} className="text-center text-muted py-3">
+                  {t("modal.noMembers")}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Modal>
+  );
+};
 
 export default RecordAttendanceModal;

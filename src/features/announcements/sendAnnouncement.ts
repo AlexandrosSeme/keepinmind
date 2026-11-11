@@ -1,3 +1,4 @@
+import i18n from "@/shared/i18n";
 import type { Member } from "@/features/members";
 import {
   emailService,
@@ -40,14 +41,14 @@ export function validateRecipients({
   const hasMemberPhones = members.some((m) => m.phone);
 
   if (channel === "email" && !hasMemberEmails && manualEmails.length === 0) {
-    return 'Δεν υπαρχουν email addresses. Προσθεστε manual emails (πατηστε "Προσθηκη" μετα το email) η επιλεξτε μελη με email.';
+    return i18n.t("announcements:errors.noEmails");
   }
   if (
     (channel === "sms" || channel === "viber") &&
     !hasMemberPhones &&
     manualPhones.length === 0
   ) {
-    return 'Δεν υπαρχουν αριθμοι κινητου. Επιλεξτε μελη με τηλεφωνο η προσθεστε manual αριθμους (πατηστε "Προσθηκη" μετα τον αριθμο).';
+    return i18n.t("announcements:errors.noPhones");
   }
   if (
     channel === "both" &&
@@ -56,7 +57,7 @@ export function validateRecipients({
     !hasMemberPhones &&
     manualPhones.length === 0
   ) {
-    return "Δεν υπαρχουν αποδεκτες. Προσθεστε manual emails η επιλεξτε μελη με email/phone.";
+    return i18n.t("announcements:errors.noRecipients");
   }
   return null;
 }
@@ -67,20 +68,12 @@ async function sendEmails({
   manualEmails,
 }: SendInput): Promise<BulkResult | null> {
   if (!emailService.isInitialized()) {
-    throw new Error(
-      "Email service not configured. Please set up Maileroo API in Settings.",
-    );
+    throw new Error(i18n.t("announcements:errors.emailNotConfigured"));
   }
 
   const fromEmail = getSavedFromEmail();
   if (!fromEmail || fromEmail.trim() === "") {
-    throw new Error(
-      "Το email address δεν ειναι set. Παρακαλω:\n" +
-        "1. Πηγαινετε στο Settings (Ρυθμισεις)\n" +
-        '2. Βαλτε ενα email address στο πεδιο "Αποστολεας Email" (π.χ. alexandros.seme@gmail.com)\n' +
-        '3. Καντε κλικ στο "Αποθηκευση" (Save)\n' +
-        "4. Δοκιμαστε ξανα",
-    );
+    throw new Error(i18n.t("announcements:errors.fromEmailMissing"));
   }
 
   const recipients = [
@@ -91,9 +84,7 @@ async function sendEmails({
   ];
 
   if (recipients.length === 0) {
-    throw new Error(
-      "Δεν υπαρχουν email addresses για αποστολη. Προσθεστε μελη με email η manual emails.",
-    );
+    throw new Error(i18n.t("announcements:errors.noEmailRecipients"));
   }
 
   return emailService.sendBulkEmails(
@@ -112,9 +103,7 @@ async function sendSms({
   manualPhones,
 }: SendInput): Promise<BulkResult | null> {
   if (!smsService.isInitialized()) {
-    throw new Error(
-      "SMS service not configured. Please set up SMSme.gr API in Settings.",
-    );
+    throw new Error(i18n.t("announcements:errors.smsNotConfigured"));
   }
 
   const recipients = [
@@ -162,7 +151,7 @@ export async function sendAnnouncement(
 
 /** Maps a send error to a user-facing message. */
 export function describeSendError(error: unknown): string {
-  if (!(error instanceof Error)) return "Σφαλμα κατα την αποστολη";
+  if (!(error instanceof Error)) return i18n.t("announcements:errors.generic");
 
   const isDomainError =
     error.message.includes("not associated") ||
@@ -170,8 +159,6 @@ export function describeSendError(error: unknown): string {
     error.message.includes("Domain verification");
 
   return isDomainError
-    ? "Το email domain δεν ειναι verified στο Maileroo. " +
-        "Πηγαινετε στο Settings και χρησιμοποιηστε ενα verified email address " +
-        "(π.χ. Gmail) η verify το domain σας στο Maileroo Dashboard."
+    ? i18n.t("announcements:errors.domainNotVerified")
     : error.message;
 }

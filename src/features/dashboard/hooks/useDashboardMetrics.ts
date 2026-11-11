@@ -1,17 +1,18 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { Member } from "@/features/members";
 import type { Payment } from "@/features/payments";
-import { GREEK_MONTHS_SHORT, parseGRDate } from "@/shared/lib/date";
+import { monthShort, parseGRDate } from "@/shared/lib/date";
 import type { Stats } from "../types";
 
-function lastSixMonthBuckets() {
+function lastSixMonthBuckets(lng: string) {
   const now = new Date();
   const buckets: { key: string; label: string }[] = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     buckets.push({
       key: `${d.getFullYear()}-${d.getMonth()}`,
-      label: GREEK_MONTHS_SHORT[d.getMonth()],
+      label: monthShort(d.getMonth(), lng),
     });
   }
   return buckets;
@@ -26,6 +27,8 @@ export function useDashboardMetrics(
   members: Member[],
   payments: Payment[],
 ) {
+  const { t, i18n } = useTranslation("dashboard");
+
   const memberDistribution = useMemo(() => {
     const active = members.filter((m) => m.status === "active").length;
     const expiring = members.filter((m) => m.status === "expiring_soon").length;
@@ -34,9 +37,13 @@ export function useDashboardMetrics(
     return {
       series: total > 0 ? [active, expiring, expired] : [0, 0, 0],
       total,
-      labels: ["Ενεργα", "Ληγουν", "Ληγμενα"],
+      labels: [
+        t("distribution.labels.active"),
+        t("distribution.labels.expiring"),
+        t("distribution.labels.expired"),
+      ],
     };
-  }, [members]);
+  }, [members, t]);
 
   const sampleRevenue = useMemo(() => {
     const base = Math.max(members.length, 8);
@@ -55,7 +62,7 @@ export function useDashboardMetrics(
   );
 
   const revenueSeries = useMemo(() => {
-    const buckets = lastSixMonthBuckets();
+    const buckets = lastSixMonthBuckets(i18n.language);
     const totals = buckets.map(() => 0);
 
     payments.forEach((p) => {
@@ -74,7 +81,7 @@ export function useDashboardMetrics(
       data: hasReal ? totals : sampleRevenue,
       hasReal,
     };
-  }, [payments, sampleRevenue]);
+  }, [payments, sampleRevenue, i18n.language]);
 
   const paymentStatus = useMemo(() => {
     const completed = payments.filter((p) => p.status === "completed").length;

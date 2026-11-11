@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   AlertCircle,
   CheckCircle,
@@ -23,40 +24,41 @@ const KpiGrid: React.FC<KpiGridProps> = ({
   displayPending,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
 
   const kpis = [
     {
-      title: "Μελη",
+      title: t("kpi.members"),
       value: stats.totalMembers,
       icon: <Users size={16} />,
       to: "/members",
     },
     {
-      title: "Ενεργες",
+      title: t("kpi.active"),
       value: stats.activeSubscriptions,
       icon: <CheckCircle size={16} />,
       to: "/subscriptions",
     },
     {
-      title: "Ληγουν",
+      title: t("kpi.expiring"),
       value: stats.expiringThisWeek,
       icon: <Clock size={16} />,
       to: "/members",
     },
     {
-      title: "Οφειλες",
+      title: t("kpi.debts"),
       value: stats.overdueDebts,
       icon: <AlertCircle size={16} />,
       to: "/debts",
     },
     {
-      title: "Εσοδα",
+      title: t("kpi.revenue"),
       value: `€${displayRevenue}`,
       icon: <TrendingUp size={16} />,
       to: "/payments",
     },
     {
-      title: "Εκκρεμη",
+      title: t("kpi.pending"),
       value: `€${displayPending}`,
       icon: <Euro size={16} />,
       to: "/payments",

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Line } from "react-chartjs-2";
 import type { ChartData, ChartOptions } from "chart.js";
 import "@/shared/lib/chartjs";
@@ -23,12 +24,13 @@ const RevenuePanel: React.FC<RevenuePanelProps> = ({
   isSample,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation(["dashboard", "common"]);
 
   const chartData: ChartData<"line"> = {
     labels: categories,
     datasets: [
       {
-        label: "Εσοδα",
+        label: t("revenue.dataset"),
         data,
         fill: true,
         tension: 0.4,
@@ -74,14 +76,20 @@ const RevenuePanel: React.FC<RevenuePanelProps> = ({
 
   return (
     <PanelCard
-      title="Εσοδα (6 μηνες)"
+      title={t("revenue.title")}
       badge={
         isSample && (
-          <StatusBadge tone="neutral" label="Δειγμα" showDot={false} />
+          <StatusBadge
+            tone="neutral"
+            label={t("common:sample")}
+            showDot={false}
+          />
         )
       }
       action={
-        <LinkButton onClick={() => navigate("/payments")}>Πληρωμες</LinkButton>
+        <LinkButton onClick={() => navigate("/payments")}>
+          {t("revenue.payments")}
+        </LinkButton>
       }
       className="km-dashboard__panel"
       bodyClassName="p-2 km-dashboard__chart"

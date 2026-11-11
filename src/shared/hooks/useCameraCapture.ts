@@ -1,29 +1,27 @@
 import React, { useEffect, useRef, useState } from "react";
+import i18n from "@/shared/i18n";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
-
-const PERMISSION_HELP =
-  '\n\nΟδηγιες για Chrome:\n1. Καντε κλικ στο εικονιδιο κλειδωματος (🔒) στην αριστερη πλευρα της γραμμης διευθυνσεων\n2. Βρειτε "Camera" και επιλεξτε "Allow"\n3. Καντε refresh τη σελιδα';
 
 function cameraErrorMessage(error: unknown): string {
   const name = (error as { name?: string })?.name;
   switch (name) {
     case "NotAllowedError":
     case "PermissionDeniedError":
-      return "Δεν δοθηκε αδεια προσβασης στην καμερα." + PERMISSION_HELP;
+      return i18n.t("camera.denied") + i18n.t("camera.permissionHelp");
     case "NotFoundError":
     case "DevicesNotFoundError":
-      return "Δεν βρεθηκε καμερα. Παρακαλω χρησιμοποιηστε file upload.";
+      return i18n.t("camera.notFound");
     case "NotReadableError":
     case "TrackStartError":
-      return "Η καμερα χρησιμοποιειται απο αλλη εφαρμογη. Παρακαλω κλειστε την αλλη εφαρμογη.";
+      return i18n.t("camera.inUse");
     case "OverconstrainedError":
     case "ConstraintNotSatisfiedError":
-      return "Η καμερα δεν υποστηριζει τις απαιτουμενες ρυθμισεις.";
+      return i18n.t("camera.overconstrained");
     case "SecurityError":
-      return "Σφαλμα ασφαλειας. Βεβαιωθειτε οτι χρησιμοποιειτε HTTPS.";
+      return i18n.t("camera.security");
     default:
-      return "Δεν ηταν δυνατη η προσβαση στην καμερα.";
+      return i18n.t("camera.generic");
   }
 }
 
@@ -83,16 +81,12 @@ export function useCameraCapture(initialPhoto: string | null = null) {
 
   const startCamera = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      fallbackToFileInput(
-        "Το browser σας δεν υποστηριζει προσβαση στην καμερα. Χρησιμοποιηστε file upload.",
-      );
+      fallbackToFileInput(i18n.t("camera.unsupported"));
       return;
     }
 
     if (!isSecureContextForCamera()) {
-      fallbackToFileInput(
-        "Η καμερα απαιτει HTTPS connection. Χρησιμοποιηστε file upload.",
-      );
+      fallbackToFileInput(i18n.t("camera.needsHttps"));
       return;
     }
 
@@ -121,14 +115,12 @@ export function useCameraCapture(initialPhoto: string | null = null) {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) {
-      setCameraError(
-        "Σφαλμα: Δεν βρεθηκε video element. Παρακαλω δοκιμαστε ξανα.",
-      );
+      setCameraError(i18n.t("camera.noVideo"));
       return;
     }
 
     if (video.readyState < 2) {
-      setCameraError("Η καμερα δεν ειναι ετοιμη. Παρακαλω περιμενετε...");
+      setCameraError(i18n.t("camera.notReady"));
       setTimeout(() => {
         setCameraError(null);
         capturePhoto();
@@ -137,15 +129,13 @@ export function useCameraCapture(initialPhoto: string | null = null) {
     }
 
     if (video.videoWidth === 0 || video.videoHeight === 0) {
-      setCameraError(
-        "Η καμερα δεν βγαζει εικονα. Παρακαλω ελεγξτε τη συνδεση της καμερας.",
-      );
+      setCameraError(i18n.t("camera.noImage"));
       return;
     }
 
     const context = canvas.getContext("2d");
     if (!context) {
-      setCameraError("Σφαλμα κατα την ληψη της φωτογραφιας.");
+      setCameraError(i18n.t("camera.captureError"));
       return;
     }
 
@@ -157,7 +147,7 @@ export function useCameraCapture(initialPhoto: string | null = null) {
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            setCameraError("Σφαλμα κατα την αποθηκευση της φωτογραφιας.");
+            setCameraError(i18n.t("camera.saveError"));
             return;
           }
           setPhotoFile(new File([blob], "photo.jpg", { type: "image/jpeg" }));
@@ -170,7 +160,7 @@ export function useCameraCapture(initialPhoto: string | null = null) {
       );
     } catch (error) {
       console.error("[Camera] Error capturing photo:", error);
-      setCameraError("Σφαλμα κατα την ληψη της φωτογραφιας.");
+      setCameraError(i18n.t("camera.captureError"));
     }
   };
 
@@ -188,11 +178,11 @@ export function useCameraCapture(initialPhoto: string | null = null) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Παρακαλω επιλεξτε αρχειο εικονας.");
+      alert(i18n.t("camera.notImage"));
       return;
     }
     if (file.size > MAX_IMAGE_BYTES) {
-      alert("Το αρχειο ειναι πολυ μεγαλο. Μεγιστο μεγεθος: 10MB.");
+      alert(i18n.t("camera.tooLarge"));
       return;
     }
 
@@ -211,11 +201,10 @@ export function useCameraCapture(initialPhoto: string | null = null) {
     video.onloadedmetadata = () => {
       video.play().catch((err) => {
         console.error("[Camera] Error playing video:", err);
-        setCameraError("Σφαλμα κατα την αναπαραγωγη του video.");
+        setCameraError(i18n.t("camera.playError"));
       });
     };
-    video.onerror = () =>
-      setCameraError("Σφαλμα κατα την προβολη της καμερας.");
+    video.onerror = () => setCameraError(i18n.t("camera.previewError"));
     video.play().catch(() => {
       // Will retry on loadedmetadata.
     });

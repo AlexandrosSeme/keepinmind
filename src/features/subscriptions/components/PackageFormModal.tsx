@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FormActions, Modal } from "@/shared/ui";
 import type { Package, PackageInput } from "../types";
 
@@ -25,12 +26,21 @@ interface PackageFormModalProps {
   onSubmit: (payload: PackageInput) => Promise<boolean>;
 }
 
-const PackageFormModal: React.FC<PackageFormModalProps> = ({ pkg, onClose, onSubmit }) => {
-  const [formData, setFormData] = useState<PackageInput>(pkg ? toForm(pkg) : emptyForm);
+const PackageFormModal: React.FC<PackageFormModalProps> = ({
+  pkg,
+  onClose,
+  onSubmit,
+}) => {
+  const { t } = useTranslation(["subscriptions", "common"]);
+  const [formData, setFormData] = useState<PackageInput>(
+    pkg ? toForm(pkg) : emptyForm,
+  );
   const [saving, setSaving] = useState(false);
 
-  const setField = <K extends keyof PackageInput>(key: K, value: PackageInput[K]) =>
-    setFormData((prev) => ({ ...prev, [key]: value }));
+  const setField = <K extends keyof PackageInput>(
+    key: K,
+    value: PackageInput[K],
+  ) => setFormData((prev) => ({ ...prev, [key]: value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,50 +59,56 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({ pkg, onClose, onSub
 
   return (
     <Modal
-      title={pkg ? "Επεξεργασια Πακετου" : "Νεο Πακετο"}
+      title={pkg ? t("form.editTitle") : t("form.newTitle")}
       onClose={onClose}
       closeDisabled={saving}
       onSubmit={handleSubmit}
-      footer={<FormActions saving={saving} isEdit={Boolean(pkg)} onCancel={onClose} />}
+      footer={
+        <FormActions saving={saving} isEdit={Boolean(pkg)} onCancel={onClose} />
+      }
     >
       <div className="mb-3">
-        <label className="form-label">Ονομα πακετου</label>
+        <label className="form-label">{t("fields.name")}</label>
         <input
           type="text"
           className="form-control"
           value={formData.name}
           onChange={(e) => setField("name", e.target.value)}
-          placeholder="π.χ. Μηνιαια Unlimited"
+          placeholder={t("fields.namePlaceholder")}
           required
         />
       </div>
       <div className="mb-3">
-        <label className="form-label">Κατηγορια</label>
+        <label className="form-label">{t("fields.category")}</label>
         <select
           className="form-select"
           value={formData.category}
-          onChange={(e) => setField("category", e.target.value as Package["category"])}
+          onChange={(e) =>
+            setField("category", e.target.value as Package["category"])
+          }
           required
         >
-          <option value="subscription">Συνδρομη</option>
-          <option value="hourly">Ωριαια</option>
-          <option value="kids">Παιδικο</option>
+          <option value="subscription">
+            {t("common:status.subscription")}
+          </option>
+          <option value="hourly">{t("common:status.hourly")}</option>
+          <option value="kids">{t("common:status.kids")}</option>
         </select>
       </div>
       <div className="mb-3">
-        <label className="form-label">Διαρκεια</label>
+        <label className="form-label">{t("fields.duration")}</label>
         <input
           type="text"
           className="form-control"
           value={formData.duration}
           onChange={(e) => setField("duration", e.target.value)}
-          placeholder="π.χ. 30 ημερες / 10 επισκεψεις"
+          placeholder={t("fields.durationPlaceholder")}
           required
         />
       </div>
       <div className="row g-3">
         <div className="col-6">
-          <label className="form-label">Τιμη (€)</label>
+          <label className="form-label">{t("fields.price")}</label>
           <input
             type="number"
             className="form-control"
@@ -104,7 +120,7 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({ pkg, onClose, onSub
           />
         </div>
         <div className="col-6">
-          <label className="form-label">Ενεργα μελη</label>
+          <label className="form-label">{t("fields.activeMembers")}</label>
           <input
             type="number"
             className="form-control"

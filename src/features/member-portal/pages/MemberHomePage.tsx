@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Calendar,
   Megaphone,
@@ -8,6 +9,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { StatusBadge } from "@/shared/ui";
+import { intlLocale } from "@/shared/i18n";
 import {
   fetchAnnouncements,
   type Announcement,
@@ -17,6 +19,7 @@ import { fetchMemberDebts, type Debt } from "@/features/debts";
 import { useMemberSession } from "../session/useMemberSession";
 
 const MemberHome: React.FC = () => {
+  const { t } = useTranslation("memberPortal");
   const { member, session } = useMemberSession();
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const [upcoming, setUpcoming] = useState<Booking[]>([]);
@@ -51,18 +54,20 @@ const MemberHome: React.FC = () => {
 
   return (
     <div>
-      <h1 className="mp-page-title">Γεια σου, {firstName}</h1>
-      <p className="mp-page-sub">Ο λογαριασμος σου Melos με μια ματια.</p>
+      <h1 className="mp-page-title">
+        {t("home.greeting", { name: firstName })}
+      </h1>
+      <p className="mp-page-sub">{t("home.subtitle")}</p>
 
       <div className="mp-stat-row">
         <div className="mp-stat">
-          <div className="mp-stat-label">Κατασταση</div>
+          <div className="mp-stat-label">{t("home.status")}</div>
           <div className="mt-2">
             <StatusBadge status={member.status} />
           </div>
         </div>
         <div className="mp-stat">
-          <div className="mp-stat-label">Ληξη</div>
+          <div className="mp-stat-label">{t("home.expiry")}</div>
           <div className="mp-stat-value mp-stat-value--sm">
             {member.expiry || "—"}
           </div>
@@ -70,9 +75,9 @@ const MemberHome: React.FC = () => {
       </div>
 
       <div className="mp-card">
-        <div className="mp-card-title">Πακετο</div>
+        <div className="mp-card-title">{t("home.package")}</div>
         <div className="fw-semibold">
-          {member.package || "Δεν εχει οριστει"}
+          {member.package || t("home.noPackage")}
         </div>
         {member.card_lost && (
           <div className="mt-2">
@@ -85,7 +90,7 @@ const MemberHome: React.FC = () => {
         <div className="mp-card mp-card--danger">
           <div className="mp-card-title d-flex align-items-center gap-2">
             <AlertTriangle size={16} className="text-danger" />
-            Οφειλες
+            {t("home.debts")}
           </div>
           {debts.map((d) => (
             <div
@@ -96,9 +101,7 @@ const MemberHome: React.FC = () => {
               <strong className="text-danger">€{d.amount}</strong>
             </div>
           ))}
-          <small className="text-muted">
-            Περασε απο reception για εξοφληση.
-          </small>
+          <small className="text-muted">{t("home.debtsHint")}</small>
         </div>
       )}
 
@@ -106,7 +109,7 @@ const MemberHome: React.FC = () => {
         <div className="mp-card">
           <div className="mp-card-title d-flex align-items-center gap-2">
             <Megaphone size={16} />
-            Τελευταια ανακοινωση
+            {t("home.latestAnnouncement")}
           </div>
           <div className="fw-semibold mb-1">{announcement.title}</div>
           <p className="text-muted mb-2 mp-text-sm">
@@ -115,7 +118,7 @@ const MemberHome: React.FC = () => {
               : announcement.body}
           </p>
           <Link to="/member/app/announcements" className="mp-btn mp-btn-ghost">
-            Ολες οι ανακοινωσεις
+            {t("home.allAnnouncements")}
           </Link>
         </div>
       )}
@@ -123,12 +126,10 @@ const MemberHome: React.FC = () => {
       <div className="mp-card">
         <div className="mp-card-title d-flex align-items-center gap-2">
           <Bookmark size={16} />
-          Επομενες κρατησεις
+          {t("home.upcomingBookings")}
         </div>
         {upcoming.length === 0 ? (
-          <div className="mp-empty py-3">
-            Δεν εχεις κλεισει ακομα. Δες το προγραμμα.
-          </div>
+          <div className="mp-empty py-3">{t("home.noBookings")}</div>
         ) : (
           upcoming.map((b) => (
             <div
@@ -138,7 +139,7 @@ const MemberHome: React.FC = () => {
               <div>
                 <div className="fw-semibold">{b.title}</div>
                 <div className="mp-session-time">
-                  {new Date(b.startTime).toLocaleString("el-GR", {
+                  {new Date(b.startTime).toLocaleString(intlLocale(), {
                     weekday: "short",
                     day: "numeric",
                     month: "short",
@@ -154,11 +155,11 @@ const MemberHome: React.FC = () => {
         <div className="mp-actions">
           <Link to="/member/app/schedule" className="mp-btn mp-btn-primary">
             <Calendar size={16} />
-            Προγραμμα
+            {t("home.schedule")}
           </Link>
           <Link to="/member/app/qr" className="mp-btn mp-btn-ghost">
             <QrCode size={16} />
-            QR εισοδου
+            {t("home.entryQr")}
           </Link>
         </div>
       </div>

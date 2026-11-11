@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
 import { useMembers } from "@/features/members";
@@ -11,6 +12,7 @@ import PaymentDetailsModal from "../components/PaymentDetailsModal";
 type FormState = { payment: Payment | null } | null;
 
 const PaymentsPage: React.FC = () => {
+  const { t } = useTranslation("payments");
   const { payments } = usePayments();
   const { members } = useMembers();
   const { addPayment, editPayment, removePayment } = usePaymentMutations();
@@ -20,16 +22,17 @@ const PaymentsPage: React.FC = () => {
   const handleDelete = async (payment: Payment) => {
     if (
       !window.confirm(
-        `Διαγραφη πληρωμης €${payment.amount} απο ${payment.memberName};`,
+        t("page.confirmDelete", {
+          amount: payment.amount,
+          name: payment.memberName,
+        }),
       )
     ) {
       return;
     }
     const ok = await removePayment(payment.id);
     if (!ok) {
-      alert(
-        "Αποτυχια διαγραφης. Βεβαιωθειτε οτι εχετε τρεξει το supabase-payments-setup.sql.",
-      );
+      alert(t("page.deleteError"));
     }
   };
 
@@ -40,17 +43,13 @@ const PaymentsPage: React.FC = () => {
     if (editing) {
       const updated = await editPayment(editing.id, payload);
       if (!updated) {
-        alert(
-          "Αποτυχια ενημερωσης. Τρεξτε το supabase-payments-setup.sql στο Supabase.",
-        );
+        alert(t("page.updateError"));
       }
       return Boolean(updated);
     }
     const created = await addPayment(payload);
     if (!created) {
-      alert(
-        "Αποτυχια δημιουργιας πληρωμης. Τρεξτε το supabase-payments-setup.sql στο Supabase SQL Editor.",
-      );
+      alert(t("page.createError"));
     }
     return Boolean(created);
   };
@@ -58,7 +57,7 @@ const PaymentsPage: React.FC = () => {
   return (
     <div>
       <PageHeader
-        title="Πληρωμες"
+        title={t("page.title")}
         actions={
           <button
             className="btn btn-primary"
@@ -66,7 +65,7 @@ const PaymentsPage: React.FC = () => {
             onClick={() => setForm({ payment: null })}
           >
             <Plus size={16} className="me-2" />
-            Νεα Πληρωμη
+            {t("page.newPayment")}
           </button>
         }
       />

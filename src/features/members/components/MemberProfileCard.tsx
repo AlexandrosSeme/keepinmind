@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { User } from "lucide-react";
 import { StatusBadge } from "@/shared/ui";
 import { stripAccents } from "@/shared/lib/text";
@@ -15,15 +16,19 @@ const MemberProfileCard: React.FC<MemberProfileCardProps> = ({
   yearAttendance,
   onPhotoClick,
 }) => {
+  const { t } = useTranslation("members");
   const fields = [
-    { label: "Τηλεφωνο", value: member.phone },
-    { label: "Email", value: member.email ? stripAccents(member.email) : "—" },
+    { label: t("fields.phone"), value: member.phone },
     {
-      label: "Πακετο",
-      value: member.package ? stripAccents(member.package) : "Δεν εχει οριστει",
+      label: t("fields.email"),
+      value: member.email ? stripAccents(member.email) : "—",
     },
-    { label: "Ληξη", value: member.expiry || "—" },
-    { label: "Ετος προσελευσεων", value: yearAttendance },
+    {
+      label: t("fields.package"),
+      value: member.package ? stripAccents(member.package) : t("fields.notSet"),
+    },
+    { label: t("fields.expiry"), value: member.expiry || "—" },
+    { label: t("fields.yearAttendance"), value: yearAttendance },
   ];
 
   return (

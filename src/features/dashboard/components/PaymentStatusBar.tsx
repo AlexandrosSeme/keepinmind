@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { LinkButton, StatusBadge } from "@/shared/ui";
 import { BRAND } from "@/shared/lib/brand";
 
@@ -14,11 +15,20 @@ const PaymentStatusBar: React.FC<PaymentStatusBarProps> = ({
   isSample,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation(["dashboard", "common"]);
 
   const meters = [
-    { label: "Ολοκληρωμενες", value: series[0], color: BRAND.paid },
-    { label: "Εκκρεμεις", value: series[1], color: BRAND.pending },
-    { label: "Αποτυχιες", value: series[2], color: BRAND.failed },
+    {
+      label: t("paymentStatus.completed"),
+      value: series[0],
+      color: BRAND.paid,
+    },
+    {
+      label: t("paymentStatus.pending"),
+      value: series[1],
+      color: BRAND.pending,
+    },
+    { label: t("paymentStatus.failed"), value: series[2], color: BRAND.failed },
   ];
   const max = Math.max(...meters.map((m) => m.value), 1);
 
@@ -27,13 +37,17 @@ const PaymentStatusBar: React.FC<PaymentStatusBarProps> = ({
       <div className="km-dashboard__pay-status">
         <div className="km-dashboard__pay-status-head">
           <div className="d-flex align-items-center gap-2">
-            <div className="km-stat-label mb-0">Κατασταση πληρωμων</div>
+            <div className="km-stat-label mb-0">{t("paymentStatus.title")}</div>
             {isSample && (
-              <StatusBadge tone="neutral" label="Δειγμα" showDot={false} />
+              <StatusBadge
+                tone="neutral"
+                label={t("common:sample")}
+                showDot={false}
+              />
             )}
           </div>
           <LinkButton onClick={() => navigate("/payments")}>
-            Λεπτομερειες
+            {t("paymentStatus.details")}
           </LinkButton>
         </div>
         <div className="km-dashboard__meters">

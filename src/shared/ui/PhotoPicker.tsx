@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Camera, User, X } from "lucide-react";
 import type { CameraCapture } from "@/shared/hooks/useCameraCapture";
 import CameraModal from "./CameraModal";
@@ -16,6 +17,7 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
   capture,
   onRemove,
 }) => {
+  const { t } = useTranslation();
   const {
     photo,
     showCamera,
@@ -42,7 +44,7 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
             <div className="position-relative">
               <img
                 src={photo}
-                alt="Profile"
+                alt={t("photo.profileAlt")}
                 className="rounded-circle km-photo-picker__preview"
               />
               <button
@@ -66,10 +68,10 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
             >
               <Camera size={16} className="me-2" />
               {photo
-                ? "Αλλαγη Φωτογραφιας"
+                ? t("photo.change")
                 : useFileInput
-                  ? "Επιλογη Αρχειου"
-                  : "Ληψη Φωτογραφιας"}
+                  ? t("photo.chooseFile")
+                  : t("photo.take")}
             </button>
             {!useFileInput && (
               <button
@@ -77,7 +79,7 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
                 className="btn btn-outline-secondary btn-sm"
                 onClick={openFileInput}
               >
-                Επιλογη απο Αρχειο
+                {t("photo.fromFile")}
               </button>
             )}
           </div>

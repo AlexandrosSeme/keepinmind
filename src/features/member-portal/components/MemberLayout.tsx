@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { NavLink, Outlet, Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Home,
   Megaphone,
@@ -8,11 +9,12 @@ import {
   QrCode,
   User,
 } from "lucide-react";
-import { PageLoader } from "@/shared/ui";
+import { LanguageSwitcher, PageLoader } from "@/shared/ui";
 import { useMemberSession } from "../session/useMemberSession";
 import "../styles/memberPortal.scss";
 
 const MemberLayout: React.FC = () => {
+  const { t } = useTranslation("memberPortal");
   const { session, loading } = useMemberSession();
 
   if (loading) {
@@ -28,24 +30,33 @@ const MemberLayout: React.FC = () => {
   }
 
   const nav = [
-    { to: "/member/app", end: true, icon: <Home size={20} />, label: "Αρχικη" },
+    {
+      to: "/member/app",
+      end: true,
+      icon: <Home size={20} />,
+      label: t("nav.home"),
+    },
     {
       to: "/member/app/announcements",
       icon: <Megaphone size={20} />,
-      label: "Νεα",
+      label: t("nav.announcements"),
     },
     {
       to: "/member/app/schedule",
       icon: <Calendar size={20} />,
-      label: "Προγραμμα",
+      label: t("nav.schedule"),
     },
     {
       to: "/member/app/bookings",
       icon: <Bookmark size={20} />,
-      label: "Κρατησεις",
+      label: t("nav.bookings"),
     },
-    { to: "/member/app/qr", icon: <QrCode size={20} />, label: "QR" },
-    { to: "/member/app/profile", icon: <User size={20} />, label: "Προφιλ" },
+    { to: "/member/app/qr", icon: <QrCode size={20} />, label: t("nav.qr") },
+    {
+      to: "/member/app/profile",
+      icon: <User size={20} />,
+      label: t("nav.profile"),
+    },
   ];
 
   return (
@@ -60,6 +71,7 @@ const MemberLayout: React.FC = () => {
             <div className="mp-brand-sub">Member</div>
           </div>
         </div>
+        <LanguageSwitcher className="mp-lang" />
       </header>
 
       <main className="mp-main">
@@ -68,7 +80,7 @@ const MemberLayout: React.FC = () => {
         </Suspense>
       </main>
 
-      <nav className="mp-nav" aria-label="Member navigation">
+      <nav className="mp-nav" aria-label={t("nav.ariaLabel")}>
         {nav.map((item) => (
           <NavLink
             key={item.to}

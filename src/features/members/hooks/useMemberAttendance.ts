@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   getEntranceLogsByMember,
   type EntranceLog,
 } from "@/features/attendance";
-import { GREEK_MONTHS_SHORT } from "@/shared/lib/date";
+import { monthShort } from "@/shared/lib/date";
 
 const REFRESH_INTERVAL_MS = 5000;
 
@@ -41,24 +42,23 @@ function computeStats(dates: Date[], now: Date): AttendanceStats {
 /** Counts per month of the current year (always 12 entries). */
 function computeMonthly(dates: Date[], now: Date) {
   const year = now.getFullYear();
-  const monthly = GREEK_MONTHS_SHORT.map((month) => ({ month, count: 0 }));
+  const monthly: number[] = Array(12).fill(0);
   dates.forEach((d) => {
-    if (d.getFullYear() === year) monthly[d.getMonth()].count++;
+    if (d.getFullYear() === year) monthly[d.getMonth()]++;
   });
   return monthly;
 }
 
 /** Entrance logs + attendance stats for a member, auto-refreshing every few seconds. */
 export function useMemberAttendance(memberId: number | undefined) {
+  const { i18n } = useTranslation();
   const [entranceLogs, setEntranceLogs] = useState<EntranceLog[]>([]);
   const [stats, setStats] = useState<AttendanceStats>({
     thisWeek: 0,
     thisMonth: 0,
     thisYear: 0,
   });
-  const [monthly, setMonthly] = useState<{ month: string; count: number }[]>(
-    [],
-  );
+  const [monthlyCounts, setMonthlyCounts] = useState<number[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const reload = useCallback(
@@ -72,7 +72,7 @@ export function useMemberAttendance(memberId: number | undefined) {
         const dates = validDates(logs);
         setEntranceLogs(logs);
         setStats(computeStats(dates, now));
-        setMonthly(computeMonthly(dates, now));
+        setMonthlyCounts(computeMonthly(dates, now));
       } catch (error) {
         console.error("[MemberAttendance] Error loading entrance logs:", error);
       } finally {
@@ -88,6 +88,15 @@ export function useMemberAttendance(memberId: number | undefined) {
     const interval = setInterval(() => reload(false), REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [memberId, reload]);
+
+  const monthly = useMemo(
+    () =>
+      monthlyCounts.map((count, i) => ({
+        month: monthShort(i, i18n.language),
+        count,
+      })),
+    [monthlyCounts, i18n.language],
+  );
 
   return { entranceLogs, stats, monthly, refreshing, reload };
 }

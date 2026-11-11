@@ -1,16 +1,16 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, CreditCard, Printer } from "lucide-react";
 import type { Member } from "@/features/members";
 import { isBarcodeMember } from "../lib";
 import MemberCode from "./MemberCode";
 import GymLogo from "./GymLogo";
 
-const STATUS_DISPLAY: Record<Member["status"], { dot: string; text: string }> =
-  {
-    active: { dot: "status-active", text: "ΕΝΕΡΓΗ" },
-    expiring_soon: { dot: "status-warning", text: "ΛΗΓΕΙ ΣΟΝΤΟΜΑ" },
-    expired: { dot: "status-expired", text: "ΛΗΓΜΕΝΗ" },
-  };
+const STATUS_DOT: Record<Member["status"], string> = {
+  active: "status-active",
+  expiring_soon: "status-warning",
+  expired: "status-expired",
+};
 
 interface MemberPrintCardProps {
   member: Member;
@@ -33,8 +33,9 @@ const MemberPrintCard: React.FC<MemberPrintCardProps> = ({
   onToggleCardLost,
   onPrintNew,
 }) => {
+  const { t } = useTranslation(["qrCodes", "common"]);
   const isLost = member.card_lost === true;
-  const status = STATUS_DISPLAY[member.status] ?? STATUS_DISPLAY.expired;
+  const statusKey = member.status in STATUS_DOT ? member.status : "expired";
 
   return (
     <div
@@ -58,7 +59,7 @@ const MemberPrintCard: React.FC<MemberPrintCardProps> = ({
         {isLost && (
           <div className="card-lost-badge d-print-none">
             <AlertTriangle size={14} />
-            <span>ΑΚΥΡΩΜΕΝΗ</span>
+            <span>{t("card.lost")}</span>
           </div>
         )}
 
@@ -69,10 +70,10 @@ const MemberPrintCard: React.FC<MemberPrintCardProps> = ({
           <button
             className="btn btn-sm btn-primary mb-1 w-100"
             onClick={onPrint}
-            title="Εκτυπωση αυτης της καρτας"
+            title={t("card.printThis")}
           >
             <Printer size={12} className="me-1" />
-            Εκτυπωση
+            {t("common:actions.print")}
           </button>
 
           {isLost ? (
@@ -80,28 +81,28 @@ const MemberPrintCard: React.FC<MemberPrintCardProps> = ({
               <button
                 className="btn btn-sm btn-success mb-1 w-100"
                 onClick={onToggleCardLost}
-                title="Ενεργοποιηση Καρτας"
+                title={t("card.activateTitle")}
               >
                 <CreditCard size={12} className="me-1" />
-                Ενεργοποιηση
+                {t("card.activate")}
               </button>
               <button
                 className="btn btn-sm btn-warning w-100"
                 onClick={onPrintNew}
-                title="Εκτυπωση Νεας Καρτας (ενεργοποιει και εκτυπωνει)"
+                title={t("card.printNewTitle")}
               >
                 <Printer size={12} className="me-1" />
-                Εκτυπωση Νεας
+                {t("card.printNew")}
               </button>
             </>
           ) : (
             <button
               className="btn btn-sm btn-danger w-100"
               onClick={onToggleCardLost}
-              title="Ακυρωση Καρτας"
+              title={t("card.cancelTitle")}
             >
               <AlertTriangle size={12} className="me-1" />
-              Ακυρωση
+              {t("common:actions.cancel")}
             </button>
           )}
         </div>
@@ -146,16 +147,18 @@ const MemberPrintCard: React.FC<MemberPrintCardProps> = ({
               <span className="info-value">{member.id}</span>
             </div>
             <div className="info-row">
-              <span className="info-label">Τηλ:</span>
+              <span className="info-label">{t("card.phone")}</span>
               <span className="info-value">{member.phone}</span>
             </div>
             <div className="info-row">
-              <span className="info-label">Πακετο:</span>
+              <span className="info-label">{t("card.package")}</span>
               <span className="info-value-small">{member.package}</span>
             </div>
             <div className="status-badge">
-              <span className={`status-dot ${status.dot}`}></span>
-              <span className="status-text">{status.text}</span>
+              <span className={`status-dot ${STATUS_DOT[statusKey]}`}></span>
+              <span className="status-text">
+                {t(`card.status.${statusKey}`)}
+              </span>
             </div>
           </div>
         </div>

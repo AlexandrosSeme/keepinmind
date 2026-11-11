@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2, Send } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
+import { intlLocale } from "@/shared/i18n";
 import { isValidEmail, isValidPhone } from "@/shared/lib/validation";
 import { useMembers } from "@/features/members";
 import { initNotificationServices, smsService } from "@/features/notifications";
@@ -26,7 +28,7 @@ const INITIAL_HISTORY: SentAnnouncement[] = [
   {
     id: 1,
     title: "Χριστουγεννιατικες Προσφορες",
-    sentTo: "142 μελη",
+    recipientCount: 142,
     channel: "SMS",
     date: "10/12/2024 10:00",
     status: "sent",
@@ -35,6 +37,7 @@ const INITIAL_HISTORY: SentAnnouncement[] = [
 ];
 
 const AnnouncementsPage: React.FC = () => {
+  const { t } = useTranslation("announcements");
   const { members } = useMembers();
   const [message, setMessage] = useState("");
   const [recipients, setRecipients] = useState<RecipientGroup>("all");
@@ -71,7 +74,7 @@ const AnnouncementsPage: React.FC = () => {
 
   const handleSend = async () => {
     if (!message.trim()) {
-      setSendResult({ success: false, message: "Παρακαλω εισαγετε μηνυμα" });
+      setSendResult({ success: false, message: t("errors.messageRequired") });
       return;
     }
 
@@ -98,7 +101,7 @@ const AnnouncementsPage: React.FC = () => {
       if (result.failed > 0 && result.errors.length > 0) {
         setSendResult({
           success: false,
-          message: `Αποστολη απετυχε: ${result.errors.join("; ")}`,
+          message: t("result.failed", { errors: result.errors.join("; ") }),
         });
       } else if (result.success > 0) {
         setHistory((prev) => [
@@ -106,9 +109,9 @@ const AnnouncementsPage: React.FC = () => {
             id: Date.now(),
             title:
               message.substring(0, 50) + (message.length > 50 ? "..." : ""),
-            sentTo: `${result.success} παραληπτες`,
+            recipientCount: result.success,
             channel: channels.join(" + "),
-            date: new Date().toLocaleString("el-GR"),
+            date: new Date().toLocaleString(intlLocale()),
             status: "sent",
             successful: result.success,
           },
@@ -119,12 +122,17 @@ const AnnouncementsPage: React.FC = () => {
         setManualPhones([]);
         setSendResult({
           success: true,
-          message: `Αποστολη ολοκληρωθηκε! Επιτυχημενα: ${result.success}, Αποτυχημενα: ${result.failed}`,
+          message: t("result.success", {
+            success: result.success,
+            failed: result.failed,
+          }),
         });
       } else {
         setSendResult({
           success: false,
-          message: `Αποστολη απετυχε: ${result.errors.join("; ") || "Αγνωστο σφαλμα"}`,
+          message: t("result.failed", {
+            errors: result.errors.join("; ") || t("errors.unknown"),
+          }),
         });
       }
     } catch (error) {
@@ -138,17 +146,17 @@ const AnnouncementsPage: React.FC = () => {
   const handleAddEmail = () => {
     const email = newEmailInput.trim();
     if (!email) {
-      setSendResult({ success: false, message: "Παρακαλω εισαγετε email" });
+      setSendResult({ success: false, message: t("errors.emailRequired") });
       return;
     }
     if (!isValidEmail(email)) {
-      setSendResult({ success: false, message: "Μη εγκυρο email address" });
+      setSendResult({ success: false, message: t("errors.invalidEmail") });
       return;
     }
     if (manualEmails.includes(email)) {
       setSendResult({
         success: false,
-        message: "Το email υπαρχει ηδη στη λιστα",
+        message: t("errors.emailExists"),
       });
       return;
     }
@@ -162,22 +170,21 @@ const AnnouncementsPage: React.FC = () => {
     if (!phone) {
       setSendResult({
         success: false,
-        message: "Παρακαλω εισαγετε αριθμο κινητου",
+        message: t("errors.phoneRequired"),
       });
       return;
     }
     if (!isValidPhone(phone)) {
       setSendResult({
         success: false,
-        message:
-          "Μη εγκυρος αριθμος κινητου. Χρησιμοποιηστε μορφη 69..., 3069... η +3069...",
+        message: t("errors.invalidPhone"),
       });
       return;
     }
     if (manualPhones.includes(phone)) {
       setSendResult({
         success: false,
-        message: "Ο αριθμος υπαρχει ηδη στη λιστα",
+        message: t("errors.phoneExists"),
       });
       return;
     }
@@ -189,23 +196,25 @@ const AnnouncementsPage: React.FC = () => {
   return (
     <div>
       <PageHeader
-        title="Ανακοινωσεις"
+        title={t("page.title")}
         actions={
           <button className="btn btn-primary">
             <Send size={16} className="me-2" />
-            Νεα Ανακοινωση
+            {t("page.new")}
           </button>
         }
       />
 
       <div className="card border-0 shadow-sm mb-4 km-toolbar-card">
         <div className="card-header border-0 py-3">
-          <h5 className="card-title mb-0">Δημιουργια Ανακοινωσης</h5>
+          <h5 className="card-title mb-0">{t("page.create")}</h5>
         </div>
         <div className="card-body">
           <div className="row g-4">
             <div className="col-12 col-md-6">
-              <label className="form-label fw-semibold">Αποδεκτες</label>
+              <label className="form-label fw-semibold">
+                {t("page.recipients")}
+              </label>
               <select
                 className="form-select"
                 value={recipients}
@@ -222,70 +231,79 @@ const AnnouncementsPage: React.FC = () => {
             </div>
 
             <div className="col-12 col-md-6">
-              <label className="form-label fw-semibold">Καναλι</label>
+              <label className="form-label fw-semibold">
+                {t("page.channel")}
+              </label>
               <ChannelSelector value={channel} onChange={setChannel} />
             </div>
 
             <div className="col-12">
               <div className="d-flex justify-content-between align-items-center mb-2">
-                <label className="form-label fw-semibold mb-0">Μηνυμα</label>
+                <label className="form-label fw-semibold mb-0">
+                  {t("page.message")}
+                </label>
                 {channel === "email" && (
                   <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
                     onClick={() => setMessage(CHRISTMAS_TEMPLATE)}
                   >
-                    🎄 Load Χριστουγεννιατικο Template
+                    🎄 {t("page.loadChristmas")}
                   </button>
                 )}
               </div>
               <textarea
                 className="form-control"
                 rows={8}
-                placeholder="Γραψτε το μηνυμα σας εδω..."
+                placeholder={t("page.messagePlaceholder")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
               <div className="d-flex justify-content-between mt-2 flex-wrap gap-2">
                 <small className="text-muted">
-                  Χαρακτηρες: {message.length}
+                  {t("page.characters", { length: message.length })}
                   {channel !== "email" && "/160"}
                 </small>
                 <small className="text-muted">
                   {channel === "email" ? (
-                    <span className="text-success">Δωρεαν (Maileroo)</span>
+                    <span className="text-success">{t("page.free")}</span>
                   ) : (
-                    <>Εκτιμωμενο κοστος: €{estimatedCost.toFixed(2)}</>
+                    t("page.estimatedCost", { cost: estimatedCost.toFixed(2) })
                   )}
                 </small>
               </div>
               <div className="d-flex flex-column gap-1 mt-1">
                 {filteredMembers.length > 0 && (
                   <small className="text-muted">
-                    Αποδεκτες: {filteredMembers.length}{" "}
-                    {channel === "email" && `(${memberEmailCount} με email)`}
+                    {t("page.recipientCount", {
+                      total: filteredMembers.length,
+                    })}{" "}
+                    {channel === "email" &&
+                      t("page.withEmail", { total: memberEmailCount })}
                   </small>
                 )}
                 {manualEmails.length > 0 && usesEmail && (
                   <small className="text-info">
-                    Manual Emails: {manualEmails.length}
+                    {t("page.manualEmails", { total: manualEmails.length })}
                   </small>
                 )}
                 {manualPhones.length > 0 && usesSmsCount && (
                   <small className="text-info">
-                    Manual Τηλεφωνα (SMS): {manualPhones.length}
+                    {t("page.manualPhones", { total: manualPhones.length })}
                   </small>
                 )}
                 {usesEmail && (
                   <small className="text-muted fw-semibold">
-                    Συνολο Email Recipients:{" "}
-                    {memberEmailCount + manualEmails.length}
+                    {t("page.totalEmail", {
+                      total: memberEmailCount + manualEmails.length,
+                    })}
                   </small>
                 )}
                 {usesSmsCount && (
                   <small className="text-muted fw-semibold">
-                    Συνολο SMS Recipients:{" "}
-                    {memberPhoneCount + manualPhones.length}
+                    {t("page.totalSms", {
+                      total: memberPhoneCount + manualPhones.length,
+                    })}
                   </small>
                 )}
               </div>
@@ -293,7 +311,7 @@ const AnnouncementsPage: React.FC = () => {
 
             {usesEmail && (
               <ManualRecipientsInput
-                label="Προσθηκη Email Addresses (Manual)"
+                label={t("manual.emailLabel")}
                 type="email"
                 placeholder="example@email.com"
                 value={newEmailInput}
@@ -304,16 +322,18 @@ const AnnouncementsPage: React.FC = () => {
                   setManualEmails(manualEmails.filter((e) => e !== email))
                 }
                 chipClassName="bg-primary"
-                addedLabel={`Προστεθηκαν ${manualEmails.length} email${manualEmails.length > 1 ? "s" : ""}:`}
-                hint="Προσθεστε email addresses για αποστολη εκτος απο τα μελη"
+                addedLabel={t("manual.emailsAdded", {
+                  count: manualEmails.length,
+                })}
+                hint={t("manual.emailHint")}
               />
             )}
 
             {usesSmsCount && (
               <ManualRecipientsInput
-                label="Προσθηκη Αριθμων Κινητου (SMS Manual)"
+                label={t("manual.phoneLabel")}
                 type="tel"
-                placeholder="69..., 3069..., η +3069..."
+                placeholder={t("manual.phonePlaceholder")}
                 value={newPhoneInput}
                 onValueChange={setNewPhoneInput}
                 onAdd={handleAddPhone}
@@ -322,8 +342,10 @@ const AnnouncementsPage: React.FC = () => {
                   setManualPhones(manualPhones.filter((p) => p !== phone))
                 }
                 chipClassName="bg-success"
-                addedLabel={`Προστεθηκαν ${manualPhones.length} αριθμοι:`}
-                hint="Προσθεστε αριθμους κινητου που δεν ανηκουν στα μελη (μπορειτε να γραψετε 69..., 3069..., η +3069..., θα γινουν αυτοματα κανονικοποιηση)."
+                addedLabel={t("manual.phonesAdded", {
+                  count: manualPhones.length,
+                })}
+                hint={t("manual.phoneHint")}
               />
             )}
 
@@ -335,14 +357,14 @@ const AnnouncementsPage: React.FC = () => {
                   className="btn btn-outline-secondary flex-fill"
                   disabled={sending || !message.trim()}
                 >
-                  Αποθηκευση Προχειρου
+                  {t("page.saveDraft")}
                 </button>
                 <button
                   type="button"
                   className="btn btn-primary flex-fill d-flex align-items-center justify-content-center gap-2"
                   onClick={handleSend}
                   disabled={sending}
-                  title="Καντε κλικ για αποστολη"
+                  title={t("page.sendHint")}
                 >
                   {sending ? (
                     <>
@@ -350,12 +372,12 @@ const AnnouncementsPage: React.FC = () => {
                         size={16}
                         className="spinner-border spinner-border-sm"
                       />
-                      Αποστολη...
+                      {t("page.sending")}
                     </>
                   ) : (
                     <>
                       <Send size={16} />
-                      Αποστολη Τωρα
+                      {t("page.sendNow")}
                     </>
                   )}
                 </button>

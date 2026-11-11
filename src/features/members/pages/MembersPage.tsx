@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Download, Filter, Plus, Search } from "lucide-react";
 import { ImageModal, PageHeader } from "@/shared/ui";
 import { EMPTY_MEMBER_INPUT, type Member, type MemberInput } from "../types";
@@ -14,6 +15,7 @@ import type { MemberRowActions } from "../components/memberActions";
 type FormState = { mode: "add" } | { mode: "edit"; member: Member } | null;
 
 const MembersPage: React.FC = () => {
+  const { t } = useTranslation("members");
   const { members } = useMembers();
   const { addMember, editMember, removeMember } = useMemberMutations();
   const navigate = useNavigate();
@@ -28,9 +30,7 @@ const MembersPage: React.FC = () => {
   );
 
   const handleDelete = async (member: Member) => {
-    if (
-      window.confirm("Ειστε σιγουροι οτι θελετε να διαγραψετε αυτο το μελος;")
-    ) {
+    if (window.confirm(t("confirmDelete"))) {
       await removeMember(member.id);
     }
   };
@@ -87,14 +87,14 @@ const MembersPage: React.FC = () => {
   return (
     <div>
       <PageHeader
-        title="Μελη Γυμναστηριου"
+        title={t("page.title")}
         actions={
           <button
             className="btn btn-primary"
             onClick={() => setForm({ mode: "add" })}
           >
             <Plus size={16} className="me-2" />
-            Νεο Μελος
+            {t("page.newMember")}
           </button>
         }
       />
@@ -112,7 +112,7 @@ const MembersPage: React.FC = () => {
                 <input
                   type="text"
                   className="form-control ps-5"
-                  placeholder="Αναζητηση μελους (ονομα, τηλεφωνο)..."
+                  placeholder={t("page.searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -121,13 +121,13 @@ const MembersPage: React.FC = () => {
             <div className="col-6 col-md-3 col-lg-2">
               <button className="btn btn-outline-secondary w-100">
                 <Filter size={16} className="me-2" />
-                Φιλτρα
+                {t("page.filters")}
               </button>
             </div>
             <div className="col-6 col-md-3 col-lg-2">
               <button className="btn btn-outline-secondary w-100">
                 <Download size={16} className="me-2" />
-                Export
+                {t("page.export")}
               </button>
             </div>
           </div>
@@ -139,7 +139,7 @@ const MembersPage: React.FC = () => {
 
       {form?.mode === "add" && (
         <MemberFormModal
-          title="Προσθηκη Νεου Μελους"
+          title={t("page.addTitle")}
           initialValues={EMPTY_MEMBER_INPUT}
           onClose={() => setForm(null)}
           onSubmit={handleSubmitAdd}
@@ -148,7 +148,7 @@ const MembersPage: React.FC = () => {
 
       {form?.mode === "edit" && (
         <MemberFormModal
-          title="Επεξεργασια Μελους"
+          title={t("page.editTitle")}
           initialValues={{
             name: form.member.name,
             phone: form.member.phone,
@@ -166,9 +166,9 @@ const MembersPage: React.FC = () => {
 
       {photoPreview && (
         <ImageModal
-          title="Φωτογραφια Προφιλ"
+          title={t("fields.photo")}
           src={photoPreview}
-          alt="Profile"
+          alt={t("fields.photo")}
           onClose={() => setPhotoPreview(null)}
         />
       )}

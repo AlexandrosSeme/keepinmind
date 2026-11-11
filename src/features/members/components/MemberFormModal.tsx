@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, PhotoPicker } from "@/shared/ui";
 import { useCameraCapture } from "@/shared/hooks";
 import type { MemberInput, MemberStatus } from "../types";
@@ -21,6 +22,7 @@ const MemberFormModal: React.FC<MemberFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation(["members", "common"]);
   const [formData, setFormData] = useState<MemberInput>(initialValues);
   const capture = useCameraCapture(initialValues.photo_url ?? null);
 
@@ -42,22 +44,22 @@ const MemberFormModal: React.FC<MemberFormModalProps> = ({
       footer={
         <>
           <button type="button" className="btn btn-secondary" onClick={onClose}>
-            Ακυρωση
+            {t("common:actions.cancel")}
           </button>
           <button type="submit" className="btn btn-primary">
-            Αποθηκευση
+            {t("common:actions.save")}
           </button>
         </>
       }
     >
       <PhotoPicker
-        label="Φωτογραφια Προφιλ"
+        label={t("fields.photo")}
         capture={capture}
         onRemove={() => setField("photo_url", undefined)}
       />
 
       <div className="mb-3">
-        <label className="form-label">Ονοματεπωνυμο</label>
+        <label className="form-label">{t("fields.name")}</label>
         <input
           type="text"
           className="form-control"
@@ -67,7 +69,7 @@ const MemberFormModal: React.FC<MemberFormModalProps> = ({
         />
       </div>
       <div className="mb-3">
-        <label className="form-label">Τηλεφωνο</label>
+        <label className="form-label">{t("fields.phone")}</label>
         <input
           type="text"
           className="form-control"
@@ -78,7 +80,7 @@ const MemberFormModal: React.FC<MemberFormModalProps> = ({
       </div>
       {showEmail && (
         <div className="mb-3">
-          <label className="form-label">Email</label>
+          <label className="form-label">{t("fields.email")}</label>
           <input
             type="email"
             className="form-control"
@@ -88,20 +90,22 @@ const MemberFormModal: React.FC<MemberFormModalProps> = ({
         </div>
       )}
       <div className="mb-3">
-        <label className="form-label">Κατασταση</label>
+        <label className="form-label">{t("fields.status")}</label>
         <select
           className="form-select"
           value={formData.status}
           onChange={(e) => setField("status", e.target.value as MemberStatus)}
           required
         >
-          <option value="active">Ενεργη</option>
-          <option value="expiring_soon">Ληγει Συντομα</option>
-          <option value="expired">Ληγμενη</option>
+          <option value="active">{t("common:status.active")}</option>
+          <option value="expiring_soon">
+            {t("common:status.expiring_soon")}
+          </option>
+          <option value="expired">{t("common:status.expired")}</option>
         </select>
       </div>
       <div className="mb-3">
-        <label className="form-label">Ημερομηνια Ληξης</label>
+        <label className="form-label">{t("fields.expiryDate")}</label>
         <input
           type="text"
           className="form-control"
@@ -112,7 +116,7 @@ const MemberFormModal: React.FC<MemberFormModalProps> = ({
         />
       </div>
       <div className="mb-3">
-        <label className="form-label">Πακετο</label>
+        <label className="form-label">{t("fields.package")}</label>
         <input
           type="text"
           className="form-control"

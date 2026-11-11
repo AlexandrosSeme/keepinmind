@@ -1,5 +1,6 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ScanLine, XCircle } from "lucide-react";
 import { isBarcodeMember } from "../lib";
 import { useMemberLookup } from "../hooks/useMemberLookup";
@@ -10,6 +11,7 @@ import "./PublicQRPage.scss";
 
 /** Public member QR page (`/my-qr?id=` or `?phone=`). */
 const PublicQRPage: React.FC = () => {
+  const { t } = useTranslation(["qrCodes", "common"]);
   const [searchParams] = useSearchParams();
   const { member, loading, error } = useMemberLookup({
     id: searchParams.get("id"),
@@ -27,8 +29,8 @@ const PublicQRPage: React.FC = () => {
               <div className="card border-0 shadow-sm">
                 <div className="card-body text-center p-5">
                   <XCircle className="text-danger mb-3" size={64} />
-                  <h4 className="mb-3">Σφαλμα</h4>
-                  <p className="text-muted">{error || "Δεν βρεθηκε μελος"}</p>
+                  <h4 className="mb-3">{t("common:error")}</h4>
+                  <p className="text-muted">{error || t("lookup.notFound")}</p>
                 </div>
               </div>
             </div>
@@ -50,7 +52,7 @@ const PublicQRPage: React.FC = () => {
               <div className="card-body p-5">
                 <div className="text-center mb-4">
                   <h2 className="mb-3 fw-bold">
-                    {isBarcode ? "Το Barcode μου" : "Το QR Code μου"}
+                    {isBarcode ? t("myCode.myBarcode") : t("myCode.myQr")}
                   </h2>
                   <div className="d-flex justify-content-center mb-3">
                     {member.photo_url ? (
@@ -104,21 +106,27 @@ const PublicQRPage: React.FC = () => {
                 <div className="border-top pt-4">
                   <div className="row g-3">
                     <div className="col-6">
-                      <small className="text-muted d-block mb-1">Ονομα</small>
+                      <small className="text-muted d-block mb-1">
+                        {t("member.name")}
+                      </small>
                       <p className="mb-0 fw-semibold">{member.name}</p>
                     </div>
                     <div className="col-6">
                       <small className="text-muted d-block mb-1">
-                        Τηλεφωνο
+                        {t("member.phone")}
                       </small>
                       <p className="mb-0">{member.phone}</p>
                     </div>
                     <div className="col-6">
-                      <small className="text-muted d-block mb-1">Πακετο</small>
+                      <small className="text-muted d-block mb-1">
+                        {t("member.package")}
+                      </small>
                       <p className="mb-0">{member.package}</p>
                     </div>
                     <div className="col-6">
-                      <small className="text-muted d-block mb-1">Ληξη</small>
+                      <small className="text-muted d-block mb-1">
+                        {t("member.expiry")}
+                      </small>
                       <p className="mb-0">{member.expiry}</p>
                     </div>
                   </div>
@@ -127,12 +135,12 @@ const PublicQRPage: React.FC = () => {
                 <div className="mt-4 text-center">
                   <div className="alert alert-light border mb-0" role="alert">
                     <small className="d-block mb-1">
-                      <strong>📱 Οδηγιες:</strong>
+                      <strong>{t("myCode.instructions")}</strong>
                     </small>
                     <small className="text-muted">
                       {isBarcode
-                        ? "Δειξτε αυτο το barcode στον διαχειριστη για να εισελθετε στο γυμναστηριο"
-                        : "Δειξτε αυτο το QR code στον διαχειριστη για να εισελθετε στο γυμναστηριο"}
+                        ? t("myCode.showBarcodeGym")
+                        : t("myCode.showQrGym")}
                     </small>
                   </div>
                 </div>

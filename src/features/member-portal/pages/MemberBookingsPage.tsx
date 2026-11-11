@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Bookmark } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { intlLocale } from "@/shared/i18n";
 import { StatusBadge } from "@/shared/ui";
 import {
   cancelMemberBooking,
@@ -9,6 +11,7 @@ import {
 import { useMemberSession } from "../session/useMemberSession";
 
 const MemberBookings: React.FC = () => {
+  const { t } = useTranslation(["memberPortal", "common"]);
   const { member } = useMemberSession();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +36,7 @@ const MemberBookings: React.FC = () => {
 
   const handleCancel = async (id: number) => {
     if (!member) return;
-    if (!window.confirm("Ακυρωση αυτης της κρατησης;")) return;
+    if (!window.confirm(t("bookings.confirmCancel"))) return;
     setBusyId(id);
     await cancelMemberBooking(id, member.id);
     setBusyId(null);
@@ -50,18 +53,18 @@ const MemberBookings: React.FC = () => {
 
   return (
     <div>
-      <h1 className="mp-page-title">Οι κρατησεις μου</h1>
-      <p className="mp-page-sub">Επερχομενα και ιστορικο.</p>
+      <h1 className="mp-page-title">{t("bookings.title")}</h1>
+      <p className="mp-page-sub">{t("bookings.subtitle")}</p>
 
       {loading ? (
-        <div className="mp-empty">Φορτωση...</div>
+        <div className="mp-empty">{t("common:loading")}</div>
       ) : (
         <>
-          <div className="mp-card-title mb-2">Επερχομενα</div>
+          <div className="mp-card-title mb-2">{t("bookings.upcoming")}</div>
           {upcoming.length === 0 ? (
             <div className="mp-empty py-3">
               <Bookmark size={24} className="mb-2 opacity-50" />
-              <div>Καμια επερχομενη κρατηση</div>
+              <div>{t("bookings.noUpcoming")}</div>
             </div>
           ) : (
             upcoming.map((b) => (
@@ -70,7 +73,7 @@ const MemberBookings: React.FC = () => {
                   <div>
                     <div className="mp-card-title mb-1">{b.title}</div>
                     <div className="mp-session-time">
-                      {new Date(b.startTime).toLocaleString("el-GR", {
+                      {new Date(b.startTime).toLocaleString(intlLocale(), {
                         weekday: "short",
                         day: "numeric",
                         month: "short",
@@ -80,7 +83,7 @@ const MemberBookings: React.FC = () => {
                     </div>
                     {b.instructor && (
                       <small className="text-muted">
-                        Προπονητης: {b.instructor}
+                        {t("bookings.instructor", { name: b.instructor })}
                       </small>
                     )}
                   </div>
@@ -92,7 +95,9 @@ const MemberBookings: React.FC = () => {
                   disabled={busyId === b.id}
                   onClick={() => handleCancel(b.id)}
                 >
-                  {busyId === b.id ? "Ακυρωση..." : "Ακυρωση κρατησης"}
+                  {busyId === b.id
+                    ? t("bookings.cancelling")
+                    : t("bookings.cancel")}
                 </button>
               </div>
             ))
@@ -100,14 +105,16 @@ const MemberBookings: React.FC = () => {
 
           {past.length > 0 && (
             <>
-              <div className="mp-card-title mb-2 mt-3">Ιστορικο</div>
+              <div className="mp-card-title mb-2 mt-3">
+                {t("bookings.history")}
+              </div>
               {past.slice(0, 10).map((b) => (
                 <div key={b.id} className="mp-card">
                   <div className="d-flex justify-content-between gap-2">
                     <div>
                       <div className="fw-semibold">{b.title}</div>
                       <small className="text-muted">
-                        {new Date(b.startTime).toLocaleString("el-GR")}
+                        {new Date(b.startTime).toLocaleString(intlLocale())}
                       </small>
                     </div>
                     <StatusBadge status={b.status} showDot={false} />

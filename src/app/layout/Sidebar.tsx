@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { navItems } from "./navItems";
 
@@ -10,6 +11,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
+  const { t } = useTranslation("layout");
 
   return (
     <>
@@ -33,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             type="button"
             className="btn btn-link text-white p-0 d-lg-none"
             onClick={onClose}
+            aria-label={t("topbar.closeMenu")}
           >
             <X size={20} />
           </button>
@@ -40,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
 
         <nav className="km-sidebar__nav p-3">
           <ul className="nav nav-pills flex-column gap-2">
-            {navItems.map(({ id, name, icon: Icon, path, external }) => (
+            {navItems.map(({ id, icon: Icon, path, external }) => (
               <li key={id} className="nav-item">
                 {external ? (
                   <a
@@ -53,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
                     <span className="fs-5">
                       <Icon size={20} />
                     </span>
-                    <span>{name}</span>
+                    <span>{t(`nav.${id}`)}</span>
                   </a>
                 ) : (
                   <Link
@@ -66,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
                     <span className="fs-5">
                       <Icon size={20} />
                     </span>
-                    <span>{name}</span>
+                    <span>{t(`nav.${id}`)}</span>
                   </Link>
                 )}
               </li>

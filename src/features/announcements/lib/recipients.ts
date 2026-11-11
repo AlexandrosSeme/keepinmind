@@ -1,3 +1,4 @@
+import i18n from "@/shared/i18n";
 import type { Member } from "@/features/members";
 import type { RecipientGroup } from "../types";
 
@@ -20,15 +21,6 @@ const GROUP_FILTERS: Record<RecipientGroup, (m: Member) => boolean> = {
   yearly: (m) => m.package.toLowerCase().includes("ετησι"),
 };
 
-const GROUP_LABELS: Record<RecipientGroup, string> = {
-  all: "Ολα τα μελη",
-  active: "Ενεργα μελη",
-  expiring: "Ληξη εντος 7 ημερων",
-  overdue: "Ληξιπροθεσμα",
-  monthly: "Μηνιαια συνδρομη",
-  yearly: "Ετησια συνδρομη",
-};
-
 export function filterMembersByGroup(
   members: Member[],
   group: RecipientGroup,
@@ -37,8 +29,8 @@ export function filterMembersByGroup(
 }
 
 export function buildRecipientOptions(members: Member[]) {
-  return (Object.keys(GROUP_LABELS) as RecipientGroup[]).map((group) => ({
+  return (Object.keys(GROUP_FILTERS) as RecipientGroup[]).map((group) => ({
     value: group,
-    label: `${GROUP_LABELS[group]} (${filterMembersByGroup(members, group).length})`,
+    label: `${i18n.t(`announcements:groups.${group}`)} (${filterMembersByGroup(members, group).length})`,
   }));
 }
