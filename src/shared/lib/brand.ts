@@ -17,5 +17,5 @@ export const BRAND = {
   failed: "#5c5c5c",
 } as const;
 
-export const CHART_FONT = "Barlow Condensed, Barlow, sans-serif";
-export const CHART_FONT_CONDENSED = "Barlow Condensed, sans-serif";
+export const CHART_FONT = "Inter, system-ui, sans-serif";
+export const CHART_FONT_CONDENSED = "'Roboto Condensed', Inter, sans-serif";
