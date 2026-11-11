@@ -6,7 +6,6 @@ import type { EntranceLog } from "@/features/attendance";
 import type { Member } from "@/features/members";
 import type { Payment } from "@/features/payments";
 import type { Package } from "@/features/subscriptions";
-import type { UpcomingExpiry } from "../types";
 
 /** Pure aggregations behind the role dashboards (no React, easy to test). */
 
@@ -74,7 +73,7 @@ const completedWithin = (payments: Payment[], days: number, now: Date) => {
   });
 };
 
-/** Completed revenue per package over the last `days` (payments matched to members by name). */
+/** Completed revenue per package over the last `days` (uses the payment's package, else the member's). */
 export function revenueByPackage(
   payments: Payment[],
   members: Member[],
@@ -84,10 +83,110 @@ export function revenueByPackage(
   const packageOf = new Map(members.map((m) => [m.name, m.package]));
   const totals = new Map<string, number>();
   completedWithin(payments, days, now).forEach((p) => {
-    const key = packageOf.get(p.memberName) ?? "—";
+    const key = p.package ?? packageOf.get(p.memberName) ?? "—";
     totals.set(key, (totals.get(key) ?? 0) + (Number(p.amount) || 0));
   });
   return [...totals.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+/** Package length in days, from its duration label (e.g. "30 ημέρες"). */
+export const packageDays = (pkg: Package) => parseInt(pkg.duration, 10) || 30;
+
+export interface SubscriptionMixRow {
+  pkg: Package;
+  members: number;
+  /** Price normalised to 30 days × members. */
+  monthly: number;
+}
+
+/** Non-expired members per package and their monthly-equivalent value, largest first. */
+export function subscriptionMix(members: Member[], packages: Package[]): SubscriptionMixRow[] {
+  const counts = new Map<string, number>();
+  members
+    .filter((m) => m.status !== "expired")
+    .forEach((m) => counts.set(m.package, (counts.get(m.package) ?? 0) + 1));
+  return packages
+    .map((pkg) => {
+      const n = counts.get(pkg.name) ?? 0;
+      return { pkg, members: n, monthly: (Number(pkg.price) * 30 * n) / packageDays(pkg) };
+    })
+    .sort((a, b) => b.monthly - a.monthly);
+}
+
+/**
+ * Expected renewal revenue per week for the next `weeks` weeks: every non-expired
+ * member renews on their expiry date and then every package period after it.
+ */
+export function renewalForecast(
+  members: Member[],
+  packages: Package[],
+  weeks: number,
+  now = new Date(),
+) {
+  const byName = new Map(packages.map((p) => [p.name, p]));
+  const today = startOfDay(now);
+  const end = addDays(today, weeks * 7);
+  const buckets = Array.from({ length: weeks }, (_, i) => ({
+    start: addDays(today, i * 7),
+    amount: 0,
+    count: 0,
+  }));
+  members.forEach((m) => {
+    const pkg = byName.get(m.package);
+    const expiry = parseGRDate(m.expiry);
+    if (m.status === "expired" || m.card_lost || !pkg || !expiry) return;
+    for (let due = startOfDay(expiry); due < end; due = addDays(due, packageDays(pkg))) {
+      const index = Math.floor((due.getTime() - today.getTime()) / (7 * DAY_MS));
+      if (index < 0) continue;
+      buckets[index].amount += Number(pkg.price) || 0;
+      buckets[index].count += 1;
+    }
+  });
+  return buckets;
+}
+
+/**
+ * Renewal rate over the last `days`: members who paid a renewal vs members whose
+ * subscription ran out in that window and did not renew (now expired).
+ */
+export function renewalRate(members: Member[], payments: Payment[], days: number, now = new Date()) {
+  const today = startOfDay(now);
+  const from = addDays(today, -days);
+  const keyOf = (p: Payment) => (p.memberId !== undefined ? String(p.memberId) : p.memberName);
+  const completed = payments
+    .filter((p) => p.status === "completed")
+    .map((p) => ({ key: keyOf(p), date: paymentDate(p) }))
+    .filter((p): p is { key: string; date: Date } => p.date !== null);
+  // Order-independent: a renewal is a payment in the window by someone who had paid before it.
+  const paidBefore = new Set(completed.filter((p) => p.date < from).map((p) => p.key));
+  const renewed = new Set(
+    completed
+      .filter((p) => p.date >= from && p.date <= now && paidBefore.has(p.key))
+      .map((p) => p.key),
+  );
+  const lost = members.filter((m) => {
+    if (m.status !== "expired") return false;
+    const expiry = parseGRDate(m.expiry);
+    return expiry !== null && expiry >= from && expiry < today;
+  }).length;
+  const total = renewed.size + lost;
+  return { renewed: renewed.size, lost, rate: total ? Math.round((renewed.size / total) * 100) : null };
+}
+
+/** Payment counts and amounts of the current calendar month, per status. */
+export function monthPaymentStatus(payments: Payment[], now = new Date()) {
+  const result = {
+    completed: { count: 0, amount: 0 },
+    pending: { count: 0, amount: 0 },
+    failed: { count: 0, amount: 0 },
+  };
+  payments.forEach((p) => {
+    const d = paymentDate(p);
+    if (!d || d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) return;
+    result[p.status].count += 1;
+    result[p.status].amount += Number(p.amount) || 0;
+  });
+  return result;
 }
 
 /** Completed revenue per payment method over the last `days`. */
@@ -112,12 +211,6 @@ export function debtAging(debts: Debt[]) {
     critical: group("critical"),
     total: sum(debts.map((d) => Number(d.amount) || 0)),
   };
-}
-
-/** Value of the renewals coming up (package price of each expiring member). */
-export function renewalValue(upcoming: UpcomingExpiry[], packages: Package[]) {
-  const price = new Map(packages.map((p) => [p.name, Number(p.price) || 0]));
-  return sum(upcoming.map((u) => price.get(u.package) ?? 0));
 }
 
 // ==================== VISITS ====================

@@ -8,7 +8,6 @@ const emptyForm: PackageInput = {
   category: "subscription",
   duration: "",
   price: 0,
-  active: 0,
 };
 
 const toForm = (pkg: Package): PackageInput => ({
@@ -16,7 +15,6 @@ const toForm = (pkg: Package): PackageInput => ({
   category: pkg.category,
   duration: pkg.duration,
   price: pkg.price,
-  active: pkg.active,
 });
 
 interface PackageFormModalProps {
@@ -49,7 +47,6 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
       const saved = await onSubmit({
         ...formData,
         price: Number(formData.price) || 0,
-        active: Number(formData.active) || 0,
       });
       if (saved) onClose();
     } finally {
@@ -106,30 +103,17 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
           required
         />
       </div>
-      <div className="row g-3">
-        <div className="col-6">
-          <label className="form-label">{t("fields.price")}</label>
-          <input
-            type="number"
-            className="form-control"
-            min={0}
-            step="0.01"
-            value={formData.price}
-            onChange={(e) => setField("price", Number(e.target.value))}
-            required
-          />
-        </div>
-        <div className="col-6">
-          <label className="form-label">{t("fields.activeMembers")}</label>
-          <input
-            type="number"
-            className="form-control"
-            min={0}
-            step={1}
-            value={formData.active}
-            onChange={(e) => setField("active", Number(e.target.value))}
-          />
-        </div>
+      <div className="mb-0">
+        <label className="form-label">{t("fields.price")}</label>
+        <input
+          type="number"
+          className="form-control"
+          min={0}
+          step="0.01"
+          value={formData.price}
+          onChange={(e) => setField("price", Number(e.target.value))}
+          required
+        />
       </div>
     </Modal>
   );

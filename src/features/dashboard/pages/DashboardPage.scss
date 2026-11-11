@@ -996,3 +996,40 @@
   font-weight: 700;
   font-size: 0.78rem;
 }
+
+/* ---------- Finance ---------- */
+
+.km-pay-row {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+}
+
+.km-pay-row__date {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--km-text-muted);
+}
+
+.km-pay-row__amount {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--km-text);
+  margin-bottom: 0.15rem;
+}
+
+.km-expiry-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.km-mix tbody tr {
+  cursor: pointer;
+}
+
+.km-mix tfoot td {
+  padding: 0.6rem 0.75rem;
+  border-top: 2px solid var(--km-border);
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

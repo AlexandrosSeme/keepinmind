@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { countRecords, pingApi } from "@/shared/api/httpClient";
+import { parseGRDate } from "@/shared/lib/date";
 import { getEntranceLogsBetween } from "@/features/attendance";
 import { fetchBookings } from "@/features/bookings";
-import { fetchUpcomingExpiries } from "./api";
+import { useMembers } from "@/features/members";
 import { addDays, startOfDay } from "./lib/analytics";
+import type { UpcomingExpiry } from "./types";
 
 export const dashboardKeys = {
-  upcomingExpiries: ["upcoming-expiries"] as const,
   visitsHistory: (days: number, today: number) =>
     ["dashboard", "visits", "history", days, today] as const,
   visitsToday: (today: number) => ["dashboard", "visits", "today", today] as const,
@@ -25,7 +26,6 @@ export const COLLECTIONS = [
   "bookings",
   "entrance_logs",
   "announcements",
-  "upcoming_expiries",
   "staff",
 ] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
@@ -33,12 +33,22 @@ export type CollectionName = (typeof COLLECTIONS)[number];
 const LIVE_REFRESH_MS = 60_000;
 const CHECKIN_REFRESH_MS = 30_000;
 
-export function useUpcomingExpiries() {
-  const { data = [], ...rest } = useQuery({
-    queryKey: dashboardKeys.upcomingExpiries,
-    queryFn: fetchUpcomingExpiries,
-  });
-  return { upcomingExpiries: data, ...rest };
+/** Members whose subscription ends within `days` days (today included), soonest first. */
+export function useUpcomingExpiries(days = 14) {
+  const { members, ...rest } = useMembers();
+  const upcomingExpiries = useMemo<UpcomingExpiry[]>(() => {
+    const today = startOfDay(new Date());
+    return members
+      .flatMap((m) => {
+        const expiry = parseGRDate(m.expiry);
+        if (!expiry || m.card_lost) return [];
+        const left = Math.round((startOfDay(expiry).getTime() - today.getTime()) / 86400000);
+        if (left < 0 || left > days) return [];
+        return [{ id: m.id, name: m.name, phone: m.phone, expiry: m.expiry, days: left, package: m.package }];
+      })
+      .sort((a, b) => a.days - b.days);
+  }, [members, days]);
+  return { upcomingExpiries, ...rest };
 }
 
 /**

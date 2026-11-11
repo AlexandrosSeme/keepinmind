@@ -102,7 +102,7 @@ const packages = [
   { name: "20 Επισκέψεις", category: "hourly", duration: "90 ημέρες", days: 90, price: 110 },
   { name: "Παιδικό Πρόγραμμα", category: "kids", duration: "30 ημέρες", days: 30, price: 35 },
   { name: "Παιδικό Τρίμηνο", category: "kids", duration: "90 ημέρες", days: 90, price: 95 },
-].map((p, i) => ({ id: i + 1, ...p, active: 0 }));
+].map((p, i) => ({ id: i + 1, ...p }));
 const packageWeights = [
   [packages[0], 34], [packages[1], 16], [packages[2], 7], [packages[3], 10],
   [packages[4], 12], [packages[5], 7], [packages[6], 9], [packages[7], 5],
@@ -176,69 +176,76 @@ for (let id = 1; id <= COUNTS.members; id++) {
     member.email = `${latin(p.first)}.${latin(p.last)}${int(1, 99)}@${pick(EMAIL_DOMAINS)}`;
   }
   if (chance(0.02)) member.card_lost = true;
-  if (bucket !== "expired") pkg.active += 1;
   members.push({ ...member, _pkg: pkg, _expiry: expiryDate, _joined: addDays(today, -int(20, 720)) });
 }
 
-// ---------- payments ----------
+// ---------- payments & debts ----------
+// Every subscription period is one payment. Unpaid periods (pending transfer or failed
+// without a retry) are exactly the debts, so payments, debts and members always agree.
 const METHODS = [["Καρτα", 45], ["Μετρητα", 30], ["IRIS", 13], ["Τραπεζικη Μεταφορα", 10], ["Αλλο", 2]];
+const HISTORY_START = new Date(today.getFullYear(), today.getMonth() - 11, 1);
 const payments = [];
-const sixMonthsAgo = addDays(today, -182);
-for (const m of members) {
-  // Renewals walking back from the current expiry, within the last 6 months.
-  let periodEnd = m._expiry;
-  for (let guard = 0; guard < 12; guard++) {
-    const paidOn = addDays(periodEnd, -m._pkg.days + int(-3, 2));
-    if (paidOn < sixMonthsAgo || paidOn < m._joined) break;
-    if (paidOn <= today) {
-      const recent = daysBetween(paidOn, today) < 20;
-      payments.push({
-        memberName: m.name,
-        amount: m._pkg.price,
-        date: gr(paidOn),
-        status: recent
-          ? weighted([["completed", 80], ["pending", 14], ["failed", 6]])
-          : weighted([["completed", 97], ["failed", 3]]),
-        method: weighted(METHODS),
-        _date: paidOn,
-      });
-    }
-    periodEnd = addDays(periodEnd, -m._pkg.days);
-  }
-}
-payments.sort((a, b) => a._date - b._date);
-
-// ---------- debts ----------
 const debts = [];
-const debtors = members.filter(
-  (m) => (m.status === "expired" && chance(0.35)) || (m.status !== "expired" && chance(0.06)),
-);
-for (const m of debtors) {
-  const daysOverdue = m.status === "expired" ? int(5, 90) : int(1, 20);
+const paymentOf = (m, paidOn, status, method = weighted(METHODS)) => ({
+  memberId: m.id,
+  memberName: m.name,
+  package: m.package,
+  amount: m._pkg.price,
+  date: gr(paidOn),
+  status,
+  method,
+  _date: paidOn,
+});
+const debtOf = (m, since) => {
+  const daysOverdue = Math.max(1, daysBetween(since, today));
   debts.push({
+    memberId: m.id,
     name: m.name,
-    amount: chance(0.3) ? Math.round(m._pkg.price / 2) : m._pkg.price,
+    amount: m._pkg.price,
     daysOverdue,
     status: daysOverdue >= 25 ? "critical" : daysOverdue >= 10 ? "warning" : "overdue",
-    lastContact: gr(addDays(today, -int(0, Math.min(daysOverdue, 30)))),
+    lastContact: gr(addDays(today, -int(0, Math.min(daysOverdue - 1, 21)))),
     phone: m.phone,
     ...(m.email ? { email: m.email } : {}),
   });
+};
+
+for (const m of members) {
+  // Walk back period by period from the current expiry.
+  let periodEnd = m._expiry;
+  for (let period = 0; period < 40; period++) {
+    const start = addDays(periodEnd, -m._pkg.days);
+    const paidOn = addDays(start, int(-2, 1));
+    periodEnd = start;
+    if (paidOn < HISTORY_START || paidOn < m._joined) break;
+    if (paidOn > today) continue;
+
+    if (period === 0) {
+      const age = daysBetween(paidOn, today);
+      // Latest period: some members still owe it.
+      const unpaid =
+        m.status === "expired" ? chance(0.3) : age <= 14 ? chance(0.1) : chance(0.03);
+      if (unpaid) {
+        const pending = age <= 14 && chance(0.6);
+        payments.push(
+          paymentOf(m, paidOn, pending ? "pending" : "failed", pending ? weighted([["IRIS", 50], ["Τραπεζικη Μεταφορα", 50]]) : "Καρτα"),
+        );
+        debtOf(m, paidOn);
+        continue;
+      }
+    }
+    if (chance(0.03)) {
+      // Card declined, paid a couple of days later.
+      payments.push(paymentOf(m, paidOn, "failed", "Καρτα"));
+      const retry = addDays(paidOn, int(1, 3));
+      payments.push(paymentOf(m, retry > today ? today : retry, "completed"));
+    } else {
+      payments.push(paymentOf(m, paidOn, "completed"));
+    }
+  }
 }
+payments.sort((a, b) => a._date - b._date);
 debts.sort((a, b) => b.daysOverdue - a.daysOverdue);
-
-// ---------- upcoming expiries ----------
-const upcoming = members
-  .filter((m) => m.status === "expiring_soon")
-  .map((m) => ({
-    name: m.name,
-    phone: m.phone,
-    expiry: m.expiry,
-    days: daysBetween(today, m._expiry),
-    package: m.package,
-  }))
-  .sort((a, b) => a.days - b.days);
-
 // ---------- announcements ----------
 const announcements = [
   ["Καλώς ήρθες στο Colosseum Gym", "Η πύλη μελών είναι έτοιμη. Δες το πρόγραμμα, κλείσε θέση στα ομαδικά και έχε πάντα το QR σου για είσοδο. Stronger · Together!", "all", 2],
@@ -450,7 +457,8 @@ for (let d = -30; d <= 0; d++) {
 const withIds = (rows) => rows.map((row, i) => ({ id: i + 1, ...row }));
 const strip = (rows) =>
   rows.map((row) => Object.fromEntries(Object.entries(row).filter(([k]) => !k.startsWith("_"))));
-const pkgOut = packages.map(({ days: _days, ...p }) => p);
+// Active member counts are derived from members in the app, not stored.
+const pkgOut = packages.map(({ days: _days, active: _active, ...p }) => p);
 
 const db = {
   staff,
@@ -458,7 +466,6 @@ const db = {
   members: strip(members),
   debts: withIds(debts),
   payments: withIds(strip(payments)),
-  upcoming_expiries: withIds(upcoming),
   announcements,
   bookings: withIds(bookings),
   entrance_logs: withIds(entranceLogs),

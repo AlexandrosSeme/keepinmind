@@ -6,6 +6,8 @@ import type { Package } from "../types";
 
 interface PackageCardProps {
   pkg: Package;
+  /** Members currently on this package (derived from the members list). */
+  activeMembers: number;
   showPrice: boolean;
   /** Edit/delete actions are rendered only when both handlers are given. */
   onEdit?: (pkg: Package) => void;
@@ -14,6 +16,7 @@ interface PackageCardProps {
 
 const PackageCard: React.FC<PackageCardProps> = ({
   pkg,
+  activeMembers,
   showPrice,
   onEdit,
   onDelete,
@@ -43,7 +46,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
           <small className="text-muted d-block">
             {t("fields.activeMembers")}
           </small>
-          <span className="fw-semibold text-dark">{pkg.active}</span>
+          <span className="fw-semibold text-dark">{activeMembers}</span>
         </div>
 
         {onEdit && onDelete && (

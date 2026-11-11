@@ -25,6 +25,36 @@ const dashboard = {
   },
   finance: {
     title: "Οικονομικά",
+    kpi: {
+      recurring: "Μηνιαία επαναλ. έσοδα",
+      recurringHint: "{{count}} ενεργές συνδρομές",
+      expected: "Αναμενόμενα 30 ημ.",
+      expectedHint: "{{count}} ανανεώσεις συνδρομών",
+      renewalRate: "Ανανεώσεις 30 ημ.",
+      renewalRateHint: "{{renewed}} ανανέωσαν · {{lost}} έληξαν",
+    },
+    revenue: { title: "Έσοδα · 12 μήνες" },
+    forecast: {
+      title: "Πρόβλεψη ανανεώσεων · 8 εβδομάδες",
+      dataset: "Αναμενόμενα",
+      members_one: "{{count}} μέλος",
+      members_other: "{{count}} μέλη",
+      hint: "Αν όλα τα ενεργά μέλη ανανεώσουν στη λήξη τους (και ξανά σε κάθε κύκλο του πακέτου τους). Κάθε μπάρα = εβδομάδα που ξεκινά την ημερομηνία.",
+    },
+    mix: {
+      title: "Συνδρομές ανά πακέτο",
+      manage: "Πακέτα",
+      package: "Πακέτο",
+      price: "Τιμή",
+      members: "Μέλη",
+      monthly: "€ / μήνα",
+      share: "Μερίδιο",
+      total: "Σύνολο",
+    },
+    recent: {
+      title: "Πρόσφατες πληρωμές",
+      empty: "Καμία πληρωμή",
+    },
   },
   gym: {
     trainerFilter: {
@@ -50,6 +80,7 @@ const dashboard = {
     title: "Επερχόμενες Λήξεις",
     empty: "Καμία λήξη",
     days: "{{days}}η",
+    today: "Σήμερα",
   },
   debts: {
     title: "Οφειλές",
@@ -58,20 +89,9 @@ const dashboard = {
     days_other: "{{count}} ημ.",
     payment: "Πληρωμή",
   },
-  distribution: {
-    title: "Κατανομή Μελών",
-    empty: "Χωρίς μέλη ακόμη",
-    center: "ΜΕΛΗ",
-    tooltip_one: "{{label}}: {{count}} μέλος",
-    tooltip_other: "{{label}}: {{count}} μέλη",
-    labels: {
-      active: "Ενεργά",
-      expiring: "Λήγουν",
-      expired: "Ληγμένα",
-    },
-  },
   paymentStatus: {
-    title: "Κατάσταση πληρωμών",
+    title: "Πληρωμές τρέχοντος μήνα",
+    billed: "Χρεώσεις μήνα: {{amount}}",
     details: "Λεπτομέρειες",
     completed: "Ολοκληρωμένες",
     pending: "Εκκρεμείς",
@@ -81,14 +101,10 @@ const dashboard = {
     kpi: {
       revenue: "Έσοδα μήνα",
       revenueDelta: "vs ίδιες ημέρες προηγ. μήνα",
-      activeMembers: "Ενεργά μέλη",
-      activeHint: "{{rate}}% του συνόλου",
       outstanding: "Ανεξόφλητα",
       outstandingHint: "{{count}} οφειλές · {{critical}} κρίσιμες",
       renewals: "Ανανεώσεις 14 ημ.",
       renewalsHint: "{{count}} μέλη λήγουν",
-      visits: "Επισκέψεις / ημέρα",
-      visitsHint: "Σήμερα: {{today}}",
     },
     revenue: {
       title: "Έσοδα ανά μήνα",
@@ -97,8 +113,6 @@ const dashboard = {
     },
     byPackage: { title: "Έσοδα ανά πακέτο · 90 ημ.", center: "ΣΥΝΟΛΟ" },
     byMethod: { title: "Τρόποι πληρωμής · 90 ημ.", center: "ΣΥΝΟΛΟ" },
-    visits: { title: "Επισκεψιμότητα · 30 ημ.", dataset: "Επισκέψεις" },
-    packages: { title: "Ενεργά μέλη ανά πακέτο", dataset: "Μέλη" },
     aging: {
       title: "Ηλικία οφειλών",
       overdue: "1–9 ημέρες",
@@ -190,7 +204,6 @@ const dashboard = {
         bookings: "Κρατήσεις",
         entrance_logs: "Είσοδοι",
         announcements: "Ανακοινώσεις",
-        upcoming_expiries: "Λήξεις",
         staff: "Προσωπικό",
       },
     },

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
 import { useStaffAuth } from "@/features/auth";
+import { useMembers } from "@/features/members";
 import type { Package, PackageInput } from "../types";
 import { usePackageMutations, usePackages } from "../queries";
 import PackageCard from "../components/PackageCard";
@@ -15,6 +16,15 @@ const SubscriptionsPage: React.FC = () => {
   const { t } = useTranslation("subscriptions");
   // Prices and package management are financial data.
   const canManage = useStaffAuth().can("finance");
+  const { members } = useMembers();
+  /** Non-expired members per package name. */
+  const activeByPackage = useMemo(() => {
+    const counts = new Map<string, number>();
+    members
+      .filter((m) => m.status !== "expired")
+      .forEach((m) => counts.set(m.package, (counts.get(m.package) ?? 0) + 1));
+    return counts;
+  }, [members]);
   const { packages } = usePackages();
   const { addPackage, editPackage, removePackage } = usePackageMutations();
   const [form, setForm] = useState<FormState>(null);
@@ -62,6 +72,7 @@ const SubscriptionsPage: React.FC = () => {
           <div key={pkg.id} className="col-12 col-md-6 col-lg-4 col-xl-3">
             <PackageCard
               pkg={pkg}
+              activeMembers={activeByPackage.get(pkg.name) ?? 0}
               showPrice={canManage}
               onEdit={canManage ? (p) => setForm({ pkg: p }) : undefined}
               onDelete={canManage ? handleDelete : undefined}

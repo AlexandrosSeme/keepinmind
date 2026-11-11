@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Bar, Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import type { ChartData } from "chart.js";
 import "@/shared/lib/chartjs";
 import {
@@ -9,10 +9,10 @@ import {
   CalendarClock,
   CreditCard,
   Euro,
-  Footprints,
   Plus,
+  Repeat,
   UserPlus,
-  Users,
+  Wallet,
 } from "lucide-react";
 import { PanelCard } from "@/shared/ui";
 import { BRAND } from "@/shared/lib/brand";
@@ -20,28 +20,33 @@ import { useDebts } from "@/features/debts";
 import { useMembers } from "@/features/members";
 import { paymentMethodLabel, usePayments } from "@/features/payments";
 import { usePackages } from "@/features/subscriptions";
-import { useRecentVisits, useUpcomingExpiries } from "../queries";
+import { useUpcomingExpiries } from "../queries";
 import {
   debtAging,
+  monthPaymentStatus,
   monthToDate,
-  renewalValue,
+  renewalForecast,
+  renewalRate,
   revenueByMethod,
   revenueByMonth,
   revenueByPackage,
-  visitsByDay,
+  subscriptionMix,
 } from "../lib/analytics";
-import { cartesianOptions, verticalGradient } from "../lib/chartOptions";
-import { dayMonth, formatEuro, formatNumber, monthLabel } from "../lib/format";
+import { cartesianOptions } from "../lib/chartOptions";
+import { dayMonth, formatEuro, monthLabel } from "../lib/format";
 import DashboardHeader from "../components/DashboardHeader";
 import DoughnutChart from "../components/DoughnutChart";
 import StatTile from "../components/StatTile";
 import ExpiriesPanel from "../components/ExpiriesPanel";
 import DebtsPanel from "../components/DebtsPanel";
-import MemberDistributionPanel from "../components/MemberDistributionPanel";
 import PaymentStatusBar from "../components/PaymentStatusBar";
 import DebtAgingPanel from "../components/owner/DebtAgingPanel";
+import RecentPaymentsPanel from "../components/owner/RecentPaymentsPanel";
+import SubscriptionMixPanel from "../components/owner/SubscriptionMixPanel";
 
-/** Finance view (owner/admin): revenue, members, debts, renewals and traffic. */
+const FORECAST_WEEKS = 8;
+
+/** Finance view (owner/admin): revenue, recurring income, renewals, debts and payments. */
 const FinanceDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation("dashboard");
@@ -49,32 +54,35 @@ const FinanceDashboard: React.FC = () => {
   const { packages } = usePackages();
   const { payments } = usePayments();
   const { debts } = useDebts();
-  const { upcomingExpiries } = useUpcomingExpiries();
-  const { logs } = useRecentVisits(30);
+  const { upcomingExpiries } = useUpcomingExpiries(14);
 
   const mtd = useMemo(() => monthToDate(payments), [payments]);
-  const months = useMemo(() => revenueByMonth(payments, 6), [payments]);
-  const byPackage = useMemo(
-    () => revenueByPackage(payments, members, 90),
-    [payments, members],
-  );
+  const months = useMemo(() => revenueByMonth(payments, 12), [payments]);
+  const byPackage = useMemo(() => revenueByPackage(payments, members, 90), [payments, members]);
   const byMethod = useMemo(() => revenueByMethod(payments, 90), [payments]);
   const aging = useMemo(() => debtAging(debts), [debts]);
-  const visits = useMemo(() => visitsByDay(logs, 30), [logs]);
+  const mix = useMemo(() => subscriptionMix(members, packages), [members, packages]);
+  const forecast = useMemo(
+    () => renewalForecast(members, packages, FORECAST_WEEKS),
+    [members, packages],
+  );
+  const renewals = useMemo(() => renewalRate(members, payments, 30), [members, payments]);
+  const monthStatus = useMemo(() => monthPaymentStatus(payments), [payments]);
+  const recent = useMemo(
+    () => [...payments].sort((a, b) => b.id - a.id).slice(0, 12),
+    [payments],
+  );
 
-  const counts = {
-    active: members.filter((m) => m.status === "active").length,
-    expiring: members.filter((m) => m.status === "expiring_soon").length,
-    expired: members.filter((m) => m.status === "expired").length,
-  };
-  const current = counts.active + counts.expiring;
-  const activeRate = members.length ? Math.round((current / members.length) * 100) : 0;
-  const pastVisits = visits.slice(0, -1);
-  const avgVisits = pastVisits.length
-    ? pastVisits.reduce((s, v) => s + v.count, 0) / pastVisits.length
-    : 0;
-  const paymentSeries = (["completed", "pending", "failed"] as const).map(
-    (s) => payments.filter((p) => p.status === s).length,
+  const priceOf = useMemo(() => {
+    const prices = new Map(packages.map((p) => [p.name, Number(p.price) || 0]));
+    return (name: string) => prices.get(name) ?? 0;
+  }, [packages]);
+
+  const recurring = mix.reduce((s, r) => s + r.monthly, 0);
+  const subscribers = mix.reduce((s, r) => s + r.members, 0);
+  const next30 = forecast.slice(0, 4).reduce(
+    (acc, w) => ({ amount: acc.amount + w.amount, count: acc.count + w.count }),
+    { amount: 0, count: 0 },
   );
   const packageTotal = byPackage.reduce((s, [, v]) => s + v, 0);
   const methodTotal = byMethod.reduce((s, [, v]) => s + v, 0);
@@ -85,52 +93,35 @@ const FinanceDashboard: React.FC = () => {
       {
         label: t("owner.revenue.completed"),
         data: months.map((m) => m.completed),
-        backgroundColor: BRAND.ink,
+        backgroundColor: months.map((_, i) => (i === months.length - 1 ? BRAND.yellow : BRAND.ink)),
         borderRadius: 6,
-        barPercentage: 0.55,
+        barPercentage: 0.6,
       },
       {
         label: t("owner.revenue.pending"),
         data: months.map((m) => m.pending),
-        backgroundColor: BRAND.yellow,
-        borderRadius: 6,
-        barPercentage: 0.55,
-      },
-    ],
-  };
-
-  const packageRanking = [...packages].sort((a, b) => b.active - a.active);
-  const packagesData: ChartData<"bar"> = {
-    labels: packageRanking.map((p) => p.name),
-    datasets: [
-      {
-        label: t("owner.packages.dataset"),
-        data: packageRanking.map((p) => p.active),
-        backgroundColor: packageRanking.map((_, i) => (i === 0 ? BRAND.yellow : BRAND.ink)),
+        backgroundColor: "rgba(245, 196, 0, 0.45)",
         borderRadius: 6,
         barPercentage: 0.6,
       },
     ],
   };
 
-  const visitsData: ChartData<"line"> = {
-    labels: visits.map((v) => dayMonth(v.date)),
+  const forecastData: ChartData<"bar"> = {
+    labels: forecast.map((w) => dayMonth(w.start)),
     datasets: [
       {
-        label: t("owner.visits.dataset"),
-        data: visits.map((v) => v.count),
-        fill: true,
-        tension: 0.35,
-        borderWidth: 2.5,
-        borderColor: BRAND.yellowStrong,
-        backgroundColor: verticalGradient("245, 196, 0"),
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: BRAND.yellow,
-        pointHoverBorderColor: BRAND.ink,
+        label: t("finance.forecast.dataset"),
+        data: forecast.map((w) => w.amount),
+        backgroundColor: forecast.map((_, i) => (i < 2 ? BRAND.yellow : BRAND.ink)),
+        borderRadius: 6,
+        barPercentage: 0.6,
       },
     ],
   };
+  const forecastOptions = cartesianOptions<"bar">({ format: formatEuro });
+  forecastOptions.plugins!.tooltip!.callbacks!.label = (ctx) =>
+    ` ${formatEuro(Number(ctx.parsed.y))} · ${t("finance.forecast.members", { count: forecast[ctx.dataIndex].count })}`;
 
   return (
     <div className="km-dash">
@@ -167,42 +158,39 @@ const FinanceDashboard: React.FC = () => {
         />
         <StatTile
           tone="dark"
-          icon={<Users size={16} />}
-          label={t("owner.kpi.activeMembers")}
-          value={current}
-          hint={t("owner.kpi.activeHint", { rate: activeRate })}
-          onClick={() => navigate("/members")}
+          icon={<Wallet size={16} />}
+          label={t("finance.kpi.recurring")}
+          value={formatEuro(recurring)}
+          hint={t("finance.kpi.recurringHint", { count: subscribers })}
+          onClick={() => navigate("/subscriptions")}
+        />
+        <StatTile
+          tone="info"
+          icon={<CalendarClock size={16} />}
+          label={t("finance.kpi.expected")}
+          value={formatEuro(next30.amount)}
+          hint={t("finance.kpi.expectedHint", { count: next30.count })}
+        />
+        <StatTile
+          tone="success"
+          icon={<Repeat size={16} />}
+          label={t("finance.kpi.renewalRate")}
+          value={renewals.rate === null ? "—" : `${renewals.rate}%`}
+          hint={t("finance.kpi.renewalRateHint", { renewed: renewals.renewed, lost: renewals.lost })}
         />
         <StatTile
           tone="danger"
           icon={<AlertTriangle size={16} />}
           label={t("owner.kpi.outstanding")}
           value={formatEuro(aging.total)}
-          hint={t("owner.kpi.outstandingHint", {
-            count: debts.length,
-            critical: aging.critical.count,
-          })}
+          hint={t("owner.kpi.outstandingHint", { count: debts.length, critical: aging.critical.count })}
           onClick={() => navigate("/debts")}
-        />
-        <StatTile
-          tone="info"
-          icon={<CalendarClock size={16} />}
-          label={t("owner.kpi.renewals")}
-          value={formatEuro(renewalValue(upcomingExpiries, packages))}
-          hint={t("owner.kpi.renewalsHint", { count: upcomingExpiries.length })}
-        />
-        <StatTile
-          tone="success"
-          icon={<Footprints size={16} />}
-          label={t("owner.kpi.visits")}
-          value={formatNumber(avgVisits)}
-          hint={t("owner.kpi.visitsHint", { today: visits.at(-1)?.count ?? 0 })}
         />
       </div>
 
       <div className="km-dash-grid">
-        <PanelCard title={t("owner.revenue.title")} className="km-dash-panel km-col-8">
-          <div className="km-chart" style={{ height: 260 }}>
+        <PanelCard title={t("finance.revenue.title")} className="km-dash-panel km-col-8">
+          <div className="km-chart" style={{ height: 270 }}>
             <Bar
               data={revenueData}
               options={cartesianOptions<"bar">({ format: formatEuro, stacked: true, legend: true })}
@@ -217,14 +205,19 @@ const FinanceDashboard: React.FC = () => {
             centerValue={formatEuro(packageTotal)}
             centerLabel={t("owner.byPackage.center")}
             legend="bottom"
-            height={260}
+            height={270}
           />
         </PanelCard>
 
-        <PanelCard title={t("owner.visits.title")} className="km-dash-panel km-col-8">
-          <div className="km-chart" style={{ height: 230 }}>
-            <Line data={visitsData} options={cartesianOptions<"line">()} />
+        <PanelCard
+          title={t("finance.forecast.title")}
+          badge={<span className="km-chip km-chip--brand">{formatEuro(forecast.reduce((s, w) => s + w.amount, 0))}</span>}
+          className="km-dash-panel km-col-8"
+        >
+          <div className="km-chart" style={{ height: 240 }}>
+            <Bar data={forecastData} options={forecastOptions} />
           </div>
+          <small className="text-muted d-block mt-2">{t("finance.forecast.hint")}</small>
         </PanelCard>
         <PanelCard title={t("owner.byMethod.title")} className="km-dash-panel km-col-4">
           <DoughnutChart
@@ -233,38 +226,29 @@ const FinanceDashboard: React.FC = () => {
             format={formatEuro}
             centerValue={formatEuro(methodTotal)}
             centerLabel={t("owner.byMethod.center")}
-            height={230}
+            height={240}
           />
         </PanelCard>
+
+        <div className="km-col-12">
+          <PaymentStatusBar status={monthStatus} />
+        </div>
+
+        <div className="km-col-8">
+          <SubscriptionMixPanel rows={mix} />
+        </div>
+        <div className="km-col-4">
+          <RecentPaymentsPanel payments={recent} />
+        </div>
 
         <div className="km-col-4">
           <DebtAgingPanel aging={aging} />
         </div>
         <div className="km-col-4">
-          <ExpiriesPanel upcomingExpiries={upcomingExpiries} />
-        </div>
-        <div className="km-col-4">
           <DebtsPanel debts={debts} />
         </div>
-
         <div className="km-col-4">
-          <MemberDistributionPanel
-            series={[counts.active, counts.expiring, counts.expired]}
-            labels={[
-              t("distribution.labels.active"),
-              t("distribution.labels.expiring"),
-              t("distribution.labels.expired"),
-            ]}
-            total={members.length}
-          />
-        </div>
-        <PanelCard title={t("owner.packages.title")} className="km-dash-panel km-col-8">
-          <div className="km-chart" style={{ height: 250 }}>
-            <Bar data={packagesData} options={cartesianOptions<"bar">()} />
-          </div>
-        </PanelCard>
-        <div className="km-col-12">
-          <PaymentStatusBar series={paymentSeries} isSample={false} />
+          <ExpiriesPanel upcomingExpiries={upcomingExpiries} priceOf={priceOf} />
         </div>
       </div>
     </div>

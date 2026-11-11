@@ -28,6 +28,36 @@ const dashboard: LocaleShape<typeof el> = {
   },
   finance: {
     title: "Finance",
+    kpi: {
+      recurring: "Monthly recurring revenue",
+      recurringHint: "{{count}} active subscriptions",
+      expected: "Expected · 30 days",
+      expectedHint: "{{count}} subscription renewals",
+      renewalRate: "Renewals · 30 days",
+      renewalRateHint: "{{renewed}} renewed · {{lost}} lapsed",
+    },
+    revenue: { title: "Revenue · 12 months" },
+    forecast: {
+      title: "Renewal forecast · 8 weeks",
+      dataset: "Expected",
+      members_one: "{{count}} member",
+      members_other: "{{count}} members",
+      hint: "If every active member renews on expiry (and again every package cycle). Each bar is the week starting on that date.",
+    },
+    mix: {
+      title: "Subscriptions by package",
+      manage: "Packages",
+      package: "Package",
+      price: "Price",
+      members: "Members",
+      monthly: "€ / month",
+      share: "Share",
+      total: "Total",
+    },
+    recent: {
+      title: "Recent payments",
+      empty: "No payments",
+    },
   },
   gym: {
     trainerFilter: {
@@ -53,6 +83,7 @@ const dashboard: LocaleShape<typeof el> = {
     title: "Upcoming Expiries",
     empty: "No expiries",
     days: "{{days}}d",
+    today: "Today",
   },
   debts: {
     title: "Debts",
@@ -61,20 +92,9 @@ const dashboard: LocaleShape<typeof el> = {
     days_other: "{{count}} days",
     payment: "Payment",
   },
-  distribution: {
-    title: "Member Distribution",
-    empty: "No members yet",
-    center: "MEMBERS",
-    tooltip_one: "{{label}}: {{count}} member",
-    tooltip_other: "{{label}}: {{count}} members",
-    labels: {
-      active: "Active",
-      expiring: "Expiring",
-      expired: "Expired",
-    },
-  },
   paymentStatus: {
-    title: "Payment status",
+    title: "This month's payments",
+    billed: "Billed this month: {{amount}}",
     details: "Details",
     completed: "Completed",
     pending: "Pending",
@@ -84,14 +104,10 @@ const dashboard: LocaleShape<typeof el> = {
     kpi: {
       revenue: "Revenue this month",
       revenueDelta: "vs same days last month",
-      activeMembers: "Active members",
-      activeHint: "{{rate}}% of all members",
       outstanding: "Outstanding",
       outstandingHint: "{{count}} debts · {{critical}} critical",
       renewals: "Renewals in 14 days",
       renewalsHint: "{{count}} members expiring",
-      visits: "Visits / day",
-      visitsHint: "Today: {{today}}",
     },
     revenue: {
       title: "Revenue by month",
@@ -100,8 +116,6 @@ const dashboard: LocaleShape<typeof el> = {
     },
     byPackage: { title: "Revenue by package · 90d", center: "TOTAL" },
     byMethod: { title: "Payment methods · 90d", center: "TOTAL" },
-    visits: { title: "Gym traffic · 30d", dataset: "Visits" },
-    packages: { title: "Active members per package", dataset: "Members" },
     aging: {
       title: "Debt aging",
       overdue: "1–9 days",
@@ -193,7 +207,6 @@ const dashboard: LocaleShape<typeof el> = {
         bookings: "Bookings",
         entrance_logs: "Check-ins",
         announcements: "Announcements",
-        upcoming_expiries: "Expiries",
         staff: "Staff",
       },
     },
