@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://melos.local/schema/api.json",
+  "title": "Melos Gym Manager — API data contract",
+  "description": "Objects exactly as the frontend reads/writes them today. Dates marked 'DD/MM/YYYY' are strings in that format; 'date-time' fields are ISO 8601 UTC. Every collection supports GET list, GET /{id}, POST, PATCH /{id}, DELETE /{id}.",
+  "$defs": {
+    "GrDate": {
+      "type": "string",
+      "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+      "description": "Date as DD/MM/YYYY (e.g. 15/01/2027). Recommended to migrate to ISO YYYY-MM-DD.",
+      "examples": ["15/01/2027"]
+    },
+    "MemberStatus": {
+      "type": "string",
+      "enum": ["active", "expiring_soon", "expired"],
+      "description": "active = expiry > 14 days away, expiring_soon = 0–14 days, expired = past expiry."
+    },
+    "StaffRole": {
+      "type": "string",
+      "enum": ["admin", "owner", "trainer"]
+    },
+    "PaymentMethod": {
+      "type": "string",
+      "enum": ["Μετρητα", "Καρτα", "Τραπεζικη Μεταφορα", "IRIS", "Αλλο"],
+      "description": "Stored keys (Greek, no accents). The UI translates them."
+    },
+
+    "Member": {
+      "type": "object",
+      "required": ["id", "name", "phone", "status", "expiry", "package"],
+      "properties": {
+        "id": { "type": "integer", "description": "Also encoded in the member's QR / barcode card." },
+        "name": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "description": "Greek mobile, 10 digits (e.g. 6912345678). Used for member-portal login; must be unique." },
+        "email": { "type": "string", "format": "email" },
+        "status": { "$ref": "#/$defs/MemberStatus" },
+        "expiry": { "$ref": "#/$defs/GrDate", "description": "Subscription end date." },
+        "package": { "type": "string", "description": "Package name (see Package.name). Recommended: package_id FK." },
+        "photo_url": { "type": "string", "description": "Image URL. Today a data: URL; real backend should return a file URL." },
+        "card_lost": { "type": "boolean", "default": false, "description": "Card cancelled: entry is rejected." }
+      },
+      "additionalProperties": false
+    },
+
+    "Package": {
+      "type": "object",
+      "required": ["id", "name", "category", "duration", "price"],
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "category": { "type": "string", "enum": ["subscription", "hourly", "kids"] },
+        "duration": { "type": "string", "description": "Label like '30 ημέρες'. The number of days is parsed from it. Recommended: duration_days integer." },
+        "price": { "type": "number", "minimum": 0, "description": "EUR" }
+      },
+      "additionalProperties": false
+    },
+
+    "Payment": {
+      "type": "object",
+      "required": ["id", "memberName", "amount", "date", "status", "method"],
+      "properties": {
+        "id": { "type": "integer" },
+        "memberId": { "type": "integer", "description": "FK members.id (should be required in the real DB)." },
+        "memberName": { "type": "string", "description": "Snapshot of the member name." },
+        "package": { "type": "string", "description": "Package renewed by this payment (snapshot)." },
+        "amount": { "type": "number", "minimum": 0, "description": "EUR" },
+        "date": { "$ref": "#/$defs/GrDate" },
+        "status": { "type": "string", "enum": ["completed", "pending", "failed"] },
+        "method": { "$ref": "#/$defs/PaymentMethod" }
+      },
+      "additionalProperties": false
+    },
+
+    "Debt": {
+      "type": "object",
+      "required": ["id", "name", "amount", "daysOverdue", "status"],
+      "properties": {
+        "id": { "type": "integer" },
+        "memberId": { "type": "integer", "description": "FK members.id." },
+        "name": { "type": "string", "description": "Member name (snapshot)." },
+        "amount": { "type": "number", "minimum": 0 },
+        "daysOverdue": { "type": "integer", "minimum": 0, "description": "Should be computed from the due date, not stored." },
+        "status": {
+          "type": "string",
+          "enum": ["overdue", "warning", "critical"],
+          "description": "overdue = 1–9 days, warning = 10–24, critical = 25+. Derivable from daysOverdue."
+        },
+        "lastContact": { "$ref": "#/$defs/GrDate" },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      },
+      "additionalProperties": false
+    },
+
+    "Booking": {
+      "type": "object",
+      "required": ["id", "memberId", "memberName", "title", "type", "startTime", "endTime", "status"],
+      "description": "Today one table holds both class sessions and participants: a row with memberId = 0 and memberName 'Γενικη Ταξη' is the class itself; rows with memberId > 0 are member bookings of the same title + startTime. Recommended split: class_sessions + bookings.",
+      "properties": {
+        "id": { "type": "integer" },
+        "memberId": { "type": "integer", "description": "0 = class session row (no member)." },
+        "memberName": { "type": "string" },
+        "memberPhone": { "type": "string" },
+        "title": { "type": "string", "examples": ["Pilates", "Personal Training"] },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["class", "personal_training", "appointment", "event"] },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["confirmed", "pending", "cancelled", "completed"] },
+        "instructor": { "type": "string", "description": "Trainer FIRST name as on the printed schedule (e.g. 'Τζένη'). Recommended: trainer_id FK to staff." },
+        "maxParticipants": { "type": "integer", "minimum": 1 },
+        "currentParticipants": { "type": "integer", "minimum": 0, "description": "Derivable: count of non-cancelled member bookings." },
+        "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "notes": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "EntranceLog": {
+      "type": "object",
+      "required": ["id", "memberId", "memberName", "memberPhone", "memberStatus", "validationStatus", "validationMessage", "entranceType", "timestamp"],
+      "description": "One row per check-in attempt (QR scan or manual). ~300/day. Insert-only.",
+      "properties": {
+        "id": { "type": "integer" },
+        "memberId": { "type": "integer" },
+        "memberName": { "type": "string" },
+        "memberPhone": { "type": "string" },
+        "memberStatus": { "$ref": "#/$defs/MemberStatus", "description": "Member status at the moment of entry." },
+        "validationStatus": { "type": "string", "enum": ["valid", "invalid", "expiring_soon"], "description": "invalid = rejected (expired subscription or cancelled card)." },
+        "validationMessage": { "type": "string" },
+        "entranceType": { "type": "string", "enum": ["qr_scan", "manual"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "Announcement": {
+      "type": "object",
+      "required": ["id", "title", "body", "audience", "published", "created_at"],
+      "properties": {
+        "id": { "type": "integer" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "audience": { "type": "string", "enum": ["all", "active", "expiring", "members"] },
+        "published": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "StaffUser": {
+      "type": "object",
+      "required": ["id", "email", "fullName", "role", "createdAt", "lastSignInAt"],
+      "description": "Staff account as returned to the client (never include the password).",
+      "properties": {
+        "id": { "type": "integer" },
+        "email": { "type": "string", "format": "email", "description": "Unique, lowercase. Login identifier." },
+        "fullName": { "type": ["string", "null"] },
+        "role": { "$ref": "#/$defs/StaffRole" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastSignInAt": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "StaffCreate": {
+      "type": "object",
+      "required": ["email", "fullName", "role", "password"],
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "fullName": { "type": "string" },
+        "role": { "$ref": "#/$defs/StaffRole" },
+        "password": { "type": "string", "minLength": 6, "description": "Plain text on input only; store hashed (bcrypt)." }
+      },
+      "additionalProperties": false
+    },
+
+    "Settings": {
+      "type": "object",
+      "description": "Today kept in the browser (localStorage). Should move to the backend; SMS/email credentials must never be returned to non-admins.",
+      "properties": {
+        "gym": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "examples": ["Colosseum Gym"] },
+            "phone": { "type": "string", "examples": ["210 6536082"] },
+            "email": { "type": "string", "format": "email" }
+          }
+        },
+        "sms": {
+          "type": "object",
+          "description": "admin only",
+          "properties": {
+            "username": { "type": "string" },
+            "password": { "type": "string" },
+            "senderId": { "type": "string", "maxLength": 11 }
+          }
+        },
+        "email": {
+          "type": "object",
+          "description": "admin only",
+          "properties": {
+            "apiKey": { "type": "string" },
+            "fromEmail": { "type": "string", "format": "email" },
+            "fromName": { "type": "string" }
+          }
+        },
+        "sendRate": { "type": "integer", "minimum": 1, "description": "Messages per batch (admin only)." },
+        "autoNotifications": {
+          "type": "object",
+          "properties": {
+            "sevenDays": { "type": "boolean" },
+            "threeDays": { "type": "boolean" },
+            "expiryDay": { "type": "boolean" },
+            "threeDaysAfter": { "type": "boolean" },
+            "sendTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" }
+          }
+        }
+      }
+    }
+  }
+}

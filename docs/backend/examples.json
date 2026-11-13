@@ -1,0 +1,177 @@
+{
+  "_comment": "One example per object, exactly as the frontend sends/receives it. Lists are plain JSON arrays of these objects.",
+
+  "member": {
+    "id": 53,
+    "name": "Χρήστος Γεωργίου",
+    "phone": "6943723353",
+    "email": "christos.georgiou37@yahoo.gr",
+    "status": "active",
+    "expiry": "11/12/2026",
+    "package": "Μηνιαία Απεριόριστη",
+    "photo_url": "https://cdn.example.com/members/53.jpg",
+    "card_lost": false
+  },
+
+  "package": {
+    "id": 1,
+    "name": "Μηνιαία Απεριόριστη",
+    "category": "subscription",
+    "duration": "30 ημέρες",
+    "price": 45
+  },
+
+  "payment": {
+    "id": 1,
+    "memberId": 23,
+    "memberName": "Βασίλης Μπακάλης",
+    "package": "10 Επισκέψεις",
+    "amount": 60,
+    "date": "01/12/2025",
+    "status": "completed",
+    "method": "Καρτα"
+  },
+
+  "debt": {
+    "id": 1,
+    "memberId": 377,
+    "name": "Παναγιώτης Ζαχαρίου",
+    "amount": 400,
+    "daysOverdue": 35,
+    "status": "critical",
+    "lastContact": "02/11/2026",
+    "phone": "6946670689",
+    "email": "panagiotis.zachariou36@hotmail.com"
+  },
+
+  "booking_class_session": {
+    "_comment": "memberId 0 = the class itself (capacity, trainer).",
+    "id": 1,
+    "memberId": 0,
+    "memberName": "Γενικη Ταξη",
+    "title": "Pilates",
+    "type": "class",
+    "startTime": "2026-11-04T07:30:00.000Z",
+    "endTime": "2026-11-04T08:30:00.000Z",
+    "status": "confirmed",
+    "instructor": "Αλέξανδρος",
+    "maxParticipants": 12,
+    "currentParticipants": 8,
+    "color": "#2a8bb8",
+    "created_at": "2026-11-01T09:00:00.000Z",
+    "updated_at": "2026-11-01T09:00:00.000Z"
+  },
+
+  "booking_member_in_class": {
+    "_comment": "A member's spot in the class above: same title + startTime, memberId > 0.",
+    "id": 2,
+    "memberId": 299,
+    "memberName": "Φίλιππος Κυριακίδης",
+    "memberPhone": "6940790621",
+    "title": "Pilates",
+    "type": "class",
+    "startTime": "2026-11-04T07:30:00.000Z",
+    "endTime": "2026-11-04T08:30:00.000Z",
+    "status": "confirmed",
+    "instructor": "Αλέξανδρος",
+    "maxParticipants": 12,
+    "currentParticipants": 8,
+    "color": "#2a8bb8",
+    "created_at": "2026-11-02T18:12:00.000Z",
+    "updated_at": "2026-11-02T18:12:00.000Z"
+  },
+
+  "booking_personal_training": {
+    "id": 77,
+    "memberId": 294,
+    "memberName": "Δήμητρα Αθανασίου",
+    "memberPhone": "6945531715",
+    "title": "Personal Training",
+    "type": "personal_training",
+    "startTime": "2026-11-05T14:00:00.000Z",
+    "endTime": "2026-11-05T15:00:00.000Z",
+    "status": "confirmed",
+    "instructor": "Κυριάκος",
+    "currentParticipants": 1,
+    "color": "#1f9d63",
+    "created_at": "2026-11-03T10:00:00.000Z",
+    "updated_at": "2026-11-03T10:00:00.000Z"
+  },
+
+  "entrance_log": {
+    "id": 8876,
+    "memberId": 261,
+    "memberName": "Ζωή Βασιλείου",
+    "memberPhone": "6964580426",
+    "memberStatus": "active",
+    "validationStatus": "valid",
+    "validationMessage": "Ενεργή Συνδρομή",
+    "entranceType": "qr_scan",
+    "timestamp": "2026-11-11T13:43:00.000Z"
+  },
+
+  "announcement": {
+    "id": 1,
+    "title": "Καλώς ήρθες στο Colosseum Gym",
+    "body": "Η πύλη μελών είναι έτοιμη. Δες το πρόγραμμα, κλείσε θέση στα ομαδικά και έχε πάντα το QR σου για είσοδο.",
+    "audience": "all",
+    "published": true,
+    "created_at": "2026-11-09T07:30:00.000Z"
+  },
+
+  "staff_user": {
+    "id": 3,
+    "email": "alexandros.agapitos@colosseumgym.gr",
+    "fullName": "Αλέξανδρος Αγαπητός",
+    "role": "trainer",
+    "createdAt": "2025-09-29T22:00:00.000Z",
+    "lastSignInAt": "2026-11-11T14:40:47.460Z"
+  },
+
+  "staff_create_request": {
+    "email": "new.coach@colosseumgym.gr",
+    "fullName": "Νέος Γυμναστής",
+    "role": "trainer",
+    "password": "at-least-6-chars"
+  },
+
+  "login_request": {
+    "email": "giorgos.galiatsos@colosseumgym.gr",
+    "password": "••••••"
+  },
+
+  "login_response": {
+    "token": "1|laravel-sanctum-token",
+    "user": {
+      "id": 2,
+      "email": "giorgos.galiatsos@colosseumgym.gr",
+      "fullName": "Γιώργος Γαλιάτσος",
+      "role": "owner",
+      "createdAt": "2024-05-10T09:00:00.000Z",
+      "lastSignInAt": "2026-11-11T14:51:00.000Z"
+    }
+  },
+
+  "member_portal_login_request": {
+    "phone": "6912345678"
+  },
+
+  "settings": {
+    "gym": { "name": "Colosseum Gym", "phone": "210 6536082", "email": "info@colosseumgym.gr" },
+    "autoNotifications": {
+      "sevenDays": true,
+      "threeDays": true,
+      "expiryDay": true,
+      "threeDaysAfter": false,
+      "sendTime": "10:00"
+    },
+    "sendRate": 3,
+    "sms": { "username": "admin-only", "password": "admin-only", "senderId": "ColosseumGym" },
+    "email": { "apiKey": "admin-only", "fromEmail": "noreply@colosseumgym.gr", "fromName": "Colosseum Gym" }
+  },
+
+  "error_response": {
+    "message": "The given data was invalid.",
+    "errors": { "email": ["The email has already been taken."] }
+  }
+}

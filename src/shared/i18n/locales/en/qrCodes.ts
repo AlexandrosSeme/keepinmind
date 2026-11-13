@@ -59,6 +59,8 @@ const qrCodes: LocaleShape<typeof el> = {
     filterLost: "Cancelled Cards",
     found_one: "{{count}} member found",
     found_other: "{{count}} members found",
+    moreResults_one: "…and {{count}} more. Type more to narrow the search.",
+    moreResults_other: "…and {{count}} more. Type more to narrow the search.",
     selectedMember: "Selected member:",
     clear: "Clear",
     searchResults: "Search Results:",

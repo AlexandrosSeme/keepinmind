@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { CheckSquare, Printer, Search, Square, X } from "lucide-react";
-import { PageHeader } from "@/shared/ui";
+import { PageHeader, Pagination } from "@/shared/ui";
 import {
   useMemberMutations,
   useMembers,
@@ -15,6 +15,9 @@ import "./PrintQRCodesPage.scss";
 type CardLostFilter = "all" | "lost" | "active";
 
 const CARDS_PER_PRINTED_PAGE = 6;
+/** Cards rendered on screen at once (each card renders a QR code). */
+const PAGE_SIZES = [24, 48, 96];
+const MAX_SEARCH_RESULTS = 20;
 
 const PrintQRCodesPage: React.FC = () => {
   const { t } = useTranslation("qrCodes");
@@ -27,6 +30,10 @@ const PrintQRCodesPage: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedCards, setSelectedCards] = useState<Set<number>>(new Set());
   const [cardLostFilter, setCardLostFilter] = useState<CardLostFilter>("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
+  /** While true, every selected card (all pages) is rendered for window.print(). */
+  const [printing, setPrinting] = useState(false);
 
   const sortedMembers = useMemo(
     () => [...members].sort((a, b) => a.id - b.id),
@@ -70,28 +77,49 @@ const PrintQRCodesPage: React.FC = () => {
     selectedCards.has(m.id),
   );
 
+  // Back to the first page whenever the visible set changes.
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, cardLostFilter, selectedMember, pageSize]);
+
+  const pageCount = Math.max(1, Math.ceil(membersToDisplay.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pageMembers = membersToDisplay.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+  const cardsToRender = printing ? membersToPrint : pageMembers;
+  /** Position of each card in the print run, for page breaks every 6 cards. */
+  const printIndexOf = new Map(membersToPrint.map((m, i) => [m.id, i]));
+
+  // Print once the selected cards of every page are rendered; restore paging afterwards.
+  useEffect(() => {
+    if (!printing) return;
+    const done = () => setPrinting(false);
+    window.addEventListener("afterprint", done);
+    const timer = window.setTimeout(() => {
+      window.print();
+      // Some browsers don't fire afterprint; print() blocks until the dialog closes.
+      done();
+    }, 300);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("afterprint", done);
+    };
+  }, [printing]);
+
   const handlePrint = () => {
     if (membersToPrint.length === 0) {
       alert(t("print.noneSelected"));
       return;
     }
-
-    const firstCard = document.querySelector(
-      `[data-member-id="${membersToPrint[0].id}"]`,
-    );
-    if (firstCard) {
-      firstCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      setTimeout(() => window.print(), 300);
-      return;
-    }
-    window.print();
+    setPrinting(true);
   };
 
   const handlePrintSingleCard = (member: Member) => {
     setSelectedMember(member);
     setSelectedCards(new Set([member.id]));
-    // Let the selection render before opening the print dialog.
-    setTimeout(() => window.print(), 100);
+    setPrinting(true);
   };
 
   const handleSelectMember = (member: Member) => {
@@ -245,7 +273,7 @@ const PrintQRCodesPage: React.FC = () => {
             <div className="card-body">
               <h6 className="mb-2">{t("print.searchResults")}</h6>
               <div className="list-group km-print-search-results">
-                {filteredMembers.map((member) => (
+                {filteredMembers.slice(0, MAX_SEARCH_RESULTS).map((member) => (
                   <button
                     key={member.id}
                     type="button"
@@ -264,6 +292,13 @@ const PrintQRCodesPage: React.FC = () => {
                   </button>
                 ))}
               </div>
+              {filteredMembers.length > MAX_SEARCH_RESULTS && (
+                <small className="text-muted d-block mt-2">
+                  {t("print.moreResults", {
+                    count: filteredMembers.length - MAX_SEARCH_RESULTS,
+                  })}
+                </small>
+              )}
             </div>
           </div>
         )}
@@ -300,12 +335,22 @@ const PrintQRCodesPage: React.FC = () => {
         </div>
       </div>
 
+      {!printing && membersToDisplay.length > pageSize && (
+        <Pagination
+          className="d-print-none"
+          page={currentPage}
+          pageSize={pageSize}
+          total={membersToDisplay.length}
+          onPageChange={setPage}
+          pageSizeOptions={PAGE_SIZES}
+          onPageSizeChange={setPageSize}
+        />
+      )}
+
       <div className="row g-2" id="print-cards">
-        {membersToDisplay.map((member) => {
+        {cardsToRender.map((member) => {
           const selected = selectedCards.has(member.id);
-          const printIndex = membersToPrint.findIndex(
-            (m) => m.id === member.id,
-          );
+          const printIndex = printIndexOf.get(member.id) ?? -1;
           return (
             <MemberPrintCard
               key={member.id}
@@ -324,6 +369,19 @@ const PrintQRCodesPage: React.FC = () => {
           );
         })}
       </div>
+
+      {!printing && membersToDisplay.length > pageSize && (
+        <Pagination
+          className="d-print-none mt-2"
+          page={currentPage}
+          pageSize={pageSize}
+          total={membersToDisplay.length}
+          onPageChange={(p) => {
+            setPage(p);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+      )}
     </div>
   );
 };

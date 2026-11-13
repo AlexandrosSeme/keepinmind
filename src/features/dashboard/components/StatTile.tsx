@@ -1,7 +1,13 @@
 import React, { type ReactNode } from "react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
-export type StatTone = "brand" | "dark" | "success" | "info" | "danger" | "neutral";
+export type StatTone =
+  | "brand"
+  | "dark"
+  | "success"
+  | "info"
+  | "danger"
+  | "neutral";
 
 interface StatTileProps {
   icon: ReactNode;
@@ -33,25 +39,39 @@ const StatTile: React.FC<StatTileProps> = ({
     <>
       <div className="km-stat-tile__head">
         <span className="km-stat-tile__label">{label}</span>
-        <span className={`km-stat-tile__icon km-stat-tile__icon--${tone}`}>{icon}</span>
+        <span className={`km-stat-tile__icon km-stat-tile__icon--${tone}`}>
+          {icon}
+        </span>
       </div>
       <div className="km-stat-tile__value">{value}</div>
       <div className="km-stat-tile__foot">
         {hasDelta && (
-          <span className={`km-stat-tile__delta ${good ? "is-good" : "is-bad"}`}>
-            {delta >= 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+          <span
+            className={`km-stat-tile__delta ${good ? "is-good" : "is-bad"}`}
+          >
+            {delta >= 0 ? (
+              <ArrowUpRight size={13} />
+            ) : (
+              <ArrowDownRight size={13} />
+            )}
             {Math.abs(delta)}%
           </span>
         )}
         {(deltaLabel || hint) && (
-          <span className="km-stat-tile__hint">{hasDelta ? deltaLabel : hint}</span>
+          <span className="km-stat-tile__hint">
+            {hasDelta ? deltaLabel : hint}
+          </span>
         )}
       </div>
     </>
   );
 
   return onClick ? (
-    <button type="button" className="km-stat-tile is-clickable" onClick={onClick}>
+    <button
+      type="button"
+      className="km-stat-tile is-clickable"
+      onClick={onClick}
+    >
       {content}
     </button>
   ) : (

@@ -58,6 +58,8 @@ const qrCodes = {
     filterLost: "Ακυρωμένες Κάρτες",
     found_one: "Βρέθηκε {{count}} μέλος",
     found_other: "Βρέθηκαν {{count}} μέλη",
+    moreResults_one: "…και {{count}} ακόμη. Γράψτε περισσότερα για να περιορίσετε την αναζήτηση.",
+    moreResults_other: "…και {{count}} ακόμη. Γράψτε περισσότερα για να περιορίσετε την αναζήτηση.",
     selectedMember: "Επιλεγμένο μέλος:",
     clear: "Καθαρισμός",
     searchResults: "Αποτελέσματα Αναζήτησης:",

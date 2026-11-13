@@ -23,19 +23,27 @@ const DebtAgingPanel: React.FC<{ aging: Aging }> = ({ aging }) => {
   return (
     <PanelCard
       title={t("owner.aging.title")}
-      action={<LinkButton onClick={() => navigate("/debts")}>{t("all")}</LinkButton>}
+      action={
+        <LinkButton onClick={() => navigate("/debts")}>{t("all")}</LinkButton>
+      }
       className="km-dash-panel"
     >
       <div className="km-aging">
         <div className="km-aging__total">
-          <span className="km-aging__total-label">{t("owner.aging.total")}</span>
-          <span className="km-aging__total-value">{formatEuro(aging.total)}</span>
+          <span className="km-aging__total-label">
+            {t("owner.aging.total")}
+          </span>
+          <span className="km-aging__total-value">
+            {formatEuro(aging.total)}
+          </span>
         </div>
         {ROWS.map(({ key, color }) => (
           <div key={key} className="km-aging__row">
             <div className="km-aging__meta">
               <span className="km-aging__label">{t(`owner.aging.${key}`)}</span>
-              <span className="km-aging__amount">{formatEuro(aging[key].amount)}</span>
+              <span className="km-aging__amount">
+                {formatEuro(aging[key].amount)}
+              </span>
             </div>
             <div className="km-aging__track">
               <div
