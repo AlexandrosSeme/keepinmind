@@ -1,11 +1,13 @@
 import {
   ArcElement,
+  BarController,
   BarElement,
   CategoryScale,
   Chart as ChartJS,
   Filler,
   Legend,
   LinearScale,
+  LineController,
   LineElement,
   PointElement,
   Tooltip,
@@ -14,11 +16,13 @@ import { BRAND, CHART_FONT } from "./brand";
 
 ChartJS.register(
   ArcElement,
+  BarController,
   BarElement,
   CategoryScale,
   Filler,
   Legend,
   LinearScale,
+  LineController,
   LineElement,
   PointElement,
   Tooltip,

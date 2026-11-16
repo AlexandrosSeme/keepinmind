@@ -9,6 +9,7 @@ import {
   type EntranceLog,
 } from "@/features/attendance";
 import { useMemberSession } from "../session/useMemberSession";
+import InstallAppButton from "../components/InstallAppButton";
 
 const MemberProfile: React.FC = () => {
   const { t } = useTranslation("memberPortal");
@@ -93,9 +94,11 @@ const MemberProfile: React.FC = () => {
         )}
       </div>
 
+      <InstallAppButton />
+
       <button
         type="button"
-        className="mp-btn mp-btn-ghost"
+        className="mp-btn mp-btn-ghost mt-2"
         onClick={handleLogout}
       >
         <LogOut size={16} />

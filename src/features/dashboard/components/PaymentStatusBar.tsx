@@ -1,74 +1,61 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LinkButton, StatusBadge } from "@/shared/ui";
+import { LinkButton } from "@/shared/ui";
 import { BRAND } from "@/shared/lib/brand";
+import type { monthPaymentStatus } from "../lib/analytics";
+import { formatEuro } from "../lib/format";
 
 interface PaymentStatusBarProps {
-  /** [completed, pending, failed] */
-  series: number[];
-  isSample: boolean;
+  status: ReturnType<typeof monthPaymentStatus>;
 }
 
-const PaymentStatusBar: React.FC<PaymentStatusBarProps> = ({
-  series,
-  isSample,
-}) => {
+/** This month's payments by status: count, amount and share of the month's billing. */
+const PaymentStatusBar: React.FC<PaymentStatusBarProps> = ({ status }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation(["dashboard", "common"]);
+  const { t } = useTranslation("dashboard");
 
   const meters = [
-    {
-      label: t("paymentStatus.completed"),
-      value: series[0],
-      color: BRAND.paid,
-    },
-    {
-      label: t("paymentStatus.pending"),
-      value: series[1],
-      color: BRAND.pending,
-    },
-    { label: t("paymentStatus.failed"), value: series[2], color: BRAND.failed },
-  ];
-  const max = Math.max(...meters.map((m) => m.value), 1);
+    { key: "completed", color: BRAND.success },
+    { key: "pending", color: BRAND.yellow },
+    { key: "failed", color: BRAND.danger },
+  ] as const;
+  const billed = meters.reduce((s, m) => s + status[m.key].amount, 0) || 1;
 
   return (
     <div className="card border-0 shadow-sm km-dashboard__payments-bar">
       <div className="km-dashboard__pay-status">
         <div className="km-dashboard__pay-status-head">
-          <div className="d-flex align-items-center gap-2">
+          <div>
             <div className="km-stat-label mb-0">{t("paymentStatus.title")}</div>
-            {isSample && (
-              <StatusBadge
-                tone="neutral"
-                label={t("common:sample")}
-                showDot={false}
-              />
-            )}
+            <small className="text-muted">
+              {t("paymentStatus.billed", { amount: formatEuro(billed === 1 ? 0 : billed) })}
+            </small>
           </div>
-          <LinkButton onClick={() => navigate("/payments")}>
-            {t("paymentStatus.details")}
-          </LinkButton>
+          <LinkButton onClick={() => navigate("/payments")}>{t("paymentStatus.details")}</LinkButton>
         </div>
         <div className="km-dashboard__meters">
-          {meters.map((meter) => (
-            <div key={meter.label} className="km-dashboard__meter">
-              <div className="km-dashboard__meter-meta">
-                <span className="km-dashboard__meter-label">{meter.label}</span>
-                <span className="km-dashboard__meter-value">{meter.value}</span>
+          {meters.map(({ key, color }) => {
+            const share = Math.round((status[key].amount / billed) * 100);
+            return (
+              <div key={key} className="km-dashboard__meter">
+                <div className="km-dashboard__meter-meta">
+                  <span className="km-dashboard__meter-label">
+                    {t(`paymentStatus.${key}`)} · {status[key].count}
+                  </span>
+                  <span className="km-dashboard__meter-value">{formatEuro(status[key].amount)}</span>
+                </div>
+                <div className="km-dashboard__meter-track">
+                  {/* Width and color are data-driven. */}
+                  <div
+                    className="km-dashboard__meter-fill"
+                    style={{ width: `${Math.max(2, share)}%`, backgroundColor: color }}
+                  />
+                </div>
+                <small className="text-muted">{share}%</small>
               </div>
-              <div className="km-dashboard__meter-track">
-                {/* Width and color are data-driven. */}
-                <div
-                  className="km-dashboard__meter-fill"
-                  style={{
-                    width: `${Math.max(6, (meter.value / max) * 100)}%`,
-                    backgroundColor: meter.color,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

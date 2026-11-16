@@ -4,7 +4,6 @@ export interface Package {
   category: "subscription" | "hourly" | "kids";
   duration: string;
   price: number;
-  active: number;
 }
 
 export type PackageInput = Omit<Package, "id">;

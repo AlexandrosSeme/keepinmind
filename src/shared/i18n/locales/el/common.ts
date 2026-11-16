@@ -15,6 +15,13 @@ const common = {
     viewAll: "Προβολή όλων",
   },
   loading: "Φόρτωση...",
+  pagination: {
+    label: "Σελιδοποίηση",
+    showing: "{{from}}–{{to}} από {{total}}",
+    previous: "Προηγούμενη σελίδα",
+    next: "Επόμενη σελίδα",
+    perPage: "Ανά σελίδα",
+  },
   error: "Σφάλμα",
   sample: "Δείγμα",
   language: {

@@ -6,10 +6,11 @@ export const debtKeys = {
   all: ["debts"] as const,
 };
 
-export function useDebts() {
+export function useDebts({ enabled = true }: { enabled?: boolean } = {}) {
   const { data = [], ...rest } = useQuery({
     queryKey: debtKeys.all,
     queryFn: fetchDebts,
+    enabled,
   });
   return { debts: data, ...rest };
 }

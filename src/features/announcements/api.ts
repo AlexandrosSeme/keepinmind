@@ -1,5 +1,8 @@
-import { supabase } from "@/shared/api/supabaseClient";
+import { createCollection } from "@/shared/api/collection";
+import { logger } from "@/shared/lib/logger";
 import type { Announcement } from "./types";
+
+const announcements = createCollection<Announcement>("announcements");
 
 const SAMPLE_ANNOUNCEMENTS: Announcement[] = [
   {
@@ -29,51 +32,24 @@ const SAMPLE_ANNOUNCEMENTS: Announcement[] = [
 ];
 
 export async function fetchAnnouncements(): Promise<Announcement[]> {
-  if (!supabase) {
-    return SAMPLE_ANNOUNCEMENTS;
-  }
-
   try {
-    const { data, error } = await supabase
-      .from("announcements")
-      .select("*")
-      .eq("published", true)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.warn(
-        "[Announcements] Table missing or error — using sample:",
-        error.message,
-      );
-      return SAMPLE_ANNOUNCEMENTS;
-    }
-
-    if (!data || data.length === 0) {
-      return SAMPLE_ANNOUNCEMENTS;
-    }
-
-    return data as Announcement[];
+    const data = await announcements.list({
+      published: true,
+      _sort: "created_at",
+      _order: "desc",
+    });
+    return data.length > 0 ? data : SAMPLE_ANNOUNCEMENTS;
   } catch (err) {
-    console.error("[Announcements] Exception:", err);
+    logger.warn("[Announcements] API unavailable — using sample:", err);
     return SAMPLE_ANNOUNCEMENTS;
   }
 }
 
-export async function createAnnouncement(
+export function createAnnouncement(
   announcement: Omit<Announcement, "id" | "created_at">,
 ): Promise<Announcement | null> {
-  if (!supabase) return null;
-
-  const { data, error } = await supabase
-    .from("announcements")
-    .insert([announcement])
-    .select()
-    .single();
-
-  if (error) {
-    console.error("[Announcements] Create error:", error);
-    return null;
-  }
-
-  return data as Announcement;
+  return announcements.create({
+    ...announcement,
+    created_at: new Date().toISOString(),
+  });
 }

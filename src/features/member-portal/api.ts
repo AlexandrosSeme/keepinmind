@@ -1,4 +1,4 @@
-import { supabase } from "@/shared/api/supabaseClient";
+import { api } from "@/shared/api/httpClient";
 import i18n from "@/shared/i18n";
 import { normalizePhone } from "@/shared/lib/phone";
 import type { Member } from "@/features/members";
@@ -39,7 +39,10 @@ export async function loginMemberByPhone(
     return { member: null, error: i18n.t("memberPortal:errors.invalidPhone") };
   }
 
-  if (!supabase) {
+  let data: Member[];
+  try {
+    data = await api.get<Member[]>("/members");
+  } catch {
     return {
       member: null,
       error: i18n.t("memberPortal:errors.dbUnavailable"),
@@ -47,16 +50,7 @@ export async function loginMemberByPhone(
   }
 
   try {
-    const { data, error } = await supabase.from("members").select("*");
-
-    if (error || !data) {
-      return {
-        member: null,
-        error: i18n.t("memberPortal:errors.lookupFailed"),
-      };
-    }
-
-    const member = (data as Member[]).find(
+    const member = data.find(
       (m) => normalizePhone(m.phone) === phone,
     );
 

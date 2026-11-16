@@ -1,75 +1,30 @@
-import { supabase } from "@/shared/api/supabaseClient";
+import { createCollection } from "@/shared/api/collection";
+import { logger } from "@/shared/lib/logger";
 import type { Debt, DebtInput } from "./types";
 
-export async function fetchDebts(): Promise<Debt[]> {
-  if (!supabase) return [];
+const debts = createCollection<Debt, DebtInput>("debts");
 
-  const { data, error } = await supabase
-    .from("debts")
-    .select("*")
-    .order("id", { ascending: true });
+export const fetchDebts = (): Promise<Debt[]> =>
+  debts.list({ _sort: "id", _order: "asc" });
 
-  if (error) throw error;
-  return (data ?? []) as Debt[];
-}
-
+/** Debts of one member, matched case-insensitively by full name. */
 export async function fetchMemberDebts(memberName: string): Promise<Debt[]> {
-  if (!supabase) return [];
-  const { data, error } = await supabase
-    .from("debts")
-    .select("*")
-    .ilike("name", memberName);
-  if (error || !data) return [];
-  return data as Debt[];
-}
-
-export async function createDebt(debt: DebtInput): Promise<Debt | null> {
-  if (!supabase) return null;
-
-  const { data, error } = await supabase
-    .from("debts")
-    .insert([debt])
-    .select()
-    .single();
-
-  if (error) {
-    console.error("[Supabase] Error creating debt:", error);
-    return null;
+  const name = memberName.trim().toLowerCase();
+  try {
+    const all = await debts.list();
+    return all.filter((d) => d.name.trim().toLowerCase() === name);
+  } catch (error) {
+    logger.error("[API] Error fetching member debts:", error);
+    return [];
   }
-
-  return data as Debt;
 }
 
-export async function updateDebt(
+export const createDebt = (debt: DebtInput): Promise<Debt | null> =>
+  debts.create(debt);
+
+export const updateDebt = (
   id: number,
   updates: Partial<DebtInput>,
-): Promise<Debt | null> {
-  if (!supabase) return null;
+): Promise<Debt | null> => debts.update(id, updates);
 
-  const { data, error } = await supabase
-    .from("debts")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("[Supabase] Error updating debt:", error);
-    return null;
-  }
-
-  return data as Debt;
-}
-
-export async function deleteDebt(id: number): Promise<boolean> {
-  if (!supabase) return false;
-
-  const { error } = await supabase.from("debts").delete().eq("id", id);
-
-  if (error) {
-    console.error("[Supabase] Error deleting debt:", error);
-    return false;
-  }
-
-  return true;
-}
+export const deleteDebt = (id: number): Promise<boolean> => debts.remove(id);

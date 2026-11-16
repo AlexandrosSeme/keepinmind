@@ -1,6 +1,6 @@
 import type { AttendanceRecord, Program } from "./types";
 
-// Placeholder data until programs/attendance are stored in Supabase.
+// Placeholder data until programs/attendance are stored in the API.
 
 export const DEMO_PROGRAMS: Program[] = [
   {

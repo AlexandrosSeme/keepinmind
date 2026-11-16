@@ -50,8 +50,13 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
     e.preventDefault();
     setSaving(true);
     try {
+      const memberName = formData.memberName.trim();
+      // Link to the member (and their package) so finance reports can attribute it.
+      const member = members.find((m) => m.name === memberName);
       const saved = await onSubmit({
-        memberName: formData.memberName.trim(),
+        memberName,
+        memberId: member?.id ?? payment?.memberId,
+        package: member?.package ?? payment?.package,
         amount: Number(formData.amount) || 0,
         date: formData.date.trim(),
         status: formData.status,

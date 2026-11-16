@@ -1,5 +1,6 @@
 export interface Debt {
   id: number;
+  memberId?: number;
   name: string;
   amount: number;
   daysOverdue: number;

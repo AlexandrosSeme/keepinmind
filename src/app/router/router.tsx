@@ -1,12 +1,20 @@
 import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { MemberLayout, MemberPortalRoot } from "@/features/member-portal";
+import {
+  RequirePermission,
+  RequireStaff,
+  StaffAuthRoot,
+} from "@/features/auth";
 import AdminLayout from "@/app/layout/AdminLayout";
 import RootLayout from "@/app/layout/RootLayout";
 import NotFoundPage from "./NotFoundPage";
 
 const DashboardPage = lazy(
   () => import("@/features/dashboard/pages/DashboardPage"),
+);
+const FinancePage = lazy(
+  () => import("@/features/dashboard/pages/FinancePage"),
 );
 const MembersPage = lazy(() => import("@/features/members/pages/MembersPage"));
 const MemberDetailsPage = lazy(
@@ -49,6 +57,11 @@ const PrintQRCodesPage = lazy(
 const PublicQRPage = lazy(
   () => import("@/features/qr-codes/pages/PublicQRPage"),
 );
+
+const StaffLoginPage = lazy(
+  () => import("@/features/auth/pages/StaffLoginPage"),
+);
+const StaffPage = lazy(() => import("@/features/staff/pages/StaffPage"));
 
 const MemberLoginPage = lazy(
   () => import("@/features/member-portal/pages/MemberLoginPage"),
@@ -99,27 +112,77 @@ export const router = createBrowserRouter([
         ],
       },
 
+      // Staff area (admin / owner / trainer). Members only use `/member`.
       {
-        path: "/",
-        element: <AdminLayout />,
+        element: <StaffAuthRoot />,
         children: [
-          { index: true, element: <Navigate to="/dashboard" replace /> },
-          { path: "dashboard", element: <DashboardPage /> },
-          { path: "members", element: <MembersPage /> },
-          { path: "members/:id", element: <MemberDetailsPage /> },
-          { path: "subscriptions", element: <SubscriptionsPage /> },
-          { path: "payments", element: <PaymentsPage /> },
-          { path: "debts", element: <DebtsPage /> },
-          { path: "calendar", element: <CalendarPage /> },
-          { path: "attendance", element: <AttendancePage /> },
-          { path: "notifications", element: <NotificationsPage /> },
-          { path: "announcements", element: <AnnouncementsPage /> },
-          { path: "settings", element: <SettingsPage /> },
-          { path: "qr-scanner", element: <QRScannerPage /> },
-          { path: "user-qr", element: <UserQRCodePage /> },
-          { path: "view-qr", element: <ViewQRCodePage /> },
-          { path: "print-qr-codes", element: <PrintQRCodesPage /> },
-          { path: "*", element: <NotFoundPage /> },
+          { path: "/login", element: <StaffLoginPage /> },
+          {
+            path: "/",
+            element: (
+              <RequireStaff>
+                <AdminLayout />
+              </RequireStaff>
+            ),
+            children: [
+              { index: true, element: <Navigate to="/dashboard" replace /> },
+              { path: "dashboard", element: <DashboardPage /> },
+              {
+                path: "finance",
+                element: (
+                  <RequirePermission anyOf={["finance"]}>
+                    <FinancePage />
+                  </RequirePermission>
+                ),
+              },
+              { path: "members", element: <MembersPage /> },
+              { path: "members/:id", element: <MemberDetailsPage /> },
+              { path: "subscriptions", element: <SubscriptionsPage /> },
+              {
+                path: "payments",
+                element: (
+                  <RequirePermission anyOf={["finance"]}>
+                    <PaymentsPage />
+                  </RequirePermission>
+                ),
+              },
+              {
+                path: "debts",
+                element: (
+                  <RequirePermission anyOf={["finance"]}>
+                    <DebtsPage />
+                  </RequirePermission>
+                ),
+              },
+              { path: "calendar", element: <CalendarPage /> },
+              { path: "attendance", element: <AttendancePage /> },
+              { path: "notifications", element: <NotificationsPage /> },
+              { path: "announcements", element: <AnnouncementsPage /> },
+              {
+                path: "settings",
+                element: (
+                  <RequirePermission
+                    anyOf={["settings.business", "settings.dev"]}
+                  >
+                    <SettingsPage />
+                  </RequirePermission>
+                ),
+              },
+              {
+                path: "staff",
+                element: (
+                  <RequirePermission anyOf={["staff.manage"]}>
+                    <StaffPage />
+                  </RequirePermission>
+                ),
+              },
+              { path: "qr-scanner", element: <QRScannerPage /> },
+              { path: "user-qr", element: <UserQRCodePage /> },
+              { path: "view-qr", element: <ViewQRCodePage /> },
+              { path: "print-qr-codes", element: <PrintQRCodesPage /> },
+              { path: "*", element: <NotFoundPage /> },
+            ],
+          },
         ],
       },
     ],

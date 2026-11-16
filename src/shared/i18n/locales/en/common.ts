@@ -18,6 +18,13 @@ const common: LocaleShape<typeof el> = {
     viewAll: "View all",
   },
   loading: "Loading...",
+  pagination: {
+    label: "Pagination",
+    showing: "{{from}}–{{to}} of {{total}}",
+    previous: "Previous page",
+    next: "Next page",
+    perPage: "Per page",
+  },
   error: "Error",
   sample: "Sample",
   language: {

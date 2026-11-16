@@ -22,7 +22,7 @@ const AttendancePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<StatusFilter>("all");
   const [filterCategory, setFilterCategory] = useState<CategoryFilter>("all");
-  const [activeTab, setActiveTab] = useState<Tab>("programs");
+  const [activeTab, setActiveTab] = useState<Tab>("entrance");
   const [entranceLogs, setEntranceLogs] = useState<EntranceLog[]>([]);
   const [programs] = useState<Program[]>(DEMO_PROGRAMS);
   const [attendanceRecords, setAttendanceRecords] =
@@ -101,15 +101,6 @@ const AttendancePage: React.FC = () => {
       <ul className="nav nav-tabs mb-4" role="tablist">
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === "programs" ? "active" : ""}`}
-            onClick={() => setActiveTab("programs")}
-          >
-            <Calendar className="me-2" size={18} />
-            {t("tabs.programs")}
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button
             className={`nav-link ${activeTab === "entrance" ? "active" : ""}`}
             onClick={() => setActiveTab("entrance")}
           >
@@ -123,6 +114,15 @@ const AttendancePage: React.FC = () => {
                 showDot={false}
               />
             )}
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === "programs" ? "active" : ""}`}
+            onClick={() => setActiveTab("programs")}
+          >
+            <Calendar className="me-2" size={18} />
+            {t("tabs.programs")}
           </button>
         </li>
       </ul>

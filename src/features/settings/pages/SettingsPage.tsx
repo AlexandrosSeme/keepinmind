@@ -19,12 +19,17 @@ import AutoNotificationsSection, {
 import AppearanceSection, {
   type Appearance,
 } from "../components/AppearanceSection";
+import { useStaffAuth } from "@/features/auth";
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslation(["settings", "common"]);
+  const { can } = useStaffAuth();
+  const canEditBusiness = can("settings.business");
+  // Messaging providers, credentials and send rate are developer settings.
+  const canEditDev = can("settings.dev");
   const [gymInfo, setGymInfo] = useState<GymInfo>({
     name: "Colosseum Gym",
-    phone: "210 1234567",
+    phone: "210 6536082",
     email: "info@colosseumgym.gr",
   });
   const [smsProvider, setSmsProvider] = useState(loadSmsSettings);
@@ -44,15 +49,17 @@ const SettingsPage: React.FC = () => {
   });
 
   const handleSave = () => {
-    if (emailProvider.apiKey && !emailProvider.fromEmail.trim()) {
-      alert(t("page.fromEmailRequired"));
-      return;
-    }
+    if (canEditDev) {
+      if (emailProvider.apiKey && !emailProvider.fromEmail.trim()) {
+        alert(t("page.fromEmailRequired"));
+        return;
+      }
 
-    saveSmsSettings(smsProvider);
-    saveEmailSettings(emailProvider);
-    saveSendRate(sendRate);
-    initNotificationServices(emailProvider, smsProvider);
+      saveSmsSettings(smsProvider);
+      saveEmailSettings(emailProvider);
+      saveSendRate(sendRate);
+      initNotificationServices(emailProvider, smsProvider);
+    }
 
     alert(t("page.saved"));
   };
@@ -64,18 +71,28 @@ const SettingsPage: React.FC = () => {
       </div>
 
       <div className="row g-4">
-        <GymInfoSection value={gymInfo} onChange={setGymInfo} />
-        <SmsProviderSection value={smsProvider} onChange={setSmsProvider} />
-        <EmailProviderSection
-          value={emailProvider}
-          onChange={setEmailProvider}
-        />
-        <SendRateSection value={sendRate} onChange={setSendRate} />
-        <AutoNotificationsSection
-          value={notifications}
-          onChange={setNotifications}
-        />
-        <AppearanceSection value={appearance} onChange={setAppearance} />
+        {canEditBusiness && (
+          <GymInfoSection value={gymInfo} onChange={setGymInfo} />
+        )}
+        {canEditDev && (
+          <>
+            <SmsProviderSection value={smsProvider} onChange={setSmsProvider} />
+            <EmailProviderSection
+              value={emailProvider}
+              onChange={setEmailProvider}
+            />
+            <SendRateSection value={sendRate} onChange={setSendRate} />
+          </>
+        )}
+        {canEditBusiness && (
+          <>
+            <AutoNotificationsSection
+              value={notifications}
+              onChange={setNotifications}
+            />
+            <AppearanceSection value={appearance} onChange={setAppearance} />
+          </>
+        )}
       </div>
 
       <div className="d-flex justify-content-end gap-2 mt-4">

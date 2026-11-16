@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Edit, Trash2, XCircle } from "lucide-react";
-import { supabase } from "@/shared/api/supabaseClient";
 import { ImageModal, PageHeader, PageLoader } from "@/shared/ui";
 import { stripAccents } from "@/shared/lib/text";
 import type { Member, MemberInput } from "../types";
@@ -16,7 +15,7 @@ import MemberEntranceLogs from "../components/MemberEntranceLogs";
 import MemberAttendanceChart from "../components/MemberAttendanceChart";
 import "./MemberDetailsPage.scss";
 
-type LoadError = "noId" | "noDb" | "notFoundById" | "load";
+type LoadError = "noId" | "notFoundById" | "load";
 
 const MemberDetailsPage: React.FC = () => {
   const { t } = useTranslation(["members", "common"]);
@@ -42,12 +41,6 @@ const MemberDetailsPage: React.FC = () => {
       const cached = members.find((m) => m.id === parseInt(id));
       if (cached) {
         setMember(cached);
-        setLoading(false);
-        return;
-      }
-
-      if (!supabase) {
-        setError("noDb");
         setLoading(false);
         return;
       }

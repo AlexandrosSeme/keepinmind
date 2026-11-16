@@ -13,6 +13,8 @@ import elAnnouncements from "./locales/el/announcements";
 import elNotifications from "./locales/el/notifications";
 import elSettings from "./locales/el/settings";
 import elMemberPortal from "./locales/el/memberPortal";
+import elAuth from "./locales/el/auth";
+import elStaff from "./locales/el/staff";
 import enCommon from "./locales/en/common";
 import enLayout from "./locales/en/layout";
 import enDashboard from "./locales/en/dashboard";
@@ -28,6 +30,8 @@ import enAnnouncements from "./locales/en/announcements";
 import enNotifications from "./locales/en/notifications";
 import enSettings from "./locales/en/settings";
 import enMemberPortal from "./locales/en/memberPortal";
+import enAuth from "./locales/en/auth";
+import enStaff from "./locales/en/staff";
 
 export const el = {
   common: elCommon,
@@ -45,6 +49,8 @@ export const el = {
   notifications: elNotifications,
   settings: elSettings,
   memberPortal: elMemberPortal,
+  auth: elAuth,
+  staff: elStaff,
 };
 
 const en = {
@@ -63,6 +69,8 @@ const en = {
   notifications: enNotifications,
   settings: enSettings,
   memberPortal: enMemberPortal,
+  auth: enAuth,
+  staff: enStaff,
 };
 
 export const resources = { el, en };

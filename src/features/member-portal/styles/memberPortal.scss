@@ -22,12 +22,19 @@
   z-index: 20;
   background: var(--km-ink);
   color: #fff;
-  padding: 0.85rem 1rem;
+  padding: calc(0.85rem + env(safe-area-inset-top)) 1rem 0.85rem;
   border-bottom: 3px solid var(--km-brand);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.mp-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
 }
 
 .mp-lang {
@@ -235,6 +242,66 @@
   border: 1px solid rgba(214, 59, 59, 0.25);
 }
 
+.mp-btn-install {
+  margin-top: 0.25rem;
+  background: transparent;
+  border: 1px solid var(--km-brand);
+  color: var(--km-ink);
+}
+
+.mp-install-chip {
+  width: auto;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--km-brand);
+  background: transparent;
+  color: var(--km-brand);
+  white-space: nowrap;
+}
+
+.mp-install-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.mp-install-sheet {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  color: var(--km-text);
+  border-top: 3px solid var(--km-brand);
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+}
+
+.mp-install-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.mp-install-close {
+  border: none;
+  background: transparent;
+  color: var(--km-text);
+  padding: 0.25rem;
+}
+
+.mp-install-steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
 .mp-login {
   height: 100%;
   min-height: 100%;
@@ -243,7 +310,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: calc(1.5rem + env(safe-area-inset-top)) 1.5rem 1.5rem;
   color: #fff;
   overflow: auto;
   box-sizing: border-box;
