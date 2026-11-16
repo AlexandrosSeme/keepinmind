@@ -93,9 +93,13 @@ function phone() {
 const EMAIL_DOMAINS = ["gmail.com", "yahoo.gr", "hotmail.com", "outlook.com"];
 
 // ---------- packages ----------
+// Prices: 2μηνη 89€ and 5μηνη 179€ are the published November 2026 offers
+// (colosseumgym.gr/images/nov26offers.jpg, valid through 30/11/2026).
 const packages = [
   { name: "Μηνιαία Απεριόριστη", category: "subscription", duration: "30 ημέρες", days: 30, price: 45 },
+  { name: "2μηνη Συνδρομή", category: "subscription", duration: "60 ημέρες", days: 60, price: 89 },
   { name: "Τριμηνιαία Απεριόριστη", category: "subscription", duration: "90 ημέρες", days: 90, price: 120 },
+  { name: "5μηνη Συνδρομή", category: "subscription", duration: "150 ημέρες", days: 150, price: 179 },
   { name: "Εξαμηνιαία Απεριόριστη", category: "subscription", duration: "180 ημέρες", days: 180, price: 220 },
   { name: "Ετήσια Απεριόριστη", category: "subscription", duration: "365 ημέρες", days: 365, price: 400 },
   { name: "10 Επισκέψεις", category: "hourly", duration: "60 ημέρες", days: 60, price: 60 },
@@ -104,8 +108,8 @@ const packages = [
   { name: "Παιδικό Τρίμηνο", category: "kids", duration: "90 ημέρες", days: 90, price: 95 },
 ].map((p, i) => ({ id: i + 1, ...p }));
 const packageWeights = [
-  [packages[0], 34], [packages[1], 16], [packages[2], 7], [packages[3], 10],
-  [packages[4], 12], [packages[5], 7], [packages[6], 9], [packages[7], 5],
+  [packages[0], 18], [packages[1], 22], [packages[2], 8], [packages[3], 16], [packages[4], 4],
+  [packages[5], 6], [packages[6], 10], [packages[7], 5], [packages[8], 7], [packages[9], 4],
 ];
 
 // ---------- staff (Colosseum Gym, https://www.colosseumgym.gr/) ----------
@@ -248,14 +252,14 @@ payments.sort((a, b) => a._date - b._date);
 debts.sort((a, b) => b.daysOverdue - a.daysOverdue);
 // ---------- announcements ----------
 const announcements = [
+  ["Προσφορές Νοεμβρίου", "Ισχύουν έως 30.11.2026: 2μηνη συνδρομή 89€ και 5μηνη συνδρομή 179€. Όλα τα ομαδικά περιλαμβάνονται στις τιμές των συνδρομών. Μεσογείων 226, Χολαργός · 210 6536082.", "all", 1],
   ["Καλώς ήρθες στο Colosseum Gym", "Η πύλη μελών είναι έτοιμη. Δες το πρόγραμμα, κλείσε θέση στα ομαδικά και έχε πάντα το QR σου για είσοδο. Stronger · Together!", "all", 2],
-  ["Ωράριο λειτουργίας", "Δευτέρα–Παρασκευή 07:00–23:00 · Σάββατο 09:00–20:00 · Κυριακή 09:00–17:00. Μεσογείων 226, Χολαργός · 210 6536082.", "all", 6],
-  ["Πρόγραμμα ομαδικών 2026–2027", "Pilates, Yoga, Ορθοσωμία, Functional Training, BodyCross, Cross Training, HIIT, Tabata, Fitballs και Glutes & Core. Όλα τα ομαδικά περιλαμβάνονται στη συνδρομή σου.", "active", 10],
+  ["Ωράριο λειτουργίας", "Δευτέρα–Παρασκευή 07:00–23:00 · Σάββατο 09:00–20:00 · Κυριακή 09:00–17:00. Μεσογείων 226, Χολαργός · 210 6536082 · info@colosseumgym.gr.", "all", 6],
+  ["Πρόγραμμα ομαδικών 2026–2027", "Pilates, Yoga, Ορθοσωμία, Functional Training, Body Cross, Cross Training, HIIT, Tabata, Fitballs και Glutes & Core. Δευτέρα–Παρασκευή, πρωί και απόγευμα. Όλα περιλαμβάνονται στη συνδρομή.", "active", 10],
   ["Πετσέτα & στρώμα", "Για τη συμμετοχή σε όλα τα ομαδικά μαθήματα απαιτείται ατομική πετσέτα προσώπου και ατομικό στρώμα γυμναστικής.", "all", 14],
-  ["Ανανέωση συνδρομής", "Η συνδρομή σου λήγει σύντομα; Ανανέωσε στη ρεσεψιόν και πάρε 10% έκπτωση στο τρίμηνο πακέτο.", "expiring", 18],
-  ["Personal training", "Οι coaches μας είναι διαθέσιμοι για ατομικές προπονήσεις και αξιολόγηση. Κλείσε ραντεβού στη ρεσεψιόν.", "members", 30],
+  ["Ανανέωση συνδρομής", "Η συνδρομή σου λήγει σύντομα; Πέρνα από τη ρεσεψιόν πριν τις 30.11 για τη 2μηνη στα 89€ ή τη 5μηνη στα 179€.", "expiring", 4],
+  ["Personal training", "Οι coaches μας (Αλέξανδρος, Κυριάκος, Γιάννης, Τζένη, Παναγιώτα, Βίκυ, Δημήτρης) είναι διαθέσιμοι για ατομικές προπονήσεις και αξιολόγηση. Κλείσε ραντεβού στη ρεσεψιόν.", "members", 30],
   ["Challenge μήνα", "Ολοκλήρωσε 12 προπονήσεις αυτόν τον μήνα και κέρδισε ένα δωρεάν personal training!", "active", 40],
-  ["Νέος εξοπλισμός", "Ήρθαν νέα rowing machines και assault bikes στον χώρο cardio.", "all", 55],
 ].map(([title, body, audience, ago], i) => ({
   id: i + 1,
   title,
@@ -304,6 +308,20 @@ const CAPACITY = {
   Tabata: 16, BodyCross: 16, "HIIT Training": 16, "HIIT 45'": 16,
   "Functional Training": 16, "Cross Training": 16,
 };
+/** Short blurbs and colors from the class pages on colosseumgym.gr. */
+const CLASS_META = {
+  Pilates: { color: "#2a8bb8", description: "Ενδυνάμωση εν τω βάθει μυών και αποκατάσταση, με small apparatus, εστίαση σε κορμό και σπονδυλική στήλη." },
+  Yoga: { color: "#6b4c9a", description: "Σωματική και ψυχοπνευματική άσκηση για ευθυγράμμιση, ενδυνάμωση και εσωτερική ισορροπία." },
+  Tabata: { color: "#c0392b", description: "Πολύ υψηλή ένταση σε διαστήματα 20'' δουλειάς και 10'' διαλείμματος, για μεταβολισμό και καύση λίπους." },
+  BodyCross: { color: "#e67e22", description: "Μυϊκή ενδυνάμωση και καρδιοαναπνευστική αντοχή, με βάρος σώματος και αντιστάσεις." },
+  "HIIT Training": { color: "#d35400", description: "Καύση λίπους και βελτίωση καρδιοαναπνευστικής αντοχής, με αυξημένο μεταβολισμό και μετά το μάθημα." },
+  "HIIT 45'": { color: "#e74c3c", description: "Συμπυκνωμένο HIIT 45 λεπτών για καύση λίπους και καρδιοαναπνευστική αντοχή." },
+  "Functional Training": { color: "#1f9d63", description: "Ασκήσεις συντονισμού, ισορροπίας και ιδιοδεκτικότητας με kettlebells, ropes και medicine balls." },
+  "Cross Training": { color: "#148f77", description: "Κυκλική διαλειμματική προπόνηση πολύ υψηλής έντασης για μυϊκή αντοχή και καύση λίπους." },
+  "Ορθοσωμία": { color: "#8e44ad", description: "Ορθοσωμική γυμναστική για στάση σώματος, αποφυγή τραυματισμών και υγιή ενδυνάμωση." },
+  Fitballs: { color: "#2471a3", description: "Κυκλική προπόνηση με μπάλα για ενδυνάμωση, ισορροπία και σταθερότητα." },
+  "Glutes & Core": { color: "#b03a6f", description: "Εξειδικευμένο πρόγραμμα για γλουτούς και κορμό, με έμφαση σε δύναμη και σταθερότητα." },
+};
 const atTime = (day, hhmm) => {
   const [h, m] = hhmm.split(":").map(Number);
   return at(day, h, m);
@@ -321,18 +339,20 @@ for (let d = -7; d <= 14; d++) {
     const start = atTime(day, from);
     const end = atTime(day, to);
     const max = CAPACITY[title] ?? 14;
+    const meta = CLASS_META[title] ?? { color: "#2a8bb8", description: "" };
     const [lo, hi] = demand(start);
     // Future classes further out have fewer bookings yet.
     const horizon = d > 7 ? 0.35 : 1;
     const participants = Math.round(int(Math.round(max * lo), Math.round(max * hi)) * horizon);
     const base = {
       title,
+      description: meta.description,
       type: "class",
       startTime: start.toISOString(),
       endTime: end.toISOString(),
       instructor,
       maxParticipants: max,
-      color: "#2a8bb8",
+      color: meta.color,
       created_at: nowIso,
       updated_at: nowIso,
     };

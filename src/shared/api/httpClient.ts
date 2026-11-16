@@ -1,23 +1,22 @@
 /**
- * Client for the local JSON data server (`npm run api`, json-server on :3001).
- * Vite proxies `/data/*` to it, so the app and the API share one origin.
+ * Locally this talks to json-server (`npm run api`, proxied at `/data`).
+ * A Vercel build with VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY talks to Supabase instead.
  */
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "/data";
+import { ApiError } from "./apiError";
+import { supabaseCount, supabaseRequest, usingSupabase } from "./supabaseApi";
 
-export class ApiError extends Error {
-  readonly status: number;
+export { ApiError };
 
-  constructor(status: number, message: string) {
-    super(message);
-    this.status = status;
-  }
-}
+const API_BASE = usingSupabase
+  ? "supabase"
+  : (import.meta.env.VITE_API_URL ?? "/data");
 
 async function request<T>(
   method: "GET" | "POST" | "PATCH" | "DELETE",
   path: string,
   body?: unknown,
 ): Promise<T> {
+  if (usingSupabase) return supabaseRequest<T>(method, path, body);
   const response = await fetch(`${API_BASE}${path}`, {
     method,
     headers: body === undefined ? undefined : { "Content-Type": "application/json" },
@@ -61,6 +60,7 @@ export async function getOrNull<T>(path: string): Promise<T | null> {
 
 /** Total number of records in a collection (json-server `X-Total-Count`). */
 export async function countRecords(collection: string): Promise<number> {
+  if (usingSupabase) return supabaseCount(collection);
   const response = await fetch(`${API_BASE}/${collection}?_limit=1`);
   if (!response.ok) {
     throw new ApiError(response.status, `Count of ${collection} failed`);
@@ -76,3 +76,4 @@ export async function pingApi(): Promise<number> {
 }
 
 export const API_BASE_URL = API_BASE;
+export { usingSupabase };

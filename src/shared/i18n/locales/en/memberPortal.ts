@@ -26,6 +26,22 @@ const memberPortal: LocaleShape<typeof el> = {
     submit: "Sign in",
     help: "Trouble signing in? Stop by reception.",
   },
+  install: {
+    button: "Install",
+    close: "Close",
+    ios: {
+      title: "Add to Home Screen",
+      step1: "Tap the Share button (the square with the arrow).",
+      step2: "Choose “Add to Home Screen” and confirm.",
+      step3: "The Melos icon opens the member portal directly.",
+    },
+    manual: {
+      title: "Add to Home Screen",
+      step1: "Open the browser menu (the three dots).",
+      step2: "Choose “Install app” or “Add to Home screen”.",
+      step3: "The Melos icon opens the member portal directly.",
+    },
+  },
   home: {
     greeting: "Hi, {{name}}",
     subtitle: "Your Melos account at a glance.",

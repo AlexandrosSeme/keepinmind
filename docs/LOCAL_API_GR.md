@@ -17,7 +17,7 @@ npm run dev:api
 - Την πρώτη φορά το `db/seed.json` παράγεται αυτόματα και αντιγράφεται στο `db/db.json`.
 - `npm run api:reset` → επαναφορά στα αρχικά δεδομένα (σβήνει ό,τι έχει αλλάξει).
 - `npm run seed` → ξαναφτιάχνει το `db/seed.json` με ημερομηνίες γύρω από τη σημερινή
-  ([generate-seed.mjs](../scripts/generate-seed.mjs)): ~500 μέλη, owner + 7 coaches + developer, 8 πακέτα,
+  ([generate-seed.mjs](../scripts/generate-seed.mjs)): ~500 μέλη, owner + 7 coaches + developer, 10 πακέτα,
   ~2.600 πληρωμές (12 μήνες) με τις οφειλές να προκύπτουν από τις απλήρωτες, ανακοινώσεις, το εβδομαδιαίο πρόγραμμα ομαδικών και personal
   training (±2 εβδομάδες) και ~300 εισόδους/ημέρα για 30 ημέρες (αιχμή 17:00–21:00, μέσα στο ωράριο).
   Μετά τρέξτε `npm run api:reset`.

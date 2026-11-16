@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import { LanguageSwitcher, PageLoader } from "@/shared/ui";
+import InstallAppButton from "./InstallAppButton";
 import { useMemberSession } from "../session/useMemberSession";
 import "../styles/memberPortal.scss";
 
@@ -71,7 +72,10 @@ const MemberLayout: React.FC = () => {
             <div className="mp-brand-sub">Member</div>
           </div>
         </div>
-        <LanguageSwitcher className="mp-lang" />
+        <div className="mp-top-actions">
+          <InstallAppButton variant="chip" />
+          <LanguageSwitcher className="mp-lang" />
+        </div>
       </header>
 
       <main className="mp-main">

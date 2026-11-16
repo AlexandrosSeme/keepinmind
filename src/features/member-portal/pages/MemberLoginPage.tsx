@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/shared/ui";
+import InstallAppButton from "../components/InstallAppButton";
 import { useMemberSession } from "../session/useMemberSession";
 import "../styles/memberPortal.scss";
 
@@ -64,6 +65,9 @@ const MemberLogin: React.FC = () => {
         <p className="text-muted text-center mt-3 mb-0 mp-text-xs">
           {t("login.help")}
         </p>
+        <div className="mt-3">
+          <InstallAppButton />
+        </div>
       </div>
     </div>
   );
