@@ -1,7 +1,7 @@
 const attendance = {
   page: {
     title: "Προσέλευση",
-    subtitle: "Διαχείριση προσέλευσης σε προγράμματα και καταγραφή εισόδων",
+    subtitle: "Καταγραφή εισόδων μελών",
     searchPlaceholder: "Αναζήτηση...",
   },
   tabs: {
@@ -15,6 +15,9 @@ const attendance = {
     appointment: "Ραντεβού",
     class: "Τάξεις",
     allStatuses: "Όλες οι καταστάσεις",
+    allMethods: "Όλοι οι τρόποι",
+    qr: "QR Code",
+    manual: "Χειροκίνητα",
   },
   fields: {
     date: "Ημερομηνία",

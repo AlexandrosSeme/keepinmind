@@ -1,78 +1,201 @@
-import React from "react";
+import React, { useMemo } from "react";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
-import { StatusBadge } from "@/shared/ui";
+import { flexRender } from "@tanstack/react-table";
+import { Pagination, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
+import {
+  byNumber,
+  byText,
+  useClientTable,
+  type ClientColumnDef,
+  type ClientFilterFn,
+} from "@/shared/table/useClientTable";
 import type { AttendanceRecord, Program } from "../types";
+
+const PAGE_SIZES = [10, 20, 50];
+
+const recordSearch: ClientFilterFn<AttendanceRecord> = (row, _columnId, filterValue) => {
+  const query = String(filterValue).trim().toLowerCase();
+  if (!query) return true;
+  return row.original.memberName.toLowerCase().includes(query);
+};
 
 interface AttendanceRecordsTableProps {
   records: AttendanceRecord[];
   programs: Program[];
+  searchTerm: string;
+  statusFilter: "all" | AttendanceRecord["status"];
 }
 
 const AttendanceRecordsTable: React.FC<AttendanceRecordsTableProps> = ({
   records,
   programs,
+  searchTerm,
+  statusFilter,
 }) => {
   const { t } = useTranslation("attendance");
+  const programById = useMemo(
+    () => new Map(programs.map((program) => [program.id, program])),
+    [programs],
+  );
+
+  const columns = useMemo<ClientColumnDef<AttendanceRecord>[]>(
+    () => [
+      {
+        id: "date",
+        accessorFn: (record) => {
+          const program = record.programId ? programById.get(record.programId) : undefined;
+          return program ? moment(program.date).valueOf() : 0;
+        },
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.date")} />
+        ),
+        cell: ({ row }) => {
+          const program = row.original.programId
+            ? programById.get(row.original.programId)
+            : undefined;
+          return program
+            ? `${moment(program.date).format("DD/MM/YYYY")} ${program.time}`
+            : "-";
+        },
+      },
+      {
+        id: "program",
+        accessorFn: (record) =>
+          (record.programId ? programById.get(record.programId)?.title : "") ?? "",
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.program")} />
+        ),
+        cell: ({ row }) => (
+          <span className="fw-semibold">
+            {(row.original.programId
+              ? programById.get(row.original.programId)?.title
+              : "") || "-"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "memberName",
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.member")} />
+        ),
+        sortingFn: byText<AttendanceRecord>((record) => record.memberName),
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.status")} />
+        ),
+        filterFn: (row, _columnId, value) => row.original.status === value,
+        cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      },
+      {
+        id: "recordedAt",
+        accessorFn: (record) => record.recordedAt,
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.recordedAt")} />
+        ),
+        sortingFn: byNumber<AttendanceRecord>((record) => Date.parse(record.recordedAt) || 0),
+        cell: ({ row }) => moment(row.original.recordedAt).format("DD/MM/YYYY HH:mm"),
+      },
+      {
+        id: "notes",
+        accessorFn: (record) => record.notes ?? "",
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.notes")} />
+        ),
+        cell: ({ row }) => (
+          <small className="text-muted">{row.original.notes || "-"}</small>
+        ),
+      },
+    ],
+    [programById, t],
+  );
+
+  const table = useClientTable({
+    data: records,
+    columns,
+    globalFilter: searchTerm,
+    globalFilterFn: recordSearch,
+    columnFilters: statusFilter === "all" ? [] : [{ id: "status", value: statusFilter }],
+  });
+
+  const rows = table.getRowModel().rows;
+  const total = table.getFilteredRowModel().rows.length;
+  const { pageIndex, pageSize } = table.getState().pagination;
 
   return (
-    <div className="card border-0 shadow-sm km-table-card">
-      <div className="card-header border-0 py-3">
-        <h5 className="mb-0">{t("records.title")}</h5>
-      </div>
-      <div className="card-body p-0">
-        <div className="table-responsive">
-          <table className="table table-hover mb-0 km-table">
-            <thead className="table-light">
-              <tr>
-                <th className="border-0 ps-4">{t("fields.date")}</th>
-                <th className="border-0">{t("fields.program")}</th>
-                <th className="border-0">{t("fields.member")}</th>
-                <th className="border-0">{t("fields.status")}</th>
-                <th className="border-0">{t("fields.recordedAt")}</th>
-                <th className="border-0 pe-4">{t("fields.notes")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center text-muted py-4">
-                    {t("records.empty")}
-                  </td>
-                </tr>
-              ) : (
-                records.map((record) => {
-                  const program = programs.find(
-                    (p) => p.id === record.programId,
-                  );
-                  return (
-                    <tr key={record.id}>
-                      <td className="ps-4">
-                        {program &&
-                          `${moment(program.date).format("DD/MM/YYYY")} ${program.time}`}
-                      </td>
-                      <td className="fw-semibold">{program?.title || "-"}</td>
-                      <td>{record.memberName}</td>
-                      <td>
-                        <StatusBadge status={record.status} />
-                      </td>
-                      <td>
-                        {moment(record.recordedAt).format("DD/MM/YYYY HH:mm")}
-                      </td>
-                      <td className="pe-4">
-                        <small className="text-muted">
-                          {record.notes || "-"}
-                        </small>
-                      </td>
+    <>
+      <div className="card border-0 shadow-sm km-table-card">
+        <div className="card-header border-0 py-3">
+          <h5 className="mb-0">{t("records.title")}</h5>
+        </div>
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <table className="table table-hover mb-0 km-table">
+              <thead className="table-light">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className={`border-0 ${
+                          header.column.id === "date"
+                            ? "ps-4"
+                            : header.column.id === "notes"
+                              ? "pe-4"
+                              : ""
+                        }`}
+                        aria-sort={ariaSort(header.column)}
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={columns.length} className="text-center text-muted py-4">
+                      {t("records.empty")}
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((row) => (
+                    <tr key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className={
+                            cell.column.id === "date"
+                              ? "ps-4"
+                              : cell.column.id === "notes"
+                                ? "pe-4"
+                                : undefined
+                          }
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+      <Pagination
+        className="mt-3"
+        page={pageIndex + 1}
+        pageSize={pageSize}
+        total={total}
+        pageSizeOptions={PAGE_SIZES}
+        onPageChange={(page) => table.setPageIndex(page - 1)}
+        onPageSizeChange={(size) => table.setPageSize(size)}
+      />
+    </>
   );
 };
 

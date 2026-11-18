@@ -6,7 +6,7 @@ const auth: LocaleShape<typeof el> = {
     admin: "Administrator (Dev)",
     owner: "Owner",
     trainer: "Trainer",
-    accountant: "Finance",
+    accountant: "More",
   },
   logout: "Sign out",
   fields: {

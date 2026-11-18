@@ -1,7 +1,7 @@
 const layout = {
   nav: {
     dashboard: "Dashboard",
-    financeSection: "Οικονομικά",
+    financeSection: "More",
     finance: "Επισκόπηση",
     members: "Μέλη",
     subscriptions: "Συνδρομές",

@@ -33,8 +33,8 @@ function SortableHeader<T extends RowData>({
       className={`km-sort${sorted ? " is-sorted" : ""}`}
       onClick={column.getToggleSortingHandler()}
     >
-      {label}
-      <Icon size={14} aria-hidden />
+      <span>{label}</span>
+      <Icon size={13} aria-hidden />
     </button>
   );
 }

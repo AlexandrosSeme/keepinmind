@@ -3,7 +3,7 @@ const auth = {
     admin: "Διαχειριστής (Dev)",
     owner: "Ιδιοκτήτης",
     trainer: "Γυμναστής",
-    accountant: "Οικονομικά",
+    accountant: "More",
   },
   logout: "Αποσύνδεση",
   fields: {

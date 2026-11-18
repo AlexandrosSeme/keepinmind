@@ -19,7 +19,7 @@ const dashboard: LocaleShape<typeof el> = {
   subtitle: {
     admin: "System health and data quality",
     gym: "Gym and trainer monitoring",
-    finance: "Revenue, debts, renewals and members",
+    finance: "Overview",
     trainer: "What's happening in the gym today",
   },
   tabs: {
@@ -27,7 +27,7 @@ const dashboard: LocaleShape<typeof el> = {
     gym: "Gym",
   },
   finance: {
-    title: "Finance",
+    title: "More",
     kpi: {
       recurring: "Monthly recurring revenue",
       recurringHint: "{{count}} active subscriptions",

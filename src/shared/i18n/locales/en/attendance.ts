@@ -4,7 +4,7 @@ import type el from "../el/attendance";
 const attendance: LocaleShape<typeof el> = {
   page: {
     title: "Attendance",
-    subtitle: "Manage program attendance and entrance logging",
+    subtitle: "Member entrance log",
     searchPlaceholder: "Search...",
   },
   tabs: {
@@ -18,6 +18,9 @@ const attendance: LocaleShape<typeof el> = {
     appointment: "Appointments",
     class: "Classes",
     allStatuses: "All statuses",
+    allMethods: "All methods",
+    qr: "QR code",
+    manual: "Manual",
   },
   fields: {
     date: "Date",

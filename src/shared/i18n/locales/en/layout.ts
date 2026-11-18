@@ -4,7 +4,7 @@ import type el from "../el/layout";
 const layout: LocaleShape<typeof el> = {
   nav: {
     dashboard: "Dashboard",
-    financeSection: "Finance",
+    financeSection: "More",
     finance: "Overview",
     members: "Members",
     subscriptions: "Subscriptions",

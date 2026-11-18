@@ -146,7 +146,7 @@ const staffSeed = [
   {
     email: "grlol",
     password: "Zero@33",
-    fullName: "Οικονομικά",
+    fullName: "More",
     role: "accountant",
   },
 ];

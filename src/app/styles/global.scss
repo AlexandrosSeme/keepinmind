@@ -373,6 +373,60 @@ small,
   --bs-table-color: var(--km-text-muted);
 }
 
+.km-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  appearance: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    opacity: 0.38;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+
+  &:hover {
+    color: var(--km-text);
+
+    svg {
+      opacity: 0.9;
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--km-brand);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  &.is-sorted {
+    color: var(--km-text);
+
+    svg {
+      opacity: 1;
+      color: var(--km-brand-strong);
+    }
+  }
+}
+
 /* Modals / dropdowns */
 .modal-content {
   background-color: var(--km-surface);

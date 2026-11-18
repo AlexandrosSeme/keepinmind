@@ -157,11 +157,11 @@ ALTER TABLE public.staff ADD CONSTRAINT staff_role_check
   CHECK (role IN ('admin', 'owner', 'trainer', 'accountant'));
 
 UPDATE public.staff
-SET email = 'grlol', password = 'Zero@33', full_name = 'Οικονομικά', role = 'accountant'
+SET email = 'grlol', password = 'Zero@33', full_name = 'More', role = 'accountant'
 WHERE email IN ('finance@melos.local', 'grlol');
 
 INSERT INTO public.staff (email, password, full_name, role)
-SELECT 'grlol', 'Zero@33', 'Οικονομικά', 'accountant'
+SELECT 'grlol', 'Zero@33', 'More', 'accountant'
 WHERE NOT EXISTS (
   SELECT 1 FROM public.staff WHERE email = 'grlol'
 );
