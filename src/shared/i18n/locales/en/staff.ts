@@ -6,6 +6,7 @@ const staff: LocaleShape<typeof el> = {
     title: "Users",
     subtitle: "Staff accounts and roles",
     add: "New user",
+    searchPlaceholder: "Search (name, email)...",
   },
   fields: {
     email: "Email",

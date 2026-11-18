@@ -9,6 +9,8 @@ const payments = {
       "Αποτυχία ενημέρωσης. Βεβαιωθείτε ότι τρέχει το API (npm run api).",
     createError:
       "Αποτυχία δημιουργίας πληρωμής. Βεβαιωθείτε ότι τρέχει το API (npm run api).",
+    searchPlaceholder: "Αναζήτηση (μέλος, πακέτο, μέθοδος)...",
+    allStatuses: "Όλες οι καταστάσεις",
   },
   fields: {
     member: "Μέλος",

@@ -26,7 +26,6 @@ const SubscriptionsPage = lazy(
 const PaymentsPage = lazy(
   () => import("@/features/payments/pages/PaymentsPage"),
 );
-const DebtsPage = lazy(() => import("@/features/debts/pages/DebtsPage"));
 const CalendarPage = lazy(
   () => import("@/features/bookings/pages/CalendarPage"),
 );
@@ -143,14 +142,6 @@ export const router = createBrowserRouter([
                 element: (
                   <RequirePermission anyOf={["finance"]}>
                     <PaymentsPage />
-                  </RequirePermission>
-                ),
-              },
-              {
-                path: "debts",
-                element: (
-                  <RequirePermission anyOf={["finance"]}>
-                    <DebtsPage />
                   </RequirePermission>
                 ),
               },

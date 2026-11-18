@@ -4,9 +4,11 @@ const members = {
     newMember: "Νέο Μέλος",
     searchPlaceholder: "Αναζήτηση μέλους (όνομα, τηλέφωνο)...",
     filters: "Φίλτρα",
+    allStatuses: "Όλες οι καταστάσεις",
     export: "Export",
     addTitle: "Προσθήκη Νέου Μέλους",
     editTitle: "Επεξεργασία Μέλους",
+    empty: "Δεν βρέθηκαν μέλη",
   },
   confirmDelete: "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το μέλος;",
   fields: {

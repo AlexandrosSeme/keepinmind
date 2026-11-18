@@ -1,33 +1,32 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Download, Filter, Plus, Search } from "lucide-react";
+import { Download, Plus, Search } from "lucide-react";
 import { ImageModal, PageHeader } from "@/shared/ui";
-import { EMPTY_MEMBER_INPUT, type Member, type MemberInput } from "../types";
+import {
+  EMPTY_MEMBER_INPUT,
+  type Member,
+  type MemberInput,
+  type MemberStatus,
+} from "../types";
 import { useMemberMutations, useMembers } from "../queries";
 import { uploadMemberPhoto } from "../photoApi";
 import { useToggleCardLost } from "../hooks/useToggleCardLost";
 import MemberFormModal from "../components/MemberFormModal";
 import MembersTable from "../components/MembersTable";
-import MemberCardList from "../components/MemberCardList";
 import type { MemberRowActions } from "../components/memberActions";
 
 type FormState = { mode: "add" } | { mode: "edit"; member: Member } | null;
 
 const MembersPage: React.FC = () => {
-  const { t } = useTranslation("members");
+  const { t } = useTranslation(["members", "common"]);
   const { members } = useMembers();
   const { addMember, editMember, removeMember } = useMemberMutations();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<MemberStatus | "">("");
   const [form, setForm] = useState<FormState>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-
-  const filteredMembers = members.filter(
-    (member) =>
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.phone.includes(searchTerm),
-  );
 
   const handleDelete = async (member: Member) => {
     if (window.confirm(t("confirmDelete"))) {
@@ -119,10 +118,21 @@ const MembersPage: React.FC = () => {
               </div>
             </div>
             <div className="col-6 col-md-3 col-lg-2">
-              <button className="btn btn-outline-secondary w-100">
-                <Filter size={16} className="me-2" />
-                {t("page.filters")}
-              </button>
+              <select
+                className="form-select"
+                aria-label={t("page.filters")}
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(e.target.value as MemberStatus | "")
+                }
+              >
+                <option value="">{t("page.allStatuses")}</option>
+                <option value="active">{t("common:status.active")}</option>
+                <option value="expiring_soon">
+                  {t("common:status.expiring_soon")}
+                </option>
+                <option value="expired">{t("common:status.expired")}</option>
+              </select>
             </div>
             <div className="col-6 col-md-3 col-lg-2">
               <button className="btn btn-outline-secondary w-100">
@@ -134,8 +144,12 @@ const MembersPage: React.FC = () => {
         </div>
       </div>
 
-      <MembersTable members={filteredMembers} {...rowActions} />
-      <MemberCardList members={filteredMembers} {...rowActions} />
+      <MembersTable
+        members={members}
+        searchTerm={searchTerm}
+        statusFilter={statusFilter}
+        {...rowActions}
+      />
 
       {form?.mode === "add" && (
         <MemberFormModal
