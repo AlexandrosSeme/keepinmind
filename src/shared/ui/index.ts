@@ -20,3 +20,5 @@ export { GreekFlag, UkFlag } from "./Flags";
 export { default as Pagination } from "./Pagination";
 export type { PaginationProps } from "./Pagination";
 export { default as SortableHeader, ariaSort } from "./SortableHeader";
+export { default as Select } from "./Select";
+export type { SelectOption } from "./Select";

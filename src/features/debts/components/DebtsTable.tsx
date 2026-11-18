@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { flexRender } from "@tanstack/react-table";
 import { Clock, Edit, Euro, Mail, Phone, Search, Trash2 } from "lucide-react";
 import i18n from "@/shared/i18n";
-import { IconAvatar, Pagination, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
+import { IconAvatar, Pagination, Select, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
 import {
   byNumber,
   useClientTable,
@@ -213,19 +213,17 @@ const DebtsTable: React.FC<DebtsTableProps> = ({ debts, onEdit, onDelete }) => {
               </div>
             </div>
             <div className="col-12 col-md-4">
-              <select
-                className="form-select"
-                aria-label={t("fields.status")}
+              <Select
+                ariaLabel={t("fields.status")}
                 value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as DebtStatus | "")
-                }
-              >
-                <option value="">{t("page.allStatuses")}</option>
-                <option value="warning">{t("common:status.warning")}</option>
-                <option value="overdue">{t("common:status.overdue")}</option>
-                <option value="critical">{t("common:status.critical")}</option>
-              </select>
+                onChange={(value) => setStatusFilter(value as DebtStatus | "")}
+                options={[
+                  { value: "", label: t("page.allStatuses") },
+                  { value: "warning", label: t("common:status.warning") },
+                  { value: "overdue", label: t("common:status.overdue") },
+                  { value: "critical", label: t("common:status.critical") },
+                ]}
+              />
             </div>
           </div>
         </div>

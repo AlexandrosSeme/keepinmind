@@ -3,13 +3,13 @@ import { useTranslation } from "react-i18next";
 import { flexRender } from "@tanstack/react-table";
 import {
   AlertTriangle,
+  CheckCircle2,
+  Clock,
   CreditCard,
   Edit,
-  Eye,
-  Printer,
-  Trash2,
+  XCircle,
 } from "lucide-react";
-import { Pagination, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
+import { Pagination, SortableHeader, ariaSort } from "@/shared/ui";
 import {
   byNumber,
   useClientTable,
@@ -22,6 +22,19 @@ import type { MemberRowActions } from "./memberActions";
 import MemberAvatar from "./MemberAvatar";
 
 const PAGE_SIZES = [10, 20, 50];
+
+const StatusMark: React.FC<{ status: MemberStatus; label: string }> = ({
+  status,
+  label,
+}) => {
+  if (status === "expired") {
+    return <XCircle size={16} className="text-danger flex-shrink-0" aria-label={label} />;
+  }
+  if (status === "expiring_soon") {
+    return <Clock size={16} className="text-warning flex-shrink-0" aria-label={label} />;
+  }
+  return <CheckCircle2 size={16} className="text-success flex-shrink-0" aria-label={label} />;
+};
 const STATUS_RANK: Record<MemberStatus, number> = {
   active: 0,
   expiring_soon: 1,
@@ -51,8 +64,6 @@ const MembersTable: React.FC<MembersTableProps> = ({
   onView,
   onEdit,
   onToggleCardLost,
-  onPrintCard,
-  onDelete,
   onPhotoClick,
 }) => {
   const { t } = useTranslation(["members", "common"]);
@@ -60,16 +71,12 @@ const MembersTable: React.FC<MembersTableProps> = ({
     onView,
     onEdit,
     onToggleCardLost,
-    onPrintCard,
-    onDelete,
     onPhotoClick,
   });
   actionsRef.current = {
     onView,
     onEdit,
     onToggleCardLost,
-    onPrintCard,
-    onDelete,
     onPhotoClick,
   };
 
@@ -82,28 +89,36 @@ const MembersTable: React.FC<MembersTableProps> = ({
         ),
         cell: ({ row }) => {
           const member = row.original;
+          const statusLabel = t(`common:status.${member.status}`);
           return (
             <div className="d-flex align-items-center min-w-0 w-100">
-              <MemberAvatar
-                member={member}
-                onPhotoClick={(src) => actionsRef.current.onPhotoClick(src)}
-              />
+              <span
+                onClick={(event) => {
+                  if (member.photo_url) event.stopPropagation();
+                }}
+              >
+                <MemberAvatar
+                  member={member}
+                  onPhotoClick={(src) => actionsRef.current.onPhotoClick(src)}
+                />
+              </span>
               <div className="min-w-0">
-                <div
-                  className="fw-semibold text-dark km-clickable text-truncate"
-                  onClick={() => actionsRef.current.onView(member)}
-                >
-                  {member.name}
-                </div>
-                <div className="d-md-none km-member-meta">
-                  <StatusBadge status={member.status} />
+                <div className="d-flex align-items-center gap-2 min-w-0">
+                  <span className="d-md-none" title={statusLabel}>
+                    <StatusMark status={member.status} label={statusLabel} />
+                  </span>
+                  <div className="fw-semibold text-dark text-truncate km-page-subtitle">
+                    {member.name}
+                  </div>
                   {member.card_lost === true && (
-                    <StatusBadge
-                      status="card_lost"
-                      icon={<AlertTriangle size={11} />}
-                      showDot={false}
+                    <AlertTriangle
+                      size={14}
+                      className="text-danger flex-shrink-0"
+                      aria-label={t("common:status.card_lost")}
                     />
                   )}
+                </div>
+                <div className="d-md-none km-member-meta">
                   <span
                     className="text-muted text-truncate"
                     title={`${member.phone} · ${member.package} · ${member.expiry}`}
@@ -122,7 +137,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
           <SortableHeader column={column} label={t("fields.phone")} />
         ),
         cell: ({ row }) => (
-          <span className="text-muted">{row.original.phone}</span>
+          <span className="text-muted km-page-subtitle">{row.original.phone}</span>
         ),
       },
       {
@@ -131,7 +146,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
           <SortableHeader column={column} label={t("fields.package")} />
         ),
         cell: ({ row }) => (
-          <span className="text-muted">{row.original.package}</span>
+          <span className="text-muted km-page-subtitle">{row.original.package}</span>
         ),
       },
       {
@@ -143,7 +158,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
           (member) => parseGRDate(member.expiry)?.getTime() ?? 0,
         ),
         cell: ({ row }) => (
-          <span className="text-muted">{row.original.expiry}</span>
+          <span className="text-muted km-page-subtitle">{row.original.expiry}</span>
         ),
       },
       {
@@ -155,18 +170,11 @@ const MembersTable: React.FC<MembersTableProps> = ({
           value === "" || row.original.status === value,
         sortingFn: byNumber<Member>((member) => STATUS_RANK[member.status]),
         cell: ({ row }) => {
-          const member = row.original;
+          const label = t(`common:status.${row.original.status}`);
           return (
-            <div className="d-none d-md-flex flex-column align-items-start gap-1">
-              <StatusBadge status={member.status} />
-              {member.card_lost === true && (
-                <StatusBadge
-                  status="card_lost"
-                  icon={<AlertTriangle size={11} />}
-                  showDot={false}
-                />
-              )}
-            </div>
+            <span title={label}>
+              <StatusMark status={row.original.status} label={label} />
+            </span>
           );
         },
       },
@@ -180,53 +188,38 @@ const MembersTable: React.FC<MembersTableProps> = ({
           const member = row.original;
           const actions = actionsRef.current;
           return (
-            <div className="km-row-actions" role="group">
+            <div
+              className="km-row-actions"
+              role="group"
+              onClick={(event) => event.stopPropagation()}
+            >
               <button
-                className="btn btn-link btn-sm km-action-link p-0"
-                onClick={() => actions.onView(member)}
-                title={t("actions.view")}
-              >
-                <Eye size={16} />
-              </button>
-              <button
+                type="button"
                 className="btn btn-link btn-sm km-action-link p-0"
                 onClick={() => actions.onEdit(member)}
                 title={t("common:actions.edit")}
+                aria-label={t("common:actions.edit")}
               >
                 <Edit size={16} />
               </button>
-              {member.card_lost === true ? (
-                <>
-                  <button
-                    className="btn btn-link btn-sm km-action-link p-0"
-                    onClick={() => actions.onToggleCardLost(member)}
-                    title={t("actions.activateCard")}
-                  >
-                    <CreditCard size={16} />
-                  </button>
-                  <button
-                    className="btn btn-link btn-sm km-action-link p-0"
-                    onClick={() => actions.onPrintCard(member)}
-                    title={t("actions.printNewCard")}
-                  >
-                    <Printer size={16} />
-                  </button>
-                </>
-              ) : (
-                <button
-                  className="btn btn-link btn-sm km-action-link km-action-danger p-0"
-                  onClick={() => actions.onToggleCardLost(member)}
-                  title={t("actions.cancelCardLost")}
-                >
-                  <CreditCard size={16} />
-                </button>
-              )}
               <button
-                className="btn btn-link btn-sm km-action-link km-action-danger p-0"
-                onClick={() => actions.onDelete(member)}
-                title={t("common:actions.delete")}
+                type="button"
+                className={`btn btn-link btn-sm km-action-link p-0${
+                  member.card_lost === true ? "" : " km-action-danger"
+                }`}
+                onClick={() => actions.onToggleCardLost(member)}
+                title={
+                  member.card_lost === true
+                    ? t("actions.activateCard")
+                    : t("actions.cancelCardLost")
+                }
+                aria-label={
+                  member.card_lost === true
+                    ? t("actions.activateCard")
+                    : t("actions.cancelCardLost")
+                }
               >
-                <Trash2 size={16} />
+                <CreditCard size={16} />
               </button>
             </div>
           );
@@ -250,8 +243,6 @@ const MembersTable: React.FC<MembersTableProps> = ({
   const total = table.getFilteredRowModel().rows.length;
   const { pageIndex, pageSize } = table.getState().pagination;
 
-
-  console.info(table)
   return (
     <>
       <div className="card border-0 shadow-sm km-table-card">
@@ -308,7 +299,13 @@ const MembersTable: React.FC<MembersTableProps> = ({
                   </tr>
                 ) : (
                   table.getRowModel().rows.map((row) => (
-                    <tr key={row.id}>
+                    <tr
+                      key={row.id}
+                      className={
+                        row.original.status === "expired" ? "km-row-expired" : undefined
+                      }
+                      onClick={() => actionsRef.current.onView(row.original)}
+                    >
                       {row.getVisibleCells().map((cell) => {
                         const hide =
                           cell.column.id === "phone" ||

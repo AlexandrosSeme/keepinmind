@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
-import { PageHeader } from "@/shared/ui";
+import { PageHeader, Select } from "@/shared/ui";
 import type { EntranceLog } from "../types";
 import { getEntranceLogs } from "../api";
 import EntranceLogsTable from "../components/EntranceLogsTable";
@@ -52,29 +52,29 @@ const AttendancePage: React.FC = () => {
               </div>
             </div>
             <div className="col-sm-6 col-lg-3">
-              <select
-                className="form-select"
+              <Select
+                ariaLabel={t("fields.validation")}
                 value={statusFilter}
-                aria-label={t("fields.validation")}
-                onChange={(e) => setStatusFilter(e.target.value as ValidationFilter)}
-              >
-                <option value="all">{t("filters.allStatuses")}</option>
-                <option value="valid">{t("common:status.valid")}</option>
-                <option value="invalid">{t("common:status.invalid")}</option>
-                <option value="expiring_soon">{t("common:status.expiring_soon")}</option>
-              </select>
+                onChange={(value) => setStatusFilter(value as ValidationFilter)}
+                options={[
+                  { value: "all", label: t("filters.allStatuses") },
+                  { value: "valid", label: t("common:status.valid") },
+                  { value: "invalid", label: t("common:status.invalid") },
+                  { value: "expiring_soon", label: t("common:status.expiring_soon") },
+                ]}
+              />
             </div>
             <div className="col-sm-6 col-lg-3">
-              <select
-                className="form-select"
+              <Select
+                ariaLabel={t("fields.type")}
                 value={methodFilter}
-                aria-label={t("fields.type")}
-                onChange={(e) => setMethodFilter(e.target.value as MethodFilter)}
-              >
-                <option value="all">{t("filters.allMethods")}</option>
-                <option value="qr_scan">{t("filters.qr")}</option>
-                <option value="manual">{t("filters.manual")}</option>
-              </select>
+                onChange={(value) => setMethodFilter(value as MethodFilter)}
+                options={[
+                  { value: "all", label: t("filters.allMethods") },
+                  { value: "qr_scan", label: t("filters.qr") },
+                  { value: "manual", label: t("filters.manual") },
+                ]}
+              />
             </div>
           </div>
         </div>

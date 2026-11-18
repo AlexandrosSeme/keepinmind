@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { flexRender } from "@tanstack/react-table";
 import { CreditCard, Edit, Eye, Search, Trash2 } from "lucide-react";
-import { IconAvatar, Pagination, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
+import { IconAvatar, Pagination, Select, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
 import {
   byNumber,
   useClientTable,
@@ -230,19 +230,17 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
               </div>
             </div>
             <div className="col-12 col-md-4">
-              <select
-                className="form-select"
-                aria-label={t("fields.status")}
+              <Select
+                ariaLabel={t("fields.status")}
                 value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as PaymentStatus | "")
-                }
-              >
-                <option value="">{t("page.allStatuses")}</option>
-                <option value="completed">{t("common:status.completed")}</option>
-                <option value="pending">{t("common:status.pending")}</option>
-                <option value="failed">{t("common:status.failed")}</option>
-              </select>
+                onChange={(value) => setStatusFilter(value as PaymentStatus | "")}
+                options={[
+                  { value: "", label: t("page.allStatuses") },
+                  { value: "completed", label: t("common:status.completed") },
+                  { value: "pending", label: t("common:status.pending") },
+                  { value: "failed", label: t("common:status.failed") },
+                ]}
+              />
             </div>
           </div>
         </div>

@@ -356,8 +356,8 @@ small,
   font-size: 0.78rem;
   color: var(--km-text-muted) !important;
   background: #f7f6f3 !important;
-  padding-top: 0.9rem !important;
-  padding-bottom: 0.9rem !important;
+  padding-top: 0.7rem !important;
+  padding-bottom: 0.7rem !important;
   white-space: nowrap;
   vertical-align: middle;
 }
@@ -365,12 +365,49 @@ small,
 .table > :not(caption) > * > td {
   vertical-align: middle;
   border-color: var(--km-border) !important;
-  padding-top: 0.95rem !important;
-  padding-bottom: 0.95rem !important;
+  padding-top: 0.7rem !important;
+  padding-bottom: 0.7rem !important;
 }
 .table-light {
   --bs-table-bg: #f7f6f3;
   --bs-table-color: var(--km-text-muted);
+}
+
+.km-col-actions {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.km-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.km-member-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  margin-top: 0.1rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.km-member-meta > .text-truncate {
+  min-width: 0;
+}
+
+.table.km-table-rows > tbody > tr {
+  cursor: pointer;
+}
+
+.table.km-table-rows > tbody > tr.km-row-expired > * {
+  background-color: rgba(214, 59, 59, 0.08);
+}
+
+.table-hover.km-table-rows > tbody > tr.km-row-expired:hover > * {
+  background-color: rgba(214, 59, 59, 0.14);
 }
 
 .km-sort {
@@ -699,7 +736,7 @@ small,
 
 .km-page-subtitle {
   margin: 0.35rem 0 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--km-text-muted);
   font-family: var(--font-body);
   text-transform: none;
@@ -850,22 +887,37 @@ small,
     border: none;
   }
 
-  .table thead {
-    display: none;
+  .km-table thead th,
+  .km-table tbody td {
+    padding-top: 0.4rem !important;
+    padding-bottom: 0.4rem !important;
   }
 
-  .table tbody tr {
-    display: block;
-    margin-bottom: 1rem;
-    border: 1px solid var(--km-border);
-    border-radius: 6px;
+  table.km-table-rows {
+    width: 100%;
+    table-layout: fixed;
   }
 
-  .table tbody td {
-    display: block;
-    text-align: left;
-    border: none;
-    padding: 0.5rem 1rem;
+  table.km-table-rows .km-col-actions {
+    width: 52px;
+    overflow: hidden;
+    padding-left: 0 !important;
+    padding-right: 0.35rem !important;
+  }
+
+  table.km-table-rows .km-row-actions {
+    gap: 0.2rem;
+    justify-content: flex-end;
+  }
+
+  table.km-table-rows .km-action-link {
+    padding: 0 !important;
+  }
+
+  table.km-table-rows .km-member-avatar {
+    width: 32px;
+    height: 32px;
+    margin-right: 0.5rem !important;
   }
 }
 

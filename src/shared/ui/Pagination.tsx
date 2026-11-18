@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Select from "./Select";
 import "./Pagination.scss";
 
 export interface PaginationProps {
@@ -87,17 +88,16 @@ const Pagination: React.FC<PaginationProps> = ({
       {pageSizeOptions && onPageSizeChange && (
         <label className="km-pagination__size">
           <span>{t("pagination.perPage")}</span>
-          <select
-            className="form-select form-select-sm"
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          >
-            {pageSizeOptions.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+          <Select
+            size="sm"
+            ariaLabel={t("pagination.perPage")}
+            value={String(pageSize)}
+            onChange={(value) => onPageSizeChange(Number(value))}
+            options={pageSizeOptions.map((size) => ({
+              value: String(size),
+              label: String(size),
+            }))}
+          />
         </label>
       )}
     </nav>

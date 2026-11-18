@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Download, Plus, Search } from "lucide-react";
-import { ImageModal, PageHeader } from "@/shared/ui";
+import { ImageModal, PageHeader, Select } from "@/shared/ui";
 import {
   EMPTY_MEMBER_INPUT,
   type Member,
@@ -118,21 +118,17 @@ const MembersPage: React.FC = () => {
               </div>
             </div>
             <div className="col-6 col-md-3 col-lg-2">
-              <select
-                className="form-select"
-                aria-label={t("page.filters")}
+              <Select
+                ariaLabel={t("page.filters")}
                 value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as MemberStatus | "")
-                }
-              >
-                <option value="">{t("page.allStatuses")}</option>
-                <option value="active">{t("common:status.active")}</option>
-                <option value="expiring_soon">
-                  {t("common:status.expiring_soon")}
-                </option>
-                <option value="expired">{t("common:status.expired")}</option>
-              </select>
+                onChange={(value) => setStatusFilter(value as MemberStatus | "")}
+                options={[
+                  { value: "", label: t("page.allStatuses") },
+                  { value: "active", label: t("common:status.active") },
+                  { value: "expiring_soon", label: t("common:status.expiring_soon") },
+                  { value: "expired", label: t("common:status.expired") },
+                ]}
+              />
             </div>
             <div className="col-6 col-md-3 col-lg-2">
               <button className="btn btn-outline-secondary w-100">

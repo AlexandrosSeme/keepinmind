@@ -1,0 +1,112 @@
+.km-select {
+  position: relative;
+}
+
+.km-select__button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 38px;
+  padding: 0.375rem 0.75rem;
+  background: #fff;
+  border: 1px solid var(--km-border);
+  border-radius: 4px;
+  color: var(--km-text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+
+  svg {
+    flex-shrink: 0;
+    color: var(--km-text-faint);
+    transition: transform 0.15s ease;
+  }
+
+  svg.is-open {
+    transform: rotate(180deg);
+    color: var(--km-text);
+  }
+
+  &:hover,
+  &[aria-expanded="true"] {
+    border-color: var(--km-brand);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--km-brand);
+    box-shadow: 0 0 0 0.2rem rgba(var(--km-brand-rgb), 0.25);
+  }
+}
+
+.km-select__button.is-sm {
+  min-height: 32px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.85rem;
+}
+
+.km-select__menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  width: max-content;
+  min-width: 100%;
+  max-width: 18rem;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--km-border);
+  border-radius: 6px;
+  box-shadow: 0 10px 28px rgba(20, 20, 20, 0.12);
+  max-height: 240px;
+  overflow: auto;
+}
+
+.km-select__menu.is-up {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+.km-select__option {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  padding: 0.45rem 0.7rem;
+  color: var(--km-text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--km-brand-soft);
+    color: var(--km-text);
+    outline: none;
+  }
+}
+
+.km-select__option.is-selected {
+  background: var(--km-brand);
+  color: var(--km-on-brand);
+  font-weight: 700;
+
+  &:hover,
+  &:focus-visible {
+    background: #ffd633;
+    color: var(--km-on-brand);
+  }
+}
