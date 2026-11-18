@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  AlertTriangle,
   BarChart3,
   Bell,
   Calendar,
