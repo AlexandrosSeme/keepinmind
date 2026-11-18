@@ -3,6 +3,7 @@ const auth = {
     admin: "Διαχειριστής (Dev)",
     owner: "Ιδιοκτήτης",
     trainer: "Γυμναστής",
+    accountant: "Οικονομικά",
   },
   logout: "Αποσύνδεση",
   fields: {
@@ -12,6 +13,7 @@ const auth = {
     passwordHint: "Τουλάχιστον {{min}} χαρακτήρες.",
   },
   login: {
+    identifier: "Email ή όνομα χρήστη",
     subtitle: "Σύνδεση προσωπικού",
     submit: "Σύνδεση",
     submitting: "Σύνδεση...",

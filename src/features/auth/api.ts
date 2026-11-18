@@ -1,5 +1,10 @@
 import { api, ApiError, getOrNull, query } from "@/shared/api/httpClient";
-import { hasPermission, isStaffRole, manageableRoles } from "./permissions";
+import {
+  hasPermission,
+  isListedStaffRole,
+  isStaffRole,
+  manageableRoles,
+} from "./permissions";
 import {
   MIN_PASSWORD_LENGTH,
   StaffAuthError,
@@ -117,7 +122,7 @@ export const listStaff = (actor: StaffUser) =>
     }
     const records = await api.get<StaffRecord[]>("/staff");
     return records
-      .filter((r) => isStaffRole(r.role))
+      .filter((r) => isListedStaffRole(r.role))
       .map(toUser)
       .sort((a, b) => a.email.localeCompare(b.email));
   });

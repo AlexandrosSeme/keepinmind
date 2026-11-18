@@ -1,5 +1,6 @@
 export {
   STAFF_ROLES,
+  LISTED_STAFF_ROLES,
   hasPermission,
   hasAnyPermission,
   manageableRoles,

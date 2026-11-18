@@ -2,8 +2,11 @@
  * Staff roles of the admin app. Members are not staff: they only use the
  * member portal (`/member`) with its own phone-based session.
  */
-export const STAFF_ROLES = ["admin", "owner", "trainer"] as const;
+export const STAFF_ROLES = ["admin", "owner", "trainer", "accountant"] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
+
+/** Roles that appear in Users and can be assigned. Accountant stays off this list. */
+export const LISTED_STAFF_ROLES = ["admin", "owner", "trainer"] as const;
 
 export type Permission =
   /** Payments, debts, revenue, package prices and editing packages. */
@@ -16,22 +19,32 @@ export type Permission =
   | "staff.manage";
 
 const ROLE_PERMISSIONS: Record<StaffRole, readonly Permission[]> = {
-  admin: ["finance", "settings.business", "settings.dev", "staff.manage"],
-  owner: ["finance", "settings.business", "staff.manage"],
+  admin: ["settings.business", "settings.dev", "staff.manage"],
+  owner: ["settings.business", "staff.manage"],
   trainer: [],
+  // Same pages as the owner, plus the finance section.
+  accountant: ["finance", "settings.business", "staff.manage"],
 };
 
 /** Roles a user may create, edit, delete or assign. Owners cannot touch admins. */
 const MANAGEABLE_ROLES: Record<StaffRole, readonly StaffRole[]> = {
-  admin: STAFF_ROLES,
+  admin: LISTED_STAFF_ROLES,
   owner: ["owner", "trainer"],
   trainer: [],
+  accountant: ["owner", "trainer"],
 };
 
 export function isStaffRole(value: unknown): value is StaffRole {
   return (
     typeof value === "string" &&
     (STAFF_ROLES as readonly string[]).includes(value)
+  );
+}
+
+export function isListedStaffRole(value: unknown): value is StaffRole {
+  return (
+    typeof value === "string" &&
+    (LISTED_STAFF_ROLES as readonly string[]).includes(value)
   );
 }
 

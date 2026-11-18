@@ -61,12 +61,15 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
               </div>
               <button
                 type="button"
-                className="btn btn-outline-secondary"
+                className="btn-outline-secondary p-2"
                 onClick={() => setChangingPassword(true)}
                 aria-label={t("auth:changePassword.title")}
                 title={t("auth:changePassword.title")}
               >
                 <KeyRound size={20} />
+                <span className="d-none d-lg-inline ms-2">
+                  {t("auth:changePassword.title")}
+                </span>
               </button>
               <button
                 type="button"

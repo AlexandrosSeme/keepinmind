@@ -17,8 +17,8 @@ const StaffLoginPage: React.FC = () => {
 
   if (profile) {
     const from = (location.state as { from?: Location } | null)?.from;
-    const target = from && from.pathname !== "/login" ? from : "/dashboard";
-    return <Navigate to={target} replace />;
+    const requested = from && from.pathname !== "/login" ? from : "/dashboard";
+    return <Navigate to={requested} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,11 +46,11 @@ const StaffLoginPage: React.FC = () => {
             {error && <div className="alert alert-danger">{error}</div>}
             <div className="mb-3">
               <label htmlFor="staff-email" className="form-label">
-                {t("fields.email")}
+                {t("login.identifier")}
               </label>
               <input
                 id="staff-email"
-                type="email"
+                type="text"
                 className="form-control"
                 autoComplete="username"
                 value={email}

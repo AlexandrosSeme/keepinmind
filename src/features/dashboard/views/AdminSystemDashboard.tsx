@@ -19,7 +19,7 @@ import { useDebts } from "@/features/debts";
 import { useMembers } from "@/features/members";
 import { usePayments } from "@/features/payments";
 import { useStaff } from "@/features/staff";
-import { STAFF_ROLES } from "@/features/auth";
+import { LISTED_STAFF_ROLES } from "@/features/auth";
 import { useApiHealth, useCollectionCounts, useRecentVisits } from "../queries";
 import { dataQuality, sameDay } from "../lib/analytics";
 import { cartesianOptions, verticalGradient } from "../lib/chartOptions";
@@ -47,7 +47,9 @@ const AdminSystemDashboard: React.FC = () => {
   const now = new Date();
   const online = health.isSuccess && !health.isError;
   const totalRecords = counts.reduce((s, c) => s + c.count, 0);
-  const roleCounts = STAFF_ROLES.map((role) => staff.filter((s) => s.role === role).length);
+  const roleCounts = LISTED_STAFF_ROLES.map((role) =>
+    staff.filter((s) => s.role === role).length,
+  );
   const checks = useMemo(
     () => dataQuality(members, payments, debts),
     [members, payments, debts],
@@ -184,7 +186,7 @@ const AdminSystemDashboard: React.FC = () => {
           className="km-dash-panel km-col-3"
         >
           <DoughnutChart
-            labels={STAFF_ROLES.map((r) => t(`auth:roles.${r}`))}
+            labels={LISTED_STAFF_ROLES.map((r) => t(`auth:roles.${r}`))}
             values={roleCounts}
             colors={ROLE_COLORS}
             format={(v) => String(v)}

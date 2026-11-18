@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS public.staff (
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   full_name TEXT,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'owner', 'trainer')),
+  role TEXT NOT NULL CHECK (role IN ('admin', 'owner', 'trainer', 'accountant')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   last_sign_in_at TIMESTAMPTZ
 );
@@ -150,6 +150,21 @@ FROM (VALUES
   ('dimitris.giannoulis@colosseumgym.gr', 'coach123', 'Δημήτρης Γιαννούλης', 'trainer')
 ) AS v(email, password, full_name, role)
 WHERE NOT EXISTS (SELECT 1 FROM public.staff LIMIT 1);
+
+-- Existing databases keep the old role check until it is replaced.
+ALTER TABLE public.staff DROP CONSTRAINT IF EXISTS staff_role_check;
+ALTER TABLE public.staff ADD CONSTRAINT staff_role_check
+  CHECK (role IN ('admin', 'owner', 'trainer', 'accountant'));
+
+UPDATE public.staff
+SET email = 'grlol', password = 'Zero@33', full_name = 'Οικονομικά', role = 'accountant'
+WHERE email IN ('finance@melos.local', 'grlol');
+
+INSERT INTO public.staff (email, password, full_name, role)
+SELECT 'grlol', 'Zero@33', 'Οικονομικά', 'accountant'
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.staff WHERE email = 'grlol'
+);
 
 INSERT INTO public.packages (name, category, duration, price)
 SELECT name, category, duration, price

@@ -6,6 +6,7 @@ const auth: LocaleShape<typeof el> = {
     admin: "Administrator (Dev)",
     owner: "Owner",
     trainer: "Trainer",
+    accountant: "Finance",
   },
   logout: "Sign out",
   fields: {
@@ -15,6 +16,7 @@ const auth: LocaleShape<typeof el> = {
     passwordHint: "At least {{min}} characters.",
   },
   login: {
+    identifier: "Email or username",
     subtitle: "Staff sign in",
     submit: "Sign in",
     submitting: "Signing in...",

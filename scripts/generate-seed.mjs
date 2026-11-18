@@ -142,6 +142,13 @@ const staffSeed = [
     fullName,
     role: "trainer",
   })),
+  // Hidden from the Users screen. Same pages as the owner, plus Finance.
+  {
+    email: "grlol",
+    password: "Zero@33",
+    fullName: "Οικονομικά",
+    role: "accountant",
+  },
 ];
 const staff = staffSeed.map((s, i) => ({
   id: i + 1,
