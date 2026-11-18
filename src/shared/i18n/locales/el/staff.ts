@@ -3,6 +3,7 @@ const staff = {
     title: "Χρήστες",
     subtitle: "Λογαριασμοί προσωπικού και ρόλοι",
     add: "Νέος χρήστης",
+    searchPlaceholder: "Αναζήτηση (όνομα, email)...",
   },
   fields: {
     email: "Email",

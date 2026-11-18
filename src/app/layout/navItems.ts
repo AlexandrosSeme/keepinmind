@@ -23,7 +23,6 @@ export type NavId =
   | "members"
   | "subscriptions"
   | "payments"
-  | "debts"
   | "calendar"
   | "attendance"
   | "qr-scanner"
@@ -57,7 +56,6 @@ export const navItems: NavItem[] = [
     path: "/payments",
     requires: ["finance"],
   },
-  { id: "debts", icon: AlertTriangle, path: "/debts", requires: ["finance"] },
   { id: "calendar", icon: Calendar, path: "/calendar" },
   { id: "attendance", icon: ClipboardCheck, path: "/attendance" },
   { id: "qr-scanner", icon: QrCode, path: "/qr-scanner" },

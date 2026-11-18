@@ -10,6 +10,8 @@ const payments: LocaleShape<typeof el> = {
     updateError: "Update failed. Make sure the API is running (npm run api).",
     createError:
       "Failed to create payment. Make sure the API is running (npm run api).",
+    searchPlaceholder: "Search (member, package, method)...",
+    allStatuses: "All statuses",
   },
   fields: {
     member: "Member",
@@ -19,6 +21,11 @@ const payments: LocaleShape<typeof el> = {
     method: "Method",
     status: "Status",
     fullName: "Full name",
+    firstPaymentDate: "First payment",
+    firstPaymentAmount: "First amount",
+    lastPaymentDate: "Last payment",
+    lastPaymentAmount: "Last amount",
+    totalAmount: "Total",
   },
   table: {
     actions: "Actions",

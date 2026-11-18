@@ -9,6 +9,8 @@ const payments = {
       "Αποτυχία ενημέρωσης. Βεβαιωθείτε ότι τρέχει το API (npm run api).",
     createError:
       "Αποτυχία δημιουργίας πληρωμής. Βεβαιωθείτε ότι τρέχει το API (npm run api).",
+    searchPlaceholder: "Αναζήτηση (μέλος, πακέτο, μέθοδος)...",
+    allStatuses: "Όλες οι καταστάσεις",
   },
   fields: {
     member: "Μέλος",
@@ -18,6 +20,11 @@ const payments = {
     method: "Μέθοδος",
     status: "Κατάσταση",
     fullName: "Ονοματεπώνυμο",
+    firstPaymentDate: "Πρώτη πληρωμή",
+    firstPaymentAmount: "Ποσό πρώτης",
+    lastPaymentDate: "Τελευταία πληρωμή",
+    lastPaymentAmount: "Ποσό τελευταίας",
+    totalAmount: "Σύνολο",
   },
   table: {
     actions: "Ενέργειες",

@@ -272,6 +272,7 @@ small,
 
 .km-main {
   background: var(--km-canvas);
+  background: lightgray;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
@@ -813,6 +814,70 @@ small,
     border: none;
     padding: 0.5rem 1rem;
   }
+
+  // Real rows, so a phone shows many records instead of one card each.
+  table.km-table-rows {
+    width: 100%;
+    table-layout: fixed;
+
+    thead {
+      display: table-header-group;
+    }
+
+    thead th,
+    tbody td {
+      display: table-cell;
+      vertical-align: middle;
+      padding: 0.4rem 0.5rem;
+      overflow: hidden;
+    }
+
+    .km-col-actions {
+      width: 88px;
+      overflow: hidden;
+      padding-left: 0 !important;
+      padding-right: 0.4rem !important;
+    }
+
+    .km-action-link {
+      padding: 0 !important;
+    }
+
+    tbody tr {
+      display: table-row;
+      margin-bottom: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .km-member-avatar {
+      width: 32px;
+      height: 32px;
+      margin-right: 0.5rem !important;
+    }
+
+    .km-member-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      min-width: 0;
+      margin-top: 0.1rem;
+      font-size: 0.72rem;
+      line-height: 1.2;
+    }
+
+    .km-member-meta .text-truncate {
+      min-width: 0;
+    }
+
+    .km-sort {
+      font-size: 0.72rem;
+    }
+
+    .km-row-actions {
+      gap: 0.25rem;
+    }
+  }
 }
 
 .calendar-day {
@@ -858,6 +923,39 @@ small,
 /* Utilities */
 .km-clickable {
   cursor: pointer;
+}
+
+.km-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+}
+
+.km-sort svg {
+  opacity: 0.45;
+}
+
+.km-sort.is-sorted svg {
+  opacity: 1;
+}
+
+.km-row-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+}
+
+.km-col-actions {
+  width: 1%;
+  white-space: nowrap;
 }
 
 .km-spin {

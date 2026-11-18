@@ -7,9 +7,11 @@ const members: LocaleShape<typeof el> = {
     newMember: "New Member",
     searchPlaceholder: "Search members (name, phone)...",
     filters: "Filters",
+    allStatuses: "All statuses",
     export: "Export",
     addTitle: "Add New Member",
     editTitle: "Edit Member",
+    empty: "No members found",
   },
   confirmDelete: "Are you sure you want to delete this member?",
   fields: {

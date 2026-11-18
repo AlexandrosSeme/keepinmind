@@ -10,6 +10,8 @@ const debts: LocaleShape<typeof el> = {
     deleteError: "Delete failed. Check the database connection.",
     updateError: "Failed to update debt.",
     createError: "Failed to create debt. Check the database connection.",
+    searchPlaceholder: "Search (member, phone, email)...",
+    allStatuses: "All statuses",
   },
   fields: {
     member: "Member",
