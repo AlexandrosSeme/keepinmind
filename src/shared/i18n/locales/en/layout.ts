@@ -26,6 +26,7 @@ const layout: LocaleShape<typeof el> = {
     openMenu: "Open menu",
     closeMenu: "Close menu",
     notifications: "Notifications",
+    accountMenu: "Account menu",
   },
   notFound: {
     title: "Page not found",

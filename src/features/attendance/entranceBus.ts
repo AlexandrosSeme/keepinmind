@@ -30,5 +30,7 @@ export function publishEntrance(log: EntranceLog) {
 export function subscribeEntrances(listener: Listener) {
   bus();
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }

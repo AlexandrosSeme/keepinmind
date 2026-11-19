@@ -23,6 +23,7 @@ const layout = {
     openMenu: "Άνοιγμα μενού",
     closeMenu: "Κλείσιμο μενού",
     notifications: "Ειδοποιήσεις",
+    accountMenu: "Μενού λογαριασμού",
   },
   notFound: {
     title: "Η σελίδα δεν βρέθηκε",
