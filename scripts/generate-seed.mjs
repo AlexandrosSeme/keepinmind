@@ -91,6 +91,18 @@ function phone() {
   }
 }
 const EMAIL_DOMAINS = ["gmail.com", "yahoo.gr", "hotmail.com", "outlook.com"];
+const AREAS = [
+  "Χολαργός",
+  "Παπάγου",
+  "Αγία Παρασκευή",
+  "Χαλάνδρι",
+  "Ψυχικό",
+  "Φιλοθέη",
+  "Νέο Ψυχικό",
+  "Γέρακας",
+  "Βριλήσσια",
+  "Μαρούσι",
+];
 
 // ---------- packages ----------
 // Prices: 2μηνη 89€ and 5μηνη 179€ are the published November 2026 offers
@@ -175,6 +187,10 @@ for (let id = 1; id <= COUNTS.members; id++) {
     bucket === "expiring_soon" ? int(0, 14) :
     -int(1, 120);
   const expiryDate = addDays(today, offset);
+  const joinedOn = addDays(today, -int(20, 720));
+  const joined = joinedOn > expiryDate ? addDays(expiryDate, -Math.max(pkg.days, 30)) : joinedOn;
+  const kids = pkg.category === "kids";
+  const birth = new Date(kids ? 2012 + (id % 8) : 1972 + (id % 32), id % 12, (id % 27) + 1);
   const member = {
     id,
     name: p.name,
@@ -182,12 +198,16 @@ for (let id = 1; id <= COUNTS.members; id++) {
     status: bucket,
     expiry: gr(expiryDate),
     package: pkg.name,
+    dateRegistered: gr(joined),
+    dateExpired: gr(expiryDate),
+    dateBirth: gr(birth),
+    territory: AREAS[id % AREAS.length],
   };
   if (chance(0.7)) {
     member.email = `${latin(p.first)}.${latin(p.last)}${int(1, 99)}@${pick(EMAIL_DOMAINS)}`;
   }
   if (chance(0.02)) member.card_lost = true;
-  members.push({ ...member, _pkg: pkg, _expiry: expiryDate, _joined: addDays(today, -int(20, 720)) });
+  members.push({ ...member, _pkg: pkg, _expiry: expiryDate, _joined: joined });
 }
 
 // ---------- payments & debts ----------

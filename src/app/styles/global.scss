@@ -381,7 +381,22 @@ small,
 .km-row-actions {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 0.35rem;
+}
+
+.km-member-name {
+  font-weight: 600;
+  color: var(--km-text);
+}
+
+@media (min-width: 768px) {
+  .km-member-name {
+    display: block;
+    max-width: 11rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .km-member-meta {
@@ -396,6 +411,34 @@ small,
 
 .km-member-meta > .text-truncate {
   min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .km-members .km-w-name { min-width: 190px; }
+  .km-members .km-w-date { min-width: 96px; }
+  .km-members .km-w-pack { min-width: 112px; }
+  .km-members .km-w-phone { min-width: 118px; }
+  .km-members .km-w-email { min-width: 100px; }
+  .km-members .km-w-area { min-width: 88px; }
+  .km-members .km-col-actions { width: 72px; }
+}
+
+.km-members th,
+.km-members td {
+  white-space: nowrap;
+}
+
+.km-members th {
+  letter-spacing: 0.03em;
+}
+
+.km-cell-clip {
+  max-width: 7.5rem;
+  vertical-align: bottom;
+}
+
+.km-cell-clip.is-wide {
+  max-width: 8rem;
 }
 
 .table.km-table-rows > tbody > tr {
@@ -899,7 +942,7 @@ small,
   }
 
   table.km-table-rows .km-col-actions {
-    width: 52px;
+    width: 78px;
     overflow: hidden;
     padding-left: 0 !important;
     padding-right: 0.35rem !important;
@@ -912,6 +955,12 @@ small,
 
   table.km-table-rows .km-action-link {
     padding: 0 !important;
+  }
+
+  .km-member-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   table.km-table-rows .km-member-avatar {

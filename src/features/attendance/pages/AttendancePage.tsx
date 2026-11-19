@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { PageHeader, Select } from "@/shared/ui";
 import type { EntranceLog } from "../types";
 import { getEntranceLogs } from "../api";
+import { subscribeEntrances } from "../entranceBus";
 import EntranceLogsTable from "../components/EntranceLogsTable";
 
 type ValidationFilter = "all" | EntranceLog["validationStatus"];
@@ -27,6 +28,14 @@ const AttendancePage: React.FC = () => {
   useEffect(() => {
     loadLogs();
   }, [loadLogs]);
+
+  useEffect(() => {
+    return subscribeEntrances((log) => {
+      setEntranceLogs((current) =>
+        current.some((item) => item.id === log.id) ? current : [log, ...current],
+      );
+    });
+  }, []);
 
   return (
     <div>

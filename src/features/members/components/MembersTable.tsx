@@ -12,6 +12,7 @@ import {
 import { Pagination, SortableHeader, ariaSort } from "@/shared/ui";
 import {
   byNumber,
+  byText,
   useClientTable,
   type ClientColumnDef,
   type ClientFilterFn,
@@ -22,6 +23,29 @@ import type { MemberRowActions } from "./memberActions";
 import MemberAvatar from "./MemberAvatar";
 
 const PAGE_SIZES = [10, 20, 50];
+
+/** Column width on desktop. Mobile ignores these and keeps name plus actions. */
+const WIDTH: Record<string, string> = {
+  name: "km-w-name",
+  dateRegistered: "km-w-date",
+  package: "km-w-pack",
+  dateBirth: "km-w-date",
+  phone: "km-w-phone",
+  email: "km-w-email",
+  expiry: "km-w-date",
+  territory: "km-w-area",
+};
+
+/** Hidden until this breakpoint. Mobile keeps name and actions only. */
+const HIDE: Record<string, string> = {
+  dateRegistered: "d-none d-xxl-table-cell",
+  package: "d-none d-lg-table-cell",
+  dateBirth: "d-none d-xxl-table-cell",
+  phone: "d-none d-md-table-cell",
+  email: "d-none d-xl-table-cell",
+  expiry: "d-none d-md-table-cell",
+  territory: "d-none d-xxl-table-cell",
+};
 
 const StatusMark: React.FC<{ status: MemberStatus; label: string }> = ({
   status,
@@ -34,11 +58,6 @@ const StatusMark: React.FC<{ status: MemberStatus; label: string }> = ({
     return <Clock size={16} className="text-warning flex-shrink-0" aria-label={label} />;
   }
   return <CheckCircle2 size={16} className="text-success flex-shrink-0" aria-label={label} />;
-};
-const STATUS_RANK: Record<MemberStatus, number> = {
-  active: 0,
-  expiring_soon: 1,
-  expired: 2,
 };
 
 interface MembersTableProps extends MemberRowActions {
@@ -53,9 +72,21 @@ const memberSearch: ClientFilterFn<Member> = (row, _columnId, filterValue) => {
   const member = row.original;
   return (
     member.name.toLowerCase().includes(query) ||
-    member.phone.includes(String(filterValue).trim())
+    member.phone.includes(String(filterValue).trim()) ||
+    (member.email ?? "").toLowerCase().includes(query)
   );
 };
+
+const dateValue = (value?: string) => parseGRDate(value ?? "")?.getTime() ?? 0;
+
+const textCell = (value: string | undefined, wide = false) => (
+  <span
+    className={`text-muted text-truncate d-inline-block km-cell-clip${wide ? " is-wide" : ""}`}
+    title={value || undefined}
+  >
+    {value || "—"}
+  </span>
+);
 
 const MembersTable: React.FC<MembersTableProps> = ({
   members,
@@ -67,18 +98,13 @@ const MembersTable: React.FC<MembersTableProps> = ({
   onPhotoClick,
 }) => {
   const { t } = useTranslation(["members", "common"]);
-  const actionsRef = useRef({
-    onView,
-    onEdit,
-    onToggleCardLost,
-    onPhotoClick,
-  });
-  actionsRef.current = {
-    onView,
-    onEdit,
-    onToggleCardLost,
-    onPhotoClick,
-  };
+  const actionsRef = useRef({ onView, onEdit, onToggleCardLost, onPhotoClick });
+  actionsRef.current = { onView, onEdit, onToggleCardLost, onPhotoClick };
+
+  const rows = useMemo(
+    () => (statusFilter ? members.filter((member) => member.status === statusFilter) : members),
+    [members, statusFilter],
+  );
 
   const columns = useMemo<ClientColumnDef<Member>[]>(
     () => [
@@ -89,9 +115,8 @@ const MembersTable: React.FC<MembersTableProps> = ({
         ),
         cell: ({ row }) => {
           const member = row.original;
-          const statusLabel = t(`common:status.${member.status}`);
           return (
-            <div className="d-flex align-items-center min-w-0 w-100">
+            <div className="d-flex align-items-center min-w-0">
               <span
                 onClick={(event) => {
                   if (member.photo_url) event.stopPropagation();
@@ -104,10 +129,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
               </span>
               <div className="min-w-0">
                 <div className="d-flex align-items-center gap-2 min-w-0">
-                  <span className="d-md-none" title={statusLabel}>
-                    <StatusMark status={member.status} label={statusLabel} />
-                  </span>
-                  <div className="fw-semibold text-dark text-truncate km-page-subtitle">
+                  <div className="km-member-name" title={member.name}>
                     {member.name}
                   </div>
                   {member.card_lost === true && (
@@ -132,51 +154,50 @@ const MembersTable: React.FC<MembersTableProps> = ({
         },
       },
       {
-        accessorKey: "phone",
+        accessorKey: "dateRegistered",
         header: ({ column }) => (
-          <SortableHeader column={column} label={t("fields.phone")} />
+          <SortableHeader column={column} label={t("fields.dateRegistered")} />
         ),
-        cell: ({ row }) => (
-          <span className="text-muted km-page-subtitle">{row.original.phone}</span>
-        ),
+        sortingFn: byNumber<Member>((member) => dateValue(member.dateRegistered)),
+        cell: ({ row }) => textCell(row.original.dateRegistered),
       },
       {
         accessorKey: "package",
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.package")} />
         ),
-        cell: ({ row }) => (
-          <span className="text-muted km-page-subtitle">{row.original.package}</span>
+        cell: ({ row }) => textCell(row.original.package),
+      },
+      {
+        accessorKey: "dateBirth",
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.dateBirth")} />
         ),
+        sortingFn: byNumber<Member>((member) => dateValue(member.dateBirth)),
+        cell: ({ row }) => textCell(row.original.dateBirth),
+      },
+      {
+        accessorKey: "phone",
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.phone")} />
+        ),
+        cell: ({ row }) => textCell(row.original.phone),
+      },
+      {
+        accessorKey: "email",
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.email")} />
+        ),
+        sortingFn: byText<Member>((member) => member.email ?? ""),
+        cell: ({ row }) => textCell(row.original.email, true),
       },
       {
         accessorKey: "expiry",
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.expiry")} />
         ),
-        sortingFn: byNumber<Member>(
-          (member) => parseGRDate(member.expiry)?.getTime() ?? 0,
-        ),
-        cell: ({ row }) => (
-          <span className="text-muted km-page-subtitle">{row.original.expiry}</span>
-        ),
-      },
-      {
-        accessorKey: "status",
-        header: ({ column }) => (
-          <SortableHeader column={column} label={t("fields.status")} />
-        ),
-        filterFn: (row, _columnId, value) =>
-          value === "" || row.original.status === value,
-        sortingFn: byNumber<Member>((member) => STATUS_RANK[member.status]),
-        cell: ({ row }) => {
-          const label = t(`common:status.${row.original.status}`);
-          return (
-            <span title={label}>
-              <StatusMark status={row.original.status} label={label} />
-            </span>
-          );
-        },
+        sortingFn: byNumber<Member>((member) => dateValue(member.expiry)),
+        cell: ({ row }) => textCell(row.original.expiry),
       },
       {
         id: "actions",
@@ -187,12 +208,16 @@ const MembersTable: React.FC<MembersTableProps> = ({
         cell: ({ row }) => {
           const member = row.original;
           const actions = actionsRef.current;
+          const label = t(`common:status.${member.status}`);
           return (
             <div
               className="km-row-actions"
               role="group"
               onClick={(event) => event.stopPropagation()}
             >
+              <span title={label}>
+                <StatusMark status={member.status} label={label} />
+              </span>
               <button
                 type="button"
                 className="btn btn-link btn-sm km-action-link p-0"
@@ -225,21 +250,26 @@ const MembersTable: React.FC<MembersTableProps> = ({
           );
         },
       },
+      {
+        accessorKey: "territory",
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.territory")} />
+        ),
+        sortingFn: byText<Member>((member) => member.territory ?? ""),
+        cell: ({ row }) => textCell(row.original.territory),
+      },
     ],
     [t],
   );
 
   const table = useClientTable({
-    data: members,
+    data: rows,
     columns,
     globalFilter: searchTerm,
     globalFilterFn: memberSearch,
-    columnFilters: statusFilter
-      ? [{ id: "status", value: statusFilter }]
-      : [],
   });
 
-  const pageMembers = table.getRowModel().rows.map((row) => row.original);
+  const pageMembers = table.getRowModel().rows;
   const total = table.getFilteredRowModel().rows.length;
   const { pageIndex, pageSize } = table.getState().pagination;
 
@@ -248,29 +278,26 @@ const MembersTable: React.FC<MembersTableProps> = ({
       <div className="card border-0 shadow-sm km-table-card">
         <div className="card-body p-0">
           <div className="table-responsive">
-            <table className="table table-hover mb-0 km-table km-table-rows">
+            <table className="table table-hover mb-0 km-table km-table-rows km-members">
               <thead className="table-light">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => {
-                      const hide =
-                        header.column.id === "phone" ||
-                        header.column.id === "package" ||
-                        header.column.id === "status"
-                          ? "d-none d-md-table-cell"
-                          : header.column.id === "expiry"
-                            ? "d-none d-lg-table-cell"
-                            : "";
+                    {headerGroup.headers.map((header) => {
+                      const hide = HIDE[header.column.id] ?? "";
+                      const width =
+                        header.column.id === "actions"
+                          ? "km-col-actions"
+                          : (WIDTH[header.column.id] ?? "");
                       const edge =
                         header.column.id === "name"
-                          ? "ps-3 ps-md-4"
-                          : header.column.id === "actions"
-                            ? "pe-2 pe-md-4 km-col-actions"
+                          ? "ps-3"
+                          : header.column.id === "territory"
+                            ? "pe-3"
                             : "";
                       return (
                         <th
                           key={header.id}
-                          className={`border-0 ${edge} ${hide}`.trim()}
+                          className={`border-0 ${width} ${edge} ${hide}`.trim()}
                           aria-sort={ariaSort(header.column)}
                           aria-label={
                             header.column.id === "actions"
@@ -298,7 +325,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
                     </td>
                   </tr>
                 ) : (
-                  table.getRowModel().rows.map((row) => (
+                  pageMembers.map((row) => (
                     <tr
                       key={row.id}
                       className={
@@ -307,29 +334,20 @@ const MembersTable: React.FC<MembersTableProps> = ({
                       onClick={() => actionsRef.current.onView(row.original)}
                     >
                       {row.getVisibleCells().map((cell) => {
-                        const hide =
-                          cell.column.id === "phone" ||
-                          cell.column.id === "package" ||
-                          cell.column.id === "status"
-                            ? "d-none d-md-table-cell"
-                            : cell.column.id === "expiry"
-                              ? "d-none d-lg-table-cell"
-                              : "";
+                        const hide = HIDE[cell.column.id] ?? "";
+                        const width =
+                          cell.column.id === "actions"
+                            ? "km-col-actions"
+                            : (WIDTH[cell.column.id] ?? "");
                         const edge =
                           cell.column.id === "name"
-                            ? "ps-3 ps-md-4"
-                            : cell.column.id === "actions"
-                              ? "pe-2 pe-md-4 km-col-actions"
+                            ? "ps-3"
+                            : cell.column.id === "territory"
+                              ? "pe-3"
                               : "";
                         return (
-                          <td
-                            key={cell.id}
-                            className={`${edge} ${hide}`.trim()}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
+                          <td key={cell.id} className={`${width} ${edge} ${hide}`.trim()}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         );
                       })}

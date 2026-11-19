@@ -14,6 +14,10 @@ CREATE TABLE IF NOT EXISTS public.members (
 ALTER TABLE public.members ADD COLUMN IF NOT EXISTS email TEXT;
 ALTER TABLE public.members ADD COLUMN IF NOT EXISTS photo_url TEXT;
 ALTER TABLE public.members ADD COLUMN IF NOT EXISTS card_lost BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS "dateRegistered" TEXT;
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS "dateExpired" TEXT;
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS "dateBirth" TEXT;
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS territory TEXT;
 CREATE INDEX IF NOT EXISTS idx_members_phone ON public.members (phone);
 
 -- ---------- packages ----------

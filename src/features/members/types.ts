@@ -8,6 +8,13 @@ export interface Member {
   status: MemberStatus;
   expiry: string;
   package: string;
+  /** DD/MM/YYYY, the day the member joined. */
+  dateRegistered?: string;
+  /** DD/MM/YYYY, end of the current package. */
+  dateExpired?: string;
+  /** DD/MM/YYYY. */
+  dateBirth?: string;
+  territory?: string;
   photo_url?: string;
   card_lost?: boolean;
 }

@@ -31,6 +31,7 @@ function SortableHeader<T extends RowData>({
     <button
       type="button"
       className={`km-sort${sorted ? " is-sorted" : ""}`}
+      title={label}
       onClick={column.getToggleSortingHandler()}
     >
       <span>{label}</span>

@@ -1,6 +1,7 @@
 import { createCollection } from "@/shared/api/collection";
 import { logger } from "@/shared/lib/logger";
 import type { MemberStatus } from "@/features/members";
+import { publishEntrance } from "./entranceBus";
 import type { EntranceLog } from "./types";
 
 const entranceLogs = createCollection<EntranceLog>("entrance_logs");
@@ -38,10 +39,10 @@ export async function logEntrance(
 
   logger.debug("[EntranceLog] Saving entrance log:", logData);
   const saved = await entranceLogs.create(logData);
-  if (!saved) return addToCache(logData);
-
-  entranceLogsCache.unshift(saved);
-  return saved;
+  const log = saved ?? addToCache(logData);
+  if (saved) entranceLogsCache.unshift(saved);
+  publishEntrance(log);
+  return log;
 }
 
 export async function getEntranceLogs(): Promise<EntranceLog[]> {
