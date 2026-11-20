@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Package } from "lucide-react";
 import { LinkButton, PanelCard, StatusBadge } from "@/shared/ui";
+import { surnameFirst } from "@/shared/lib/personName";
 import type { UpcomingExpiry } from "../types";
 import { formatEuro } from "../lib/format";
 import DashboardEmpty from "./DashboardEmpty";
@@ -48,7 +49,7 @@ const ExpiriesPanel: React.FC<ExpiriesPanelProps> = ({ upcomingExpiries, priceOf
             onClick={() => navigate(`/members/${exp.id}`)}
           >
             <span className="min-w-0">
-              <span className="fw-semibold text-dark text-truncate d-block">{exp.name}</span>
+              <span className="fw-semibold text-dark text-truncate d-block">{surnameFirst(exp.name)}</span>
               <small className="text-muted text-truncate d-block">{exp.package}</small>
             </span>
             <span className="text-end">

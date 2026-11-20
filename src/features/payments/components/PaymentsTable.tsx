@@ -5,11 +5,13 @@ import { CreditCard, Edit, Eye, Search, Trash2 } from "lucide-react";
 import { IconAvatar, Pagination, Select, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
 import {
   byNumber,
+  bySurname,
   useClientTable,
   type ClientColumnDef,
   type ClientFilterFn,
 } from "@/shared/table/useClientTable";
 import { parseGRDate } from "@/shared/lib/date";
+import { personNameMatches, surnameFirst } from "@/shared/lib/personName";
 import type { Payment } from "../types";
 import {
   summarizePayments,
@@ -35,7 +37,7 @@ const paymentSearch: ClientFilterFn<MemberPaymentSummary> = (
   if (!query) return true;
   const summary = row.original;
   return (
-    summary.memberName.toLowerCase().includes(query) ||
+    personNameMatches(summary.memberName, query) ||
     summary.firstPaymentDate.includes(query) ||
     summary.lastPaymentDate.includes(query) ||
     String(summary.firstPaymentAmount).includes(query) ||
@@ -72,12 +74,13 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.member")} />
         ),
+        sortFn: bySurname<MemberPaymentSummary>((row) => row.memberName),
         cell: ({ row }) => (
           <div className="d-flex align-items-center">
             <IconAvatar className="me-3">
               <CreditCard size={18} />
             </IconAvatar>
-            <div className="fw-semibold text-dark">{row.original.memberName}</div>
+            <div className="fw-semibold text-dark">{surnameFirst(row.original.memberName)}</div>
           </div>
         ),
       },
@@ -86,7 +89,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.firstPaymentDate")} />
         ),
-        sortingFn: byNumber<MemberPaymentSummary>(
+        sortFn: byNumber<MemberPaymentSummary>(
           (row) => parseGRDate(row.firstPaymentDate)?.getTime() ?? 0,
         ),
         cell: ({ row }) => (
@@ -101,7 +104,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
             label={t("fields.firstPaymentAmount")}
           />
         ),
-        sortingFn: byNumber<MemberPaymentSummary>(
+        sortFn: byNumber<MemberPaymentSummary>(
           (row) => row.firstPaymentAmount,
         ),
         cell: ({ row }) => (
@@ -113,7 +116,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.lastPaymentDate")} />
         ),
-        sortingFn: byNumber<MemberPaymentSummary>(
+        sortFn: byNumber<MemberPaymentSummary>(
           (row) => parseGRDate(row.lastPaymentDate)?.getTime() ?? 0,
         ),
         cell: ({ row }) => (
@@ -128,7 +131,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
             label={t("fields.lastPaymentAmount")}
           />
         ),
-        sortingFn: byNumber<MemberPaymentSummary>((row) => row.lastPaymentAmount),
+        sortFn: byNumber<MemberPaymentSummary>((row) => row.lastPaymentAmount),
         cell: ({ row }) => (
           <span className="text-muted">€{row.original.lastPaymentAmount}</span>
         ),
@@ -138,7 +141,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.totalAmount")} />
         ),
-        sortingFn: byNumber<MemberPaymentSummary>((row) => row.totalAmount),
+        sortFn: byNumber<MemberPaymentSummary>((row) => row.totalAmount),
         cell: ({ row }) => (
           <span className="fw-semibold">€{row.original.totalAmount}</span>
         ),
@@ -150,7 +153,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
         ),
         filterFn: (row, _columnId, value) =>
           value === "" || row.original.status === value,
-        sortingFn: byNumber<MemberPaymentSummary>(
+        sortFn: byNumber<MemberPaymentSummary>(
           (row) => STATUS_RANK[row.status],
         ),
         cell: ({ row }) => <StatusBadge status={row.original.status} />,
@@ -202,6 +205,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({
     globalFilter: searchTerm,
     globalFilterFn: paymentSearch,
     columnFilters: statusFilter ? [{ id: "status", value: statusFilter }] : [],
+    initialSorting: [{ id: "memberName", desc: false }],
   });
 
   const rows = table.getRowModel().rows;

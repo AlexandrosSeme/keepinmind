@@ -286,6 +286,12 @@ small,
   flex: 1 0 auto;
 }
 
+.km-manual-pick.is-selected {
+  background: var(--km-brand-soft);
+  border-color: var(--km-brand);
+  color: var(--km-text);
+}
+
 .km-topbar {
   background-color: #fff !important;
   border-bottom: 1px solid var(--km-border) !important;

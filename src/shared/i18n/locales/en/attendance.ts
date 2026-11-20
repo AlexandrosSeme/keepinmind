@@ -65,6 +65,15 @@ const attendance: LocaleShape<typeof el> = {
     members: "Members",
     noMembers: "No members",
   },
+  manual: {
+    title: "Manual check-in",
+    hint: "For a member without a phone or QR. Search by name or phone and record the entrance.",
+    search: "Name or phone",
+    none: "No member found",
+    confirm: "Record entrance",
+    checking: "Checking...",
+    button: "Manual check-in",
+  },
 };
 
 export default attendance;

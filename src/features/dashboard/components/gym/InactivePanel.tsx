@@ -1,4 +1,5 @@
 import React from "react";
+import { surnameFirst } from "@/shared/lib/personName";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Phone, ThumbsUp } from "lucide-react";
@@ -37,7 +38,7 @@ const InactivePanel: React.FC<InactivePanelProps> = ({ rows, now }) => {
               className="km-row-link min-w-0 flex-grow-1"
               onClick={() => navigate(`/members/${member.id}`)}
             >
-              <div className="fw-semibold text-dark text-truncate">{member.name}</div>
+              <div className="fw-semibold text-dark text-truncate">{surnameFirst(member.name)}</div>
               <small className="text-muted">
                 {lastVisit === null
                   ? t("trainer.inactive.never")

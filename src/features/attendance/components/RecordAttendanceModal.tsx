@@ -3,6 +3,7 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 import { Modal, StatusBadge } from "@/shared/ui";
+import { comparePersonNames, surnameFirst } from "@/shared/lib/personName";
 import type { Member } from "@/features/members";
 import type { AttendanceRecord, Program } from "../types";
 import "./RecordAttendanceModal.scss";
@@ -64,13 +65,15 @@ const RecordAttendanceModal: React.FC<RecordAttendanceModalProps> = ({
           </thead>
           <tbody>
             {members.length > 0 ? (
-              members.map((member) => {
+              [...members]
+                .sort((a, b) => comparePersonNames(a.name, b.name))
+                .map((member) => {
                 const existing = records.find(
                   (r) => r.programId === program.id && r.memberId === member.id,
                 );
                 return (
                   <tr key={member.id}>
-                    <td>{member.name}</td>
+                    <td>{surnameFirst(member.name)}</td>
                     <td>{member.phone}</td>
                     <td>
                       {existing ? (

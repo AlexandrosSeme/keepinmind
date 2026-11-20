@@ -84,7 +84,7 @@ const ProgramsTable: React.FC<ProgramsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.date")} />
         ),
-        sortingFn: byNumber<Program>((program) => moment(program.date).valueOf()),
+        sortFn: byNumber<Program>((program) => moment(program.date).valueOf()),
         cell: ({ row }) => moment(row.original.date).format("DD/MM/YYYY"),
       },
       {
@@ -92,7 +92,7 @@ const ProgramsTable: React.FC<ProgramsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.time")} />
         ),
-        sortingFn: byText<Program>((program) => program.time),
+        sortFn: byText<Program>((program) => program.time),
       },
       {
         accessorKey: "title",
@@ -106,7 +106,7 @@ const ProgramsTable: React.FC<ProgramsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.category")} />
         ),
-        sortingFn: byText<Program>((program) => program.type),
+        sortFn: byText<Program>((program) => program.type),
         filterFn: (row, _columnId, value) => row.original.type === value,
         cell: ({ row }) => (
           <StatusBadge

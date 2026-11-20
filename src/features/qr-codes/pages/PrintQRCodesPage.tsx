@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { CheckSquare, Printer, Search, Square, X } from "lucide-react";
 import { PageHeader, Pagination } from "@/shared/ui";
+import { comparePersonNames, personNameMatches, surnameFirst } from "@/shared/lib/personName";
 import {
   useMemberMutations,
   useMembers,
@@ -36,7 +37,7 @@ const PrintQRCodesPage: React.FC = () => {
   const [printing, setPrinting] = useState(false);
 
   const sortedMembers = useMemo(
-    () => [...members].sort((a, b) => a.id - b.id),
+    () => [...members].sort((a, b) => comparePersonNames(a.name, b.name) || a.id - b.id),
     [members],
   );
 
@@ -60,7 +61,7 @@ const PrintQRCodesPage: React.FC = () => {
     return sortedMembers.filter((m) => {
       const matchesSearch =
         !term ||
-        m.name.toLowerCase().includes(term) ||
+        personNameMatches(m.name, term) ||
         m.phone.includes(searchTerm) ||
         m.id.toString().includes(searchTerm);
       const matchesCardFilter =
@@ -148,7 +149,7 @@ const PrintQRCodesPage: React.FC = () => {
   const handlePrintNewCard = async (member: Member) => {
     if (member.card_lost === true) {
       const confirmMessage = t("print.confirmReactivate", {
-        name: member.name,
+        name: surnameFirst(member.name),
       });
       if (!window.confirm(confirmMessage)) return;
       const updated = await editMember(member.id, { card_lost: false });
@@ -255,7 +256,7 @@ const PrintQRCodesPage: React.FC = () => {
         {selectedMember && (
           <div className="alert alert-success d-flex justify-content-between align-items-center">
             <div>
-              <strong>{t("print.selectedMember")}</strong> {selectedMember.name}{" "}
+              <strong>{t("print.selectedMember")}</strong> {surnameFirst(selectedMember.name)}{" "}
               (ID: {selectedMember.id})
             </div>
             <button
@@ -282,7 +283,7 @@ const PrintQRCodesPage: React.FC = () => {
                   >
                     <div className="d-flex justify-content-between align-items-center">
                       <div>
-                        <strong>{member.name}</strong>
+                        <strong>{surnameFirst(member.name)}</strong>
                         <br />
                         <small className="text-muted">
                           ID: {member.id} • {member.phone}

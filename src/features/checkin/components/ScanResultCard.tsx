@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { surnameFirst } from "@/shared/lib/personName";
 import type { ValidationResult } from "../types";
 
 interface ScanResultCardProps {
@@ -52,7 +53,7 @@ const ScanResultCard: React.FC<ScanResultCardProps> = ({ result, onReset }) => {
                   </div>
                   <div className="mb-2">
                     <small className="text-muted">{t("result.name")}</small>
-                    <p className="mb-0 fw-semibold">{result.member.name}</p>
+                    <p className="mb-0 fw-semibold">{surnameFirst(result.member.name)}</p>
                   </div>
                   <div className="mb-2">
                     <small className="text-muted">{t("result.phone")}</small>

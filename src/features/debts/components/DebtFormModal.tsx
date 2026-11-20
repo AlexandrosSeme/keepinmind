@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FormActions, Modal } from "@/shared/ui";
+import { comparePersonNames, surnameFirst } from "@/shared/lib/personName";
 import type { Member } from "@/features/members";
 import type { Debt, DebtInput } from "../types";
 
@@ -103,9 +104,11 @@ const DebtFormModal: React.FC<DebtFormModalProps> = ({
             }}
           >
             <option value="">{t("form.manualEntry")}</option>
-            {members.map((m) => (
+            {[...members]
+              .sort((a, b) => comparePersonNames(a.name, b.name))
+              .map((m) => (
               <option key={m.id} value={m.name}>
-                {m.name}
+                {surnameFirst(m.name)}
               </option>
             ))}
           </select>

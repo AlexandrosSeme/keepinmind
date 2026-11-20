@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { AlertTriangle, CreditCard, Printer } from "lucide-react";
+import { surnameFirst } from "@/shared/lib/personName";
 import type { Member } from "@/features/members";
 import { isBarcodeMember } from "../lib";
 import MemberCode from "./MemberCode";
@@ -120,7 +121,7 @@ const MemberPrintCard: React.FC<MemberPrintCardProps> = ({
         </div>
 
         <div className="card-body-custom">
-          <div className="member-name">{member.name}</div>
+          <div className="member-name">{surnameFirst(member.name)}</div>
 
           <div className="code-section">
             <div

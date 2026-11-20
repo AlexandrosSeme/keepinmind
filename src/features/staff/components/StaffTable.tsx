@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import { flexRender } from "@tanstack/react-table";
 import { Edit, Search, Trash2, UserCog } from "lucide-react";
 import { IconAvatar, Pagination, SortableHeader, ariaSort } from "@/shared/ui";
+import { personNameMatches, surnameFirst } from "@/shared/lib/personName";
 import {
   byNumber,
+  bySurname,
   byText,
   useClientTable,
   type ClientColumnDef,
@@ -25,7 +27,7 @@ const staffSearch: ClientFilterFn<StaffRow> = (row, _columnId, filterValue) => {
   if (!query) return true;
   const user = row.original;
   return (
-    (user.fullName || "").toLowerCase().includes(query) ||
+    personNameMatches(user.fullName || "", query) ||
     user.email.toLowerCase().includes(query)
   );
 };
@@ -55,6 +57,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ users, onEdit, onDelete }) => {
       {
         id: "fullName",
         accessorFn: (user) => user.fullName || user.email,
+        sortFn: bySurname<StaffRow>((user) => user.fullName || user.email),
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.fullName")} />
         ),
@@ -67,7 +70,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ users, onEdit, onDelete }) => {
               </IconAvatar>
               <div className="min-w-0">
                 <div className="fw-semibold text-dark">
-                  {user.fullName || user.email}
+                  {surnameFirst(user.fullName || user.email)}
                   {user.isSelf && (
                     <span className="text-muted fw-normal ms-1">
                       ({t("table.you")})
@@ -85,7 +88,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ users, onEdit, onDelete }) => {
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.role")} />
         ),
-        sortingFn: byText<StaffRow>((user) => t(`auth:roles.${user.role}`)),
+        sortFn: byText<StaffRow>((user) => t(`auth:roles.${user.role}`)),
         cell: ({ row }) => t(`auth:roles.${row.original.role}`),
       },
       {
@@ -93,7 +96,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ users, onEdit, onDelete }) => {
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.lastSignIn")} />
         ),
-        sortingFn: byNumber<StaffRow>((user) =>
+        sortFn: byNumber<StaffRow>((user) =>
           user.lastSignInAt ? Date.parse(user.lastSignInAt) : 0,
         ),
         cell: ({ row }) => (
@@ -146,6 +149,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ users, onEdit, onDelete }) => {
     columns,
     globalFilter: searchTerm,
     globalFilterFn: staffSearch,
+    initialSorting: [{ id: "fullName", desc: false }],
   });
 
   const rows = table.getRowModel().rows;

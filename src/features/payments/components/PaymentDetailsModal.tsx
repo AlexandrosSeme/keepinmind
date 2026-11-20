@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, StatusBadge } from "@/shared/ui";
+import { surnameFirst } from "@/shared/lib/personName";
 import type { Payment } from "../types";
 import { paymentMethodLabel } from "../methods";
 
@@ -42,7 +43,7 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({
     >
       <dl className="row mb-0">
         <dt className="col-4 text-muted">{t("fields.member")}</dt>
-        <dd className="col-8 fw-semibold">{payment.memberName}</dd>
+        <dd className="col-8 fw-semibold">{surnameFirst(payment.memberName)}</dd>
         <dt className="col-4 text-muted">{t("fields.amount")}</dt>
         <dd className="col-8 fw-semibold">€{payment.amount}</dd>
         <dt className="col-4 text-muted">{t("fields.date")}</dt>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
+import { surnameFirst } from "@/shared/lib/personName";
 import { useMembers } from "@/features/members";
 import type { Debt, DebtInput } from "../types";
 import { useDebtMutations, useDebts } from "../queries";
@@ -20,7 +21,7 @@ const DebtsPage: React.FC = () => {
   const handleDelete = async (debt: Debt) => {
     if (
       !window.confirm(
-        t("page.confirmDelete", { name: debt.name, amount: debt.amount }),
+        t("page.confirmDelete", { name: surnameFirst(debt.name), amount: debt.amount }),
       )
     ) {
       return;

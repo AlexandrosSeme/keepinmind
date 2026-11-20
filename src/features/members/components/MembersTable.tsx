@@ -12,12 +12,14 @@ import {
 import { Pagination, SortableHeader, ariaSort } from "@/shared/ui";
 import {
   byNumber,
+  bySurname,
   byText,
   useClientTable,
   type ClientColumnDef,
   type ClientFilterFn,
 } from "@/shared/table/useClientTable";
 import { parseGRDate } from "@/shared/lib/date";
+import { personNameMatches, surnameFirst } from "@/shared/lib/personName";
 import type { Member, MemberStatus } from "../types";
 import type { MemberRowActions } from "./memberActions";
 import MemberAvatar from "./MemberAvatar";
@@ -71,7 +73,7 @@ const memberSearch: ClientFilterFn<Member> = (row, _columnId, filterValue) => {
   if (!query) return true;
   const member = row.original;
   return (
-    member.name.toLowerCase().includes(query) ||
+    personNameMatches(member.name, query) ||
     member.phone.includes(String(filterValue).trim()) ||
     (member.email ?? "").toLowerCase().includes(query)
   );
@@ -113,6 +115,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.name")} />
         ),
+        sortFn: bySurname<Member>((member) => member.name),
         cell: ({ row }) => {
           const member = row.original;
           return (
@@ -129,8 +132,8 @@ const MembersTable: React.FC<MembersTableProps> = ({
               </span>
               <div className="min-w-0">
                 <div className="d-flex align-items-center gap-2 min-w-0">
-                  <div className="km-member-name" title={member.name}>
-                    {member.name}
+                  <div className="km-member-name" title={surnameFirst(member.name)}>
+                    {surnameFirst(member.name)}
                   </div>
                   {member.card_lost === true && (
                     <AlertTriangle
@@ -158,7 +161,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.dateRegistered")} />
         ),
-        sortingFn: byNumber<Member>((member) => dateValue(member.dateRegistered)),
+        sortFn: byNumber<Member>((member) => dateValue(member.dateRegistered)),
         cell: ({ row }) => textCell(row.original.dateRegistered),
       },
       {
@@ -173,7 +176,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.dateBirth")} />
         ),
-        sortingFn: byNumber<Member>((member) => dateValue(member.dateBirth)),
+        sortFn: byNumber<Member>((member) => dateValue(member.dateBirth)),
         cell: ({ row }) => textCell(row.original.dateBirth),
       },
       {
@@ -188,7 +191,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.email")} />
         ),
-        sortingFn: byText<Member>((member) => member.email ?? ""),
+        sortFn: byText<Member>((member) => member.email ?? ""),
         cell: ({ row }) => textCell(row.original.email, true),
       },
       {
@@ -196,7 +199,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.expiry")} />
         ),
-        sortingFn: byNumber<Member>((member) => dateValue(member.expiry)),
+        sortFn: byNumber<Member>((member) => dateValue(member.expiry)),
         cell: ({ row }) => textCell(row.original.expiry),
       },
       {
@@ -255,7 +258,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.territory")} />
         ),
-        sortingFn: byText<Member>((member) => member.territory ?? ""),
+        sortFn: byText<Member>((member) => member.territory ?? ""),
         cell: ({ row }) => textCell(row.original.territory),
       },
     ],
@@ -267,6 +270,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
     columns,
     globalFilter: searchTerm,
     globalFilterFn: memberSearch,
+    initialSorting: [{ id: "name", desc: false }],
   });
 
   const pageMembers = table.getRowModel().rows;

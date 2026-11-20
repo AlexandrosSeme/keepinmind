@@ -1,5 +1,6 @@
 import React from "react";
 import { User } from "lucide-react";
+import { surnameFirst } from "@/shared/lib/personName";
 import type { Member } from "../types";
 import "./MemberAvatar.scss";
 
@@ -12,7 +13,7 @@ const MemberAvatar: React.FC<MemberAvatarProps> = ({ member, onPhotoClick }) =>
   member.photo_url ? (
     <img
       src={member.photo_url}
-      alt={member.name}
+      alt={surnameFirst(member.name)}
       className="rounded-circle me-3 km-member-avatar km-member-avatar--photo"
       onClick={() => onPhotoClick?.(member.photo_url!)}
     />

@@ -5,6 +5,7 @@ const dashboard = {
     member: "Μέλος",
     payment: "Πληρωμή",
     qr: "Σάρωση QR",
+    manual: "Χειροκίνητη είσοδος",
     debt: "Οφειλή",
     calendar: "Ημερολόγιο",
   },

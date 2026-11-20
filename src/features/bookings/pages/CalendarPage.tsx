@@ -3,6 +3,7 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { useMembers } from "@/features/members";
+import { personNameMatches } from "@/shared/lib/personName";
 import {
   createBooking,
   deleteBooking,
@@ -94,7 +95,7 @@ const CalendarPage: React.FC = () => {
         if (
           term &&
           !booking.title.toLowerCase().includes(term) &&
-          !booking.memberName.toLowerCase().includes(term) &&
+          !personNameMatches(booking.memberName, term) &&
           !booking.instructor?.toLowerCase().includes(term)
         ) {
           return false;

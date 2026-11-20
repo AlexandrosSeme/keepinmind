@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FormActions, Modal } from "@/shared/ui";
 import { todayGR } from "@/shared/lib/date";
+import { comparePersonNames, surnameFirst } from "@/shared/lib/personName";
 import type { Member } from "@/features/members";
 import type { Payment, PaymentInput } from "../types";
 import { DEFAULT_METHOD, METHOD_OPTIONS, paymentMethodLabel } from "../methods";
@@ -97,9 +98,11 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
             }}
           >
             <option value="">{t("form.manualEntry")}</option>
-            {members.map((m) => (
+            {[...members]
+              .sort((a, b) => comparePersonNames(a.name, b.name))
+              .map((m) => (
               <option key={m.id} value={m.name}>
-                {m.name}
+                {surnameFirst(m.name)}
               </option>
             ))}
           </select>

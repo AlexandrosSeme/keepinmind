@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { StatusBadge } from "@/shared/ui";
 import { MemberCode } from "@/features/qr-codes";
+import { surnameFirst } from "@/shared/lib/personName";
 import { useMemberSession } from "../session/useMemberSession";
 
 const MemberQRPage: React.FC = () => {
@@ -22,7 +23,7 @@ const MemberQRPage: React.FC = () => {
           barcodeHeight={80}
         />
         <div className="text-center">
-          <div className="fw-bold">{member.name}</div>
+          <div className="fw-bold">{surnameFirst(member.name)}</div>
           <small className="text-muted">#{member.id}</small>
           <div className="mt-2">
             <StatusBadge status={member.status} />

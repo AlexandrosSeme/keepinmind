@@ -62,6 +62,15 @@ const attendance = {
     members: "Μέλη",
     noMembers: "Δεν υπάρχουν μέλη",
   },
+  manual: {
+    title: "Χειροκίνητη είσοδος",
+    hint: "Για μέλος χωρίς κινητό ή QR. Ψάξε με όνομα ή τηλέφωνο και κατέγραψε την είσοδο.",
+    search: "Όνομα ή τηλέφωνο",
+    none: "Δεν βρέθηκε μέλος",
+    confirm: "Καταγραφή εισόδου",
+    checking: "Έλεγχος...",
+    button: "Χειροκίνητη είσοδος",
+  },
 } as const;
 
 export default attendance;

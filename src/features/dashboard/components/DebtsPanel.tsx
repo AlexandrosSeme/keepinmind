@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CheckCircle } from "lucide-react";
 import { LinkButton, PanelCard, StatusBadge } from "@/shared/ui";
+import { surnameFirst } from "@/shared/lib/personName";
 import type { Debt } from "@/features/debts";
 import DashboardEmpty from "./DashboardEmpty";
 
@@ -39,7 +40,7 @@ const DebtsPanel: React.FC<{ debts: Debt[] }> = ({ debts }) => {
           >
             <div className="min-w-0">
               <div className="fw-semibold text-dark text-truncate">
-                {debt.name}
+                {surnameFirst(debt.name)}
               </div>
               <small className="text-muted">
                 {t("debts.days", { count: debt.daysOverdue })} ·{" "}

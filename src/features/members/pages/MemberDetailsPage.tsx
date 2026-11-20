@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Edit, Trash2, XCircle } from "lucide-react";
 import { ImageModal, PageHeader, PageLoader } from "@/shared/ui";
+import { surnameFirst } from "@/shared/lib/personName";
 import { stripAccents } from "@/shared/lib/text";
 import type { Member, MemberInput } from "../types";
 import { useMemberMutations, useMembers } from "../queries";
@@ -119,7 +120,7 @@ const MemberDetailsPage: React.FC = () => {
     <div className="km-member">
       <PageHeader
         title={t("details.title")}
-        subtitle={`#${member.id} · ${stripAccents(member.name)}`}
+        subtitle={`#${member.id} · ${stripAccents(surnameFirst(member.name))}`}
         leading={
           <button
             type="button"

@@ -16,6 +16,7 @@ import {
   UserCog,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/shared/ui";
+import { surnameFirst } from "@/shared/lib/personName";
 import { ChangePasswordModal, useStaffAuth } from "@/features/auth";
 
 interface TopBarProps {
@@ -29,7 +30,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
-  const displayName = profile?.fullName || profile?.email || "";
+  const displayName = surnameFirst(profile?.fullName || profile?.email || "");
   const canSettings = can("settings.business") || can("settings.dev");
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { User } from "lucide-react";
 import { StatusBadge } from "@/shared/ui";
+import { surnameFirst } from "@/shared/lib/personName";
 import { stripAccents } from "@/shared/lib/text";
 import type { Member } from "../types";
 
@@ -38,7 +39,7 @@ const MemberProfileCard: React.FC<MemberProfileCardProps> = ({
           {member.photo_url ? (
             <img
               src={member.photo_url}
-              alt={stripAccents(member.name)}
+              alt={stripAccents(surnameFirst(member.name))}
               className="km-member__photo"
               onClick={onPhotoClick}
             />
@@ -49,7 +50,7 @@ const MemberProfileCard: React.FC<MemberProfileCardProps> = ({
           )}
 
           <div className="flex-grow-1 min-w-0">
-            <h3 className="km-member__name">{stripAccents(member.name)}</h3>
+            <h3 className="km-member__name">{stripAccents(surnameFirst(member.name))}</h3>
             <div className="mb-2">
               <StatusBadge status={member.status} />
               {member.card_lost && (

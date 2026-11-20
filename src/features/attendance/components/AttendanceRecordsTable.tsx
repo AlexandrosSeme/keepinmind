@@ -3,9 +3,10 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { flexRender } from "@tanstack/react-table";
 import { Pagination, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
+import { personNameMatches, surnameFirst } from "@/shared/lib/personName";
 import {
   byNumber,
-  byText,
+  bySurname,
   useClientTable,
   type ClientColumnDef,
   type ClientFilterFn,
@@ -17,7 +18,7 @@ const PAGE_SIZES = [10, 20, 50];
 const recordSearch: ClientFilterFn<AttendanceRecord> = (row, _columnId, filterValue) => {
   const query = String(filterValue).trim().toLowerCase();
   if (!query) return true;
-  return row.original.memberName.toLowerCase().includes(query);
+  return personNameMatches(row.original.memberName, query);
 };
 
 interface AttendanceRecordsTableProps {
@@ -79,7 +80,8 @@ const AttendanceRecordsTable: React.FC<AttendanceRecordsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.member")} />
         ),
-        sortingFn: byText<AttendanceRecord>((record) => record.memberName),
+        sortFn: bySurname<AttendanceRecord>((record) => record.memberName),
+        cell: ({ row }) => surnameFirst(row.original.memberName),
       },
       {
         accessorKey: "status",
@@ -95,7 +97,7 @@ const AttendanceRecordsTable: React.FC<AttendanceRecordsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.recordedAt")} />
         ),
-        sortingFn: byNumber<AttendanceRecord>((record) => Date.parse(record.recordedAt) || 0),
+        sortFn: byNumber<AttendanceRecord>((record) => Date.parse(record.recordedAt) || 0),
         cell: ({ row }) => moment(row.original.recordedAt).format("DD/MM/YYYY HH:mm"),
       },
       {

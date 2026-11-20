@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/ui";
+import { surnameFirst } from "@/shared/lib/personName";
 import { useMembers } from "@/features/members";
 import type { Payment, PaymentInput } from "../types";
 import { usePaymentMutations, usePayments } from "../queries";
@@ -24,7 +25,7 @@ const PaymentsPage: React.FC = () => {
       !window.confirm(
         t("page.confirmDelete", {
           amount: payment.amount,
-          name: payment.memberName,
+          name: surnameFirst(payment.memberName),
         }),
       )
     ) {

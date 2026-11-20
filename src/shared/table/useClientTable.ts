@@ -15,6 +15,7 @@ import type {
   RowData,
   SortingState,
 } from "@tanstack/react-table";
+import { comparePersonNames } from "@/shared/lib/personName";
 
 export type ClientColumnDef<T extends RowData> = LegacyColumnDef<T>;
 export type ClientFilterFn<T extends RowData> = NonNullable<
@@ -32,6 +33,12 @@ export function byText<T extends RowData>(pick: (row: T) => string) {
     });
 }
 
+/** Sort a person-name column by surname. */
+export function bySurname<T extends RowData>(pick: (row: T) => string) {
+  return (a: LegacyRow<T>, b: LegacyRow<T>) =>
+    comparePersonNames(pick(a.original), pick(b.original));
+}
+
 interface UseClientTableOptions<T extends RowData> {
   data: T[];
   columns: ClientColumnDef<T>[];
@@ -39,6 +46,7 @@ interface UseClientTableOptions<T extends RowData> {
   globalFilterFn?: ClientFilterFn<T>;
   columnFilters?: ColumnFiltersState;
   initialPageSize?: number;
+  initialSorting?: SortingState;
 }
 
 /** Sort, text filter and pagination for an in-memory list. */
@@ -49,8 +57,9 @@ export function useClientTable<T extends RowData>({
   globalFilterFn,
   columnFilters = [],
   initialPageSize = 20,
+  initialSorting = [],
 }: UseClientTableOptions<T>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: initialPageSize,

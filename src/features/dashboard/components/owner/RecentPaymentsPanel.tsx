@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Receipt } from "lucide-react";
 import { LinkButton, PanelCard, StatusBadge } from "@/shared/ui";
 import { paymentMethodLabel, type Payment } from "@/features/payments";
+import { surnameFirst } from "@/shared/lib/personName";
 import DashboardEmpty from "../DashboardEmpty";
 import { formatEuro } from "../../lib/format";
 
@@ -31,7 +32,7 @@ const RecentPaymentsPanel: React.FC<{ payments: Payment[] }> = ({ payments }) =>
           >
             <span className="km-pay-row__date">{p.date.slice(0, 5)}</span>
             <span className="min-w-0">
-              <span className="km-feed__name d-block text-truncate">{p.memberName}</span>
+              <span className="km-feed__name d-block text-truncate">{surnameFirst(p.memberName)}</span>
               <small className="text-muted d-block text-truncate">
                 {[p.package, paymentMethodLabel(p.method)].filter(Boolean).join(" · ")}
               </small>

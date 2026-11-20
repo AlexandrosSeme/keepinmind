@@ -10,6 +10,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { comparePersonNames, surnameFirst } from "@/shared/lib/personName";
 import type { Member } from "@/features/members";
 import type { BookingFormData, BookingType } from "../types";
 import { BOOKING_TYPES } from "../lib/schedule";
@@ -156,9 +157,11 @@ const BookingFormModal: React.FC<BookingFormModalProps> = ({
                 }
               >
                 <option value="">{t("form.generalClass")}</option>
-                {members.map((member) => (
+                {[...members]
+                  .sort((a, b) => comparePersonNames(a.name, b.name))
+                  .map((member) => (
                   <option key={member.id} value={member.id}>
-                    {member.name} {member.status === "active" ? "✓" : ""}
+                    {surnameFirst(member.name)} {member.status === "active" ? "✓" : ""}
                   </option>
                 ))}
               </select>

@@ -9,6 +9,7 @@ import {
   CalendarDays,
   DoorOpen,
   Dumbbell,
+  Hand,
   QrCode,
   UserCheck,
   UserPlus,
@@ -17,6 +18,7 @@ import {
 import { PanelCard } from "@/shared/ui";
 import { BRAND } from "@/shared/lib/brand";
 import { useStaffAuth } from "@/features/auth";
+import ManualCheckInModal from "@/features/checkin/components/ManualCheckInModal";
 import { useMembers } from "@/features/members";
 import { useBookingsWindow, useRecentVisits, useUpcomingExpiries } from "../queries";
 import {
@@ -85,6 +87,7 @@ const GymView: React.FC<GymViewProps> = ({
   const [selectedDay, setSelectedDay] = useState(() => startOfDay(new Date()));
   /** Days back shown on the peak-hours chart (0 = today). */
   const [peakOffset, setPeakOffset] = useState(0);
+  const [manualCheckIn, setManualCheckIn] = useState(false);
 
   const now = new Date();
   const manager = mode === "manager";
@@ -230,6 +233,10 @@ const GymView: React.FC<GymViewProps> = ({
         <QrCode size={14} className="me-1" />
         {t("quickActions.qr")}
       </button>
+      <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setManualCheckIn(true)}>
+        <Hand size={14} className="me-1" />
+        {t("quickActions.manual")}
+      </button>
       <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => navigate("/calendar")}>
         <CalendarDays size={14} className="me-1" />
         {t("quickActions.calendar")}
@@ -270,6 +277,7 @@ const GymView: React.FC<GymViewProps> = ({
 
   return (
     <div className="km-dash">
+      {manualCheckIn && <ManualCheckInModal onClose={() => setManualCheckIn(false)} />}
       {embedded ? (
         <div className="km-dash-toolbar">{actions}</div>
       ) : (

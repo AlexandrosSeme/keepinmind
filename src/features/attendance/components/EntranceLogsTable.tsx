@@ -6,11 +6,12 @@ import { QrCode, RefreshCw } from "lucide-react";
 import { Pagination, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
 import {
   byNumber,
-  byText,
+  bySurname,
   useClientTable,
   type ClientColumnDef,
   type ClientFilterFn,
 } from "@/shared/table/useClientTable";
+import { personNameMatches, surnameFirst } from "@/shared/lib/personName";
 import type { EntranceLog } from "../types";
 
 const PAGE_SIZES = [10, 20, 50];
@@ -20,7 +21,7 @@ const logSearch: ClientFilterFn<EntranceLog> = (row, _columnId, filterValue) => 
   if (!raw) return true;
   const log = row.original;
   return (
-    log.memberName.toLowerCase().includes(raw.toLowerCase()) ||
+    personNameMatches(log.memberName, raw) ||
     log.memberPhone.includes(raw)
   );
 };
@@ -52,7 +53,7 @@ const EntranceLogsTable: React.FC<EntranceLogsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.dateTime")} />
         ),
-        sortingFn: byNumber<EntranceLog>((log) => Date.parse(log.timestamp) || 0),
+        sortFn: byNumber<EntranceLog>((log) => Date.parse(log.timestamp) || 0),
         cell: ({ row }) => moment(row.original.timestamp).format("DD/MM/YYYY HH:mm:ss"),
       },
       {
@@ -60,8 +61,10 @@ const EntranceLogsTable: React.FC<EntranceLogsTableProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.member")} />
         ),
-        sortingFn: byText<EntranceLog>((log) => log.memberName),
-        cell: ({ row }) => <span className="fw-semibold">{row.original.memberName}</span>,
+        sortFn: bySurname<EntranceLog>((log) => log.memberName),
+        cell: ({ row }) => (
+          <span className="fw-semibold">{surnameFirst(row.original.memberName)}</span>
+        ),
       },
       {
         accessorKey: "memberPhone",

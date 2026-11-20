@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { LinkButton, PanelCard } from "@/shared/ui";
 import { BRAND } from "@/shared/lib/brand";
+import { surnameFirst } from "@/shared/lib/personName";
 import { useDebts } from "@/features/debts";
 import { useMembers } from "@/features/members";
 import { usePayments } from "@/features/payments";
@@ -204,7 +205,7 @@ const AdminSystemDashboard: React.FC = () => {
           {recentSignIns.map((user) => (
             <div key={user.id} className="km-dashboard__row d-flex align-items-center justify-content-between gap-2">
               <div className="min-w-0">
-                <div className="fw-semibold text-dark text-truncate">{user.fullName || user.email}</div>
+                <div className="fw-semibold text-dark text-truncate">{surnameFirst(user.fullName || user.email)}</div>
                 <small className="text-muted">{t(`auth:roles.${user.role}`)}</small>
               </div>
               <small className="text-muted text-nowrap">

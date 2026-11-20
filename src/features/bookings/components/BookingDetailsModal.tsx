@@ -11,6 +11,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { surnameFirst } from "@/shared/lib/personName";
 import type { Booking } from "../types";
 import { GENERAL_CLASS_NAME } from "../lib/schedule";
 
@@ -110,7 +111,7 @@ const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                     </>
                   }
                 >
-                  {booking.memberName}
+                  {surnameFirst(booking.memberName)}
                 </DetailItem>
               )}
 

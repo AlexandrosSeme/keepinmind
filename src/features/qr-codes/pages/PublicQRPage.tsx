@@ -2,6 +2,7 @@ import React from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ScanLine, XCircle } from "lucide-react";
+import { surnameFirst } from "@/shared/lib/personName";
 import { isBarcodeMember } from "../lib";
 import { useMemberLookup } from "../hooks/useMemberLookup";
 import { getMemberStatusInfo } from "../components/memberStatusInfo";
@@ -58,7 +59,7 @@ const PublicQRPage: React.FC = () => {
                     {member.photo_url ? (
                       <img
                         src={member.photo_url}
-                        alt={member.name}
+                        alt={surnameFirst(member.name)}
                         className="rounded-circle km-public-qr__photo"
                       />
                     ) : (
@@ -109,7 +110,7 @@ const PublicQRPage: React.FC = () => {
                       <small className="text-muted d-block mb-1">
                         {t("member.name")}
                       </small>
-                      <p className="mb-0 fw-semibold">{member.name}</p>
+                      <p className="mb-0 fw-semibold">{surnameFirst(member.name)}</p>
                     </div>
                     <div className="col-6">
                       <small className="text-muted d-block mb-1">

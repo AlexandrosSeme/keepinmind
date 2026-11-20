@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { surnameFirst } from "@/shared/lib/personName";
 import { useStaff } from "@/features/staff";
 import type { ClassSlot } from "../../lib/analytics";
 
@@ -20,14 +21,14 @@ export function useTrainerDirectory(slots: ClassSlot[]) {
       .filter((u) => u.role === "trainer")
       .forEach((u) => {
         const key = (u.fullName ?? u.email).split(" ")[0];
-        labels.set(key, u.fullName ?? u.email);
+        labels.set(key, surnameFirst(u.fullName ?? u.email));
       });
     slots.forEach((s) => {
       if (s.instructor && !labels.has(s.instructor)) labels.set(s.instructor, s.instructor);
     });
     const options: TrainerOption[] = [...labels.entries()]
       .map(([key, label]) => ({ key, label }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort((a, b) => a.label.localeCompare(b.label, "el", { sensitivity: "base" }));
     return { options, labelOf: (key: string) => labels.get(key) ?? key };
   }, [users, slots]);
 }

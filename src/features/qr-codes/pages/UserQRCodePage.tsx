@@ -2,6 +2,7 @@ import React from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ScanLine, XCircle } from "lucide-react";
+import { surnameFirst } from "@/shared/lib/personName";
 import { isBarcodeMember } from "../lib";
 import { useMemberLookup } from "../hooks/useMemberLookup";
 import { getMemberStatusInfo } from "../components/memberStatusInfo";
@@ -91,7 +92,7 @@ const UserQRCodePage: React.FC = () => {
               <div className="border-top pt-3">
                 <div className="mb-2">
                   <small className="text-muted">{t("member.name")}:</small>
-                  <p className="mb-0 fw-semibold">{member.name}</p>
+                  <p className="mb-0 fw-semibold">{surnameFirst(member.name)}</p>
                 </div>
                 <div className="mb-2">
                   <small className="text-muted">{t("member.phone")}:</small>

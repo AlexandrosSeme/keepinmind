@@ -6,11 +6,13 @@ import i18n from "@/shared/i18n";
 import { IconAvatar, Pagination, Select, SortableHeader, StatusBadge, ariaSort } from "@/shared/ui";
 import {
   byNumber,
+  bySurname,
   useClientTable,
   type ClientColumnDef,
   type ClientFilterFn,
 } from "@/shared/table/useClientTable";
 import { parseGRDate } from "@/shared/lib/date";
+import { personNameMatches, surnameFirst } from "@/shared/lib/personName";
 import type { Debt } from "../types";
 
 const PAGE_SIZES = [10, 20, 50];
@@ -28,7 +30,7 @@ const debtSearch: ClientFilterFn<Debt> = (row, _columnId, filterValue) => {
   if (!query) return true;
   const debt = row.original;
   return (
-    debt.name.toLowerCase().includes(query) ||
+    personNameMatches(debt.name, query) ||
     (debt.phone ?? "").includes(String(filterValue).trim()) ||
     (debt.email ?? "").toLowerCase().includes(query) ||
     String(debt.amount).includes(query)
@@ -71,13 +73,14 @@ const DebtsTable: React.FC<DebtsTableProps> = ({ debts, onEdit, onDelete }) => {
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.member")} />
         ),
+        sortFn: bySurname<Debt>((debt) => debt.name),
         cell: ({ row }) => (
           <div className="d-flex align-items-center">
             <IconAvatar className="me-3">
               <Euro size={18} />
             </IconAvatar>
             <div>
-              <div className="fw-semibold text-dark">{row.original.name}</div>
+              <div className="fw-semibold text-dark">{surnameFirst(row.original.name)}</div>
               <small className="text-muted">{row.original.phone || "—"}</small>
             </div>
           </div>
@@ -88,7 +91,7 @@ const DebtsTable: React.FC<DebtsTableProps> = ({ debts, onEdit, onDelete }) => {
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.amount")} />
         ),
-        sortingFn: byNumber<Debt>((debt) => Number(debt.amount)),
+        sortFn: byNumber<Debt>((debt) => Number(debt.amount)),
         cell: ({ row }) => (
           <span className="fw-semibold text-danger">€{row.original.amount}</span>
         ),
@@ -98,7 +101,7 @@ const DebtsTable: React.FC<DebtsTableProps> = ({ debts, onEdit, onDelete }) => {
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.daysOverdue")} />
         ),
-        sortingFn: byNumber<Debt>((debt) => Number(debt.daysOverdue)),
+        sortFn: byNumber<Debt>((debt) => Number(debt.daysOverdue)),
         cell: ({ row }) => (
           <div className="d-flex align-items-center gap-2 text-muted">
             <Clock size={16} />
@@ -115,7 +118,7 @@ const DebtsTable: React.FC<DebtsTableProps> = ({ debts, onEdit, onDelete }) => {
         ),
         filterFn: (row, _columnId, value) =>
           value === "" || row.original.status === value,
-        sortingFn: byNumber<Debt>((debt) => STATUS_RANK[debt.status]),
+        sortFn: byNumber<Debt>((debt) => STATUS_RANK[debt.status]),
         cell: ({ row }) => <StatusBadge status={row.original.status} />,
       },
       {
@@ -123,7 +126,7 @@ const DebtsTable: React.FC<DebtsTableProps> = ({ debts, onEdit, onDelete }) => {
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.lastContact")} />
         ),
-        sortingFn: byNumber<Debt>(
+        sortFn: byNumber<Debt>(
           (debt) => parseGRDate(debt.lastContact ?? "")?.getTime() ?? 0,
         ),
         cell: ({ row }) => (
@@ -185,6 +188,7 @@ const DebtsTable: React.FC<DebtsTableProps> = ({ debts, onEdit, onDelete }) => {
     globalFilter: searchTerm,
     globalFilterFn: debtSearch,
     columnFilters: statusFilter ? [{ id: "status", value: statusFilter }] : [],
+    initialSorting: [{ id: "name", desc: false }],
   });
 
   const rows = table.getRowModel().rows;

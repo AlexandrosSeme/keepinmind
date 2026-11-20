@@ -1,4 +1,5 @@
 import React from "react";
+import { surnameFirst } from "@/shared/lib/personName";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DoorOpen, QrCode, Hand } from "lucide-react";
@@ -46,7 +47,7 @@ const CheckinFeed: React.FC<{ logs: EntranceLog[]; total?: number }> = ({ logs, 
             <span className="km-feed__icon">
               {log.entranceType === "qr_scan" ? <QrCode size={14} /> : <Hand size={14} />}
             </span>
-            <span className="km-feed__name text-truncate">{log.memberName}</span>
+            <span className="km-feed__name text-truncate">{surnameFirst(log.memberName)}</span>
             <StatusBadge status={log.validationStatus} showDot={false} />
           </button>
         ))

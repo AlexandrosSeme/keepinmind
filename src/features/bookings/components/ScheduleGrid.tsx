@@ -2,6 +2,7 @@ import React from "react";
 import moment, { type Moment } from "moment";
 import { useTranslation } from "react-i18next";
 import { Loader2, Plus, User, Users } from "lucide-react";
+import { surnameFirst } from "@/shared/lib/personName";
 import type { Booking } from "../types";
 import {
   DAYS_OF_WEEK,
@@ -46,7 +47,7 @@ const BookingCard: React.FC<{ booking: Booking; onClick: () => void }> = ({
       {booking.memberName && booking.memberName !== GENERAL_CLASS_NAME && (
         <div className="booking-member">
           <Users size={12} />
-          {booking.memberName}
+          {surnameFirst(booking.memberName)}
         </div>
       )}
       <div className="booking-time">

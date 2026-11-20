@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { surnameFirst } from "@/shared/lib/personName";
 import { useMemberMutations } from "../queries";
 import type { Member } from "../types";
 
@@ -10,8 +11,8 @@ export function useToggleCardLost() {
   return async (member: Member): Promise<Member | null> => {
     const isCurrentlyLost = member.card_lost === true;
     const confirmMessage = isCurrentlyLost
-      ? t("cardLost.confirmActivate", { name: member.name })
-      : t("cardLost.confirmCancel", { name: member.name });
+      ? t("cardLost.confirmActivate", { name: surnameFirst(member.name) })
+      : t("cardLost.confirmCancel", { name: surnameFirst(member.name) });
 
     if (!window.confirm(confirmMessage)) return null;
 
@@ -21,8 +22,8 @@ export function useToggleCardLost() {
     if (updated) {
       alert(
         isCurrentlyLost
-          ? t("cardLost.activated", { name: member.name })
-          : t("cardLost.cancelled", { name: member.name }),
+          ? t("cardLost.activated", { name: surnameFirst(member.name) })
+          : t("cardLost.cancelled", { name: surnameFirst(member.name) }),
       );
     }
     return updated;

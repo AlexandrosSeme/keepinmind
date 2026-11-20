@@ -36,7 +36,7 @@ const MemberEntranceLogs: React.FC<MemberEntranceLogsProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("logs.date")} />
         ),
-        sortingFn: byNumber<EntranceLog>((log) => Date.parse(log.timestamp) || 0),
+        sortFn: byNumber<EntranceLog>((log) => Date.parse(log.timestamp) || 0),
         cell: ({ row }) => (
           <span className="fw-semibold km-member__log-time">
             {formatDateTime(row.original.timestamp)}
@@ -48,7 +48,7 @@ const MemberEntranceLogs: React.FC<MemberEntranceLogsProps> = ({
         header: ({ column }) => (
           <SortableHeader column={column} label={t("logs.method")} />
         ),
-        sortingFn: byText<EntranceLog>((log) => log.entranceType),
+        sortFn: byText<EntranceLog>((log) => log.entranceType),
         cell: ({ row }) =>
           row.original.entranceType === "qr_scan" ? (
             <StatusBadge status="qr_scan" icon={<QrCode size={12} />} showDot={false} />

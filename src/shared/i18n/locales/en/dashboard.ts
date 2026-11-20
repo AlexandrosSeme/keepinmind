@@ -8,6 +8,7 @@ const dashboard: LocaleShape<typeof el> = {
     member: "Member",
     payment: "Payment",
     qr: "Scan QR",
+    manual: "Manual check-in",
     debt: "Debt",
     calendar: "Calendar",
   },

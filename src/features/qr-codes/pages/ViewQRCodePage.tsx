@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, QrCode, ScanLine } from "lucide-react";
 import { useMembers } from "@/features/members";
+import { comparePersonNames, personNameMatches, surnameFirst } from "@/shared/lib/personName";
 import { isBarcodeMember } from "../lib";
 import "./ViewQRCodePage.scss";
 
@@ -14,12 +15,14 @@ const ViewQRCode: React.FC = () => {
   const [selectedMemberId, setSelectedMemberId] = useState<string>("");
   const [manualId, setManualId] = useState<string>("");
 
-  const filteredMembers = members.filter(
-    (member) =>
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.phone.includes(searchTerm) ||
-      member.id.toString().includes(searchTerm),
-  );
+  const filteredMembers = members
+    .filter(
+      (member) =>
+        personNameMatches(member.name, searchTerm) ||
+        member.phone.includes(searchTerm) ||
+        member.id.toString().includes(searchTerm),
+    )
+    .sort((a, b) => comparePersonNames(a.name, b.name));
 
   const handleViewQR = (memberId: number) => {
     navigate(`/user-qr?id=${memberId}`);
@@ -96,7 +99,7 @@ const ViewQRCode: React.FC = () => {
                           <div className="d-flex justify-content-between align-items-center">
                             <div className="flex-grow-1">
                               <div className="d-flex align-items-center gap-2">
-                                <div className="fw-semibold">{member.name}</div>
+                                <div className="fw-semibold">{surnameFirst(member.name)}</div>
                                 {isBarcode && (
                                   <span className="badge bg-info text-dark">
                                     <ScanLine size={12} className="me-1" />

@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Search } from "lucide-react";
+import { Hand, Search } from "lucide-react";
 import { PageHeader, Select } from "@/shared/ui";
+import ManualCheckInModal from "@/features/checkin/components/ManualCheckInModal";
 import type { EntranceLog } from "../types";
 import { getEntranceLogs } from "../api";
 import { subscribeEntrances } from "../entranceBus";
@@ -16,6 +17,7 @@ const AttendancePage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<ValidationFilter>("all");
   const [methodFilter, setMethodFilter] = useState<MethodFilter>("all");
   const [entranceLogs, setEntranceLogs] = useState<EntranceLog[]>([]);
+  const [manualCheckIn, setManualCheckIn] = useState(false);
 
   const loadLogs = useCallback(async () => {
     try {
@@ -39,7 +41,17 @@ const AttendancePage: React.FC = () => {
 
   return (
     <div>
-      <PageHeader title={t("page.title")} subtitle={t("page.subtitle")} />
+      <PageHeader
+        title={t("page.title")}
+        subtitle={t("page.subtitle")}
+        actions={
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setManualCheckIn(true)}>
+            <Hand size={14} className="me-1" />
+            {t("manual.button")}
+          </button>
+        }
+      />
+      {manualCheckIn && <ManualCheckInModal onClose={() => setManualCheckIn(false)} />}
 
       <div className="card border-0 shadow-sm mb-4 km-toolbar-card">
         <div className="card-body">

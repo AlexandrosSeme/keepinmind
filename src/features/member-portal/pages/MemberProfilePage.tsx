@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { intlLocale } from "@/shared/i18n";
+import { surnameFirst } from "@/shared/lib/personName";
 import { StatusBadge } from "@/shared/ui";
 import {
   getEntranceLogsByMember,
@@ -42,11 +43,11 @@ const MemberProfile: React.FC = () => {
             <img src={member.photo_url} alt="" className="mp-profile-photo" />
           ) : (
             <div className="km-avatar-soft mp-profile-initial">
-              {member.name.charAt(0)}
+              {surnameFirst(member.name).charAt(0)}
             </div>
           )}
           <div>
-            <div className="fw-bold mp-profile-name">{member.name}</div>
+            <div className="fw-bold mp-profile-name">{surnameFirst(member.name)}</div>
             <StatusBadge status={member.status} />
           </div>
         </div>
