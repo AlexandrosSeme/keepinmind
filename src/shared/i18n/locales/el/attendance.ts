@@ -38,6 +38,8 @@ const attendance = {
     validation: "Επικύρωση",
     type: "Τύπος",
     message: "Μήνυμα",
+    week: "Εβδομάδα",
+    month: "Μήνας",
   },
   programs: {
     count_one: "{{count}} πρόγραμμα",
@@ -56,6 +58,8 @@ const attendance = {
     expiringSoon: "{{total}} Λήγουν Σύντομα",
     empty: "Δεν υπάρχουν logs εισόδων",
     emptyHint: "Οι είσοδοι από QR scanner θα εμφανίζονται εδώ",
+    weekHint: "{{count}} αυτή την εβδομάδα",
+    monthHint: "{{count}} αυτόν τον μήνα",
   },
   modal: {
     title: "Καταγραφή Προσέλευσης - {{title}}",

@@ -41,6 +41,8 @@ const attendance: LocaleShape<typeof el> = {
     validation: "Validation",
     type: "Type",
     message: "Message",
+    week: "Week",
+    month: "Month",
   },
   programs: {
     count_one: "{{count}} program",
@@ -59,6 +61,8 @@ const attendance: LocaleShape<typeof el> = {
     expiringSoon: "{{total}} Expiring Soon",
     empty: "No entrance logs",
     emptyHint: "Entrances from the QR scanner will appear here",
+    weekHint: "{{count}} this week",
+    monthHint: "{{count}} this month",
   },
   modal: {
     title: "Record Attendance - {{title}}",

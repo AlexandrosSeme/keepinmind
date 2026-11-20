@@ -918,6 +918,27 @@ small,
   }
 }
 
+.km-visit-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.1rem;
+  height: 1.7rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--km-surface-raised);
+  color: var(--km-text-muted);
+  border: 1px solid var(--km-border);
+}
+
+.km-visit-pill.is-active {
+  background: var(--km-brand-soft);
+  color: var(--km-text);
+  border-color: transparent;
+}
+
 @media (max-width: 767.98px) {
   body {
     font-size: var(--fs-md);

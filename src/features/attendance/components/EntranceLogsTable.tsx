@@ -16,6 +16,42 @@ import type { EntranceLog } from "../types";
 
 const PAGE_SIZES = [10, 20, 50];
 
+/** Monday 00:00 and the first of the month, in local time. */
+function periodStarts(now = new Date()) {
+  const month = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const week = new Date(now);
+  week.setHours(0, 0, 0, 0);
+  const day = week.getDay();
+  week.setDate(week.getDate() - (day === 0 ? 6 : day - 1));
+  return { week: week.getTime(), month };
+}
+
+interface VisitCounts {
+  week: number;
+  month: number;
+}
+
+function countVisits(logs: EntranceLog[]): Map<number, VisitCounts> {
+  const { week, month } = periodStarts();
+  const counts = new Map<number, VisitCounts>();
+  for (const log of logs) {
+    if (log.validationStatus === "invalid") continue;
+    const at = Date.parse(log.timestamp);
+    if (Number.isNaN(at) || at < month) continue;
+    const current = counts.get(log.memberId) ?? { week: 0, month: 0 };
+    current.month += 1;
+    if (at >= week) current.week += 1;
+    counts.set(log.memberId, current);
+  }
+  return counts;
+}
+
+const VisitPill: React.FC<{ count: number; title: string }> = ({ count, title }) => (
+  <span className={`km-visit-pill${count > 0 ? " is-active" : ""}`} title={title}>
+    {count}
+  </span>
+);
+
 const logSearch: ClientFilterFn<EntranceLog> = (row, _columnId, filterValue) => {
   const raw = String(filterValue).trim();
   if (!raw) return true;
@@ -44,6 +80,16 @@ const EntranceLogsTable: React.FC<EntranceLogsTableProps> = ({
   const { t } = useTranslation("attendance");
   const count = (status: EntranceLog["validationStatus"]) =>
     logs.filter((log) => log.validationStatus === status).length;
+  const visits = useMemo(() => countVisits(logs), [logs]);
+  const visibleLogs = useMemo(
+    () =>
+      logs.filter((log) => {
+        if (statusFilter !== "all" && log.validationStatus !== statusFilter) return false;
+        if (methodFilter !== "all" && log.entranceType !== methodFilter) return false;
+        return true;
+      }),
+    [logs, statusFilter, methodFilter],
+  );
 
   const columns = useMemo<ClientColumnDef<EntranceLog>[]>(
     () => [
@@ -80,19 +126,10 @@ const EntranceLogsTable: React.FC<EntranceLogsTableProps> = ({
         cell: ({ row }) => <StatusBadge status={row.original.memberStatus} />,
       },
       {
-        accessorKey: "validationStatus",
-        header: ({ column }) => (
-          <SortableHeader column={column} label={t("fields.validation")} />
-        ),
-        filterFn: (row, _columnId, value) => row.original.validationStatus === value,
-        cell: ({ row }) => <StatusBadge status={row.original.validationStatus} />,
-      },
-      {
         accessorKey: "entranceType",
         header: ({ column }) => (
           <SortableHeader column={column} label={t("fields.type")} />
         ),
-        filterFn: (row, _columnId, value) => row.original.entranceType === value,
         cell: ({ row }) => (
           <StatusBadge
             status={row.original.entranceType}
@@ -104,33 +141,38 @@ const EntranceLogsTable: React.FC<EntranceLogsTableProps> = ({
         ),
       },
       {
-        id: "message",
-        accessorFn: (log) => log.validationMessage,
+        id: "week",
+        accessorFn: (log) => visits.get(log.memberId)?.week ?? 0,
         header: ({ column }) => (
-          <SortableHeader column={column} label={t("fields.message")} />
+          <SortableHeader column={column} label={t("fields.week")} />
         ),
-        cell: ({ row }) => (
-          <>
-            <small className="text-muted">{row.original.validationMessage}</small>
-            {row.original.notes && (
-              <div className="small text-muted mt-1">{row.original.notes}</div>
-            )}
-          </>
+        sortFn: byNumber<EntranceLog>((log) => visits.get(log.memberId)?.week ?? 0),
+        cell: ({ row }) => {
+          const total = visits.get(row.original.memberId)?.week ?? 0;
+          return <VisitPill count={total} title={t("entrance.weekHint", { count: total })} />;
+        },
+      },
+      {
+        id: "month",
+        accessorFn: (log) => visits.get(log.memberId)?.month ?? 0,
+        header: ({ column }) => (
+          <SortableHeader column={column} label={t("fields.month")} />
         ),
+        sortFn: byNumber<EntranceLog>((log) => visits.get(log.memberId)?.month ?? 0),
+        cell: ({ row }) => {
+          const total = visits.get(row.original.memberId)?.month ?? 0;
+          return <VisitPill count={total} title={t("entrance.monthHint", { count: total })} />;
+        },
       },
     ],
-    [t],
+    [t, visits],
   );
 
   const table = useClientTable({
-    data: logs,
+    data: visibleLogs,
     columns,
     globalFilter: searchTerm,
     globalFilterFn: logSearch,
-    columnFilters: [
-      ...(statusFilter === "all" ? [] : [{ id: "validationStatus", value: statusFilter }]),
-      ...(methodFilter === "all" ? [] : [{ id: "entranceType", value: methodFilter }]),
-    ],
   });
 
   const rows = table.getRowModel().rows;
@@ -186,7 +228,7 @@ const EntranceLogsTable: React.FC<EntranceLogsTableProps> = ({
                           className={`border-0 ${
                             header.column.id === "timestamp"
                               ? "ps-4"
-                              : header.column.id === "message"
+                              : header.column.id === "month"
                                 ? "pe-4"
                                 : ""
                           }`}
@@ -214,7 +256,7 @@ const EntranceLogsTable: React.FC<EntranceLogsTableProps> = ({
                             className={
                               cell.column.id === "timestamp"
                                 ? "ps-4"
-                                : cell.column.id === "message"
+                                : cell.column.id === "month"
                                   ? "pe-4"
                                   : undefined
                             }
